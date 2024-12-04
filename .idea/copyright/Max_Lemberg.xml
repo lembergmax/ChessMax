@@ -1,0 +1,7 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="allowReplaceRegexp" value="Max Lemberg" />
+    <option name="notice" value="Copyright (c) &amp;#36;originalComment.match(&quot;Copyright \(c\) (\d+)&quot;, 1, &quot;-&quot;, &quot;&amp;#36;today.year&quot;)&amp;#36;today.year Max Lemberg. This file is part of ChessMax.&#10;Licenced under the CC BY-NC 4.0 License.&#10;See &quot;http://creativecommons.org/licenses/by-nc/4.0/&quot;." />
+    <option name="myName" value="Max Lemberg" />
+  </copyright>
+</component>
