@@ -6,9 +6,14 @@
 
 package com.mlprograms.chess;
 
+import com.mlprograms.chess.game.ChessMax;
+
 public class Main {
 
 	public static void main(String[] args) {
+
+		ChessMax chessMax = new ChessMax();
+		chessMax.play();
 
 	}
 
