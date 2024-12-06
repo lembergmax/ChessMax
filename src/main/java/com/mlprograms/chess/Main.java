@@ -6,7 +6,7 @@
 
 package com.mlprograms.chess;
 
-import com.mlprograms.chess.ui.Startmenu;
+import com.mlprograms.chess.account.ui.Startmenu;
 
 /**
  * The main entry point for the ChessMax application.
