@@ -9,6 +9,7 @@ package com.mlprograms.chess.account;
 import com.mlprograms.chess.account.ui.Login;
 import com.mlprograms.chess.database.UserDatabaseManager;
 import com.mlprograms.chess.player.*;
+import com.mlprograms.chess.utils.ConfigReader;
 import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.ErrorMessage;
 
@@ -22,8 +23,17 @@ import java.util.List;
 
 public class AccountManager {
 
-	private static final ArrayList<String> accountInfo = new ArrayList<>();
-	private static final UserDatabaseManager userDatabaseManager = new UserDatabaseManager();
+	private static final ArrayList<String> ACCOUNT_INFO = new ArrayList<>();
+	private static final UserDatabaseManager USER_DATABASE_MANAGER = new UserDatabaseManager();
+
+	private static final ConfigReader configReader = new ConfigReader();
+
+	private static final String TEXT_SECTION = "Text";
+	private static final String ERROR_MESSAGE_TITLE = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_TITLE");
+	private static final String ERROR_MESSAGE_FILL_ALL_FIELDS = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_FILL_ALL_FIELDS");
+	private static final String ERROR_MESSAGE_PASSWORDS_NOT_EQUAL = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_PASSWORDS_NOT_EQUAL");
+	private static final String ERROR_MESSAGE_USERNAME_OR_EMAIL_ALREADY_EXISTS = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_USERNAME_OR_EMAIL_ALREADY_EXISTS");
+	private static final String ERROR_MESSAGE_CANNOT_ADD_USER_TO_DB = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_CANNOT_ADD_USER_TO_DB");
 
 	/**
 	 * Creates a new account based on the input fields in the given window.
@@ -32,35 +42,35 @@ public class AccountManager {
 	 * 	the parent window containing user input fields
 	 */
 	public static void createAccount(Window window) {
-		accountInfo.clear();
+		ACCOUNT_INFO.clear();
 
 		if (areFieldsEmpty(window)) {
-			showErrorMessage("Attention", "Please fill in all fields to continue.");
+			showErrorMessage(ERROR_MESSAGE_FILL_ALL_FIELDS);
 			return;
 		}
 
 		// Extract user data from fields
-		String username = accountInfo.get(5);
-		String email = accountInfo.get(4);
-		String firstname = accountInfo.get(3);
-		String lastname = accountInfo.get(2);
-		String password = accountInfo.get(1);
-		String confirmPassword = accountInfo.get(0);
+		String username = ACCOUNT_INFO.get(5);
+		String email = ACCOUNT_INFO.get(4);
+		String firstname = ACCOUNT_INFO.get(3);
+		String lastname = ACCOUNT_INFO.get(2);
+		String password = ACCOUNT_INFO.get(1);
+		String confirmPassword = ACCOUNT_INFO.get(0);
 
 		if (!password.equals(confirmPassword)) {
-			showErrorMessage("Attention", "Passwords do not match.");
+			showErrorMessage(ERROR_MESSAGE_PASSWORDS_NOT_EQUAL);
 			return;
 		}
 
 		if (isUserAlreadyExists(username, email)) {
-			showErrorMessage("Attention", "Username or email address is already taken.");
+			showErrorMessage(ERROR_MESSAGE_USERNAME_OR_EMAIL_ALREADY_EXISTS);
 			return;
 		}
 
 		Player player = createPlayerObject(username, email, firstname, lastname, password);
 
-		if (!userDatabaseManager.addUser(player)) {
-			showErrorMessage("Attention", "An error occurred while adding the user. Please try again later.");
+		if (!USER_DATABASE_MANAGER.addUser(player)) {
+			showErrorMessage(ERROR_MESSAGE_CANNOT_ADD_USER_TO_DB);
 			return;
 		}
 
@@ -78,8 +88,8 @@ public class AccountManager {
 	 * @return true if any field is empty; false otherwise
 	 */
 	private static boolean areFieldsEmpty(Window window) {
-		collectTextsFromWindow(window, accountInfo);
-		return accountInfo.stream().anyMatch(String::isEmpty);
+		collectTextsFromWindow(window, ACCOUNT_INFO);
+		return ACCOUNT_INFO.stream().anyMatch(String::isEmpty);
 	}
 
 	/**
@@ -94,7 +104,7 @@ public class AccountManager {
 	 */
 	private static boolean isUserAlreadyExists(String username, String email) {
 		String sqlQuery = "SELECT 1 FROM users WHERE playerName = ? OR email = ? LIMIT 1;";
-		try (PreparedStatement preparedStatement = userDatabaseManager.getConnection().prepareStatement(sqlQuery)) {
+		try (PreparedStatement preparedStatement = USER_DATABASE_MANAGER.getConnection().prepareStatement(sqlQuery)) {
 			preparedStatement.setString(1, username);
 			preparedStatement.setString(2, email);
 
@@ -140,13 +150,11 @@ public class AccountManager {
 	/**
 	 * Displays an error message in a dialog box.
 	 *
-	 * @param title
-	 * 	the title of the dialog box
 	 * @param message
 	 * 	the error message to display
 	 */
-	private static void showErrorMessage(String title, String message) {
-		new ErrorMessage(title, message);
+	private static void showErrorMessage(String message) {
+		new ErrorMessage(AccountManager.ERROR_MESSAGE_TITLE, message);
 	}
 
 	/**
