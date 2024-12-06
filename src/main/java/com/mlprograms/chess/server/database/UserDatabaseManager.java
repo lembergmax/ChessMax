@@ -4,7 +4,7 @@
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.database;
+package com.mlprograms.chess.server.database;
 
 import com.mlprograms.chess.player.Player;
 import com.mlprograms.chess.utils.ConfigReader;
