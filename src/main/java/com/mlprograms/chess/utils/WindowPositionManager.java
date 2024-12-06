@@ -1,12 +1,11 @@
 /*
  * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
- * Licensed under the CC BY-NC 4.0 License.
+ * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.ui.utils;
+package com.mlprograms.chess.utils;
 
-import com.mlprograms.chess.utils.JsonFileManager;
 import org.json.JSONObject;
 
 import java.awt.*;

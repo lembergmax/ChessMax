@@ -8,9 +8,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.mlprograms.chess.ui;
+package com.mlprograms.chess.account.ui;
 
-import com.mlprograms.chess.ui.utils.WindowPositionManager;
+import com.mlprograms.chess.utils.WindowPositionManager;
 
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
