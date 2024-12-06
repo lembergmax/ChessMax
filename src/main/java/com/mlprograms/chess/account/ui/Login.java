@@ -10,10 +10,12 @@
  */
 package com.mlprograms.chess.account.ui;
 
+import com.mlprograms.chess.utils.TabTraversalManager;
 import com.mlprograms.chess.utils.WindowPositionManager;
 
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.List;
 
 public class Login extends javax.swing.JFrame {
 
@@ -33,6 +35,8 @@ public class Login extends javax.swing.JFrame {
                 positionManager.savePosition();
             }
         });
+
+        TabTraversalManager.enableTabTraversal(List.of(jTextPane3, jTextPane5, jButtonSwitchToRegistration, jButtonBack, jButtonLogin));
     }
 
     /**

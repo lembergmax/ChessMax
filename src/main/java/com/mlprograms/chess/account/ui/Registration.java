@@ -10,10 +10,12 @@
  */
 package com.mlprograms.chess.account.ui;
 
+import com.mlprograms.chess.utils.TabTraversalManager;
 import com.mlprograms.chess.utils.WindowPositionManager;
 
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.List;
 
 public class Registration extends javax.swing.JFrame {
 
@@ -33,6 +35,8 @@ public class Registration extends javax.swing.JFrame {
                 positionManager.savePosition();
             }
         });
+
+        TabTraversalManager.enableTabTraversal(List.of(jTextPaneUsername, jTextPaneEmail, jTextPaneFirstname, jTextPaneLastname, jTextPanePassword, jTextPaneConfirmPassword, jButtonSwitchToLogin, jButtonBack, jButtonCreateAccount));
     }
 
     /**
