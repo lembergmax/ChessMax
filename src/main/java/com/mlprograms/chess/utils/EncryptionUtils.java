@@ -15,7 +15,8 @@ import java.util.Base64;
 public class EncryptionUtils {
 
 	private static final String ALGORITHM = "AES";
-	private static final int KEY_SIZE = 256;
+	private static final String TRANSFORMATION = "AES/ECB/PKCS5Padding";
+	private static final int KEY_BIT_SIZE = 256;
 
 	/**
 	 * Generates a new AES encryption key.
@@ -27,7 +28,7 @@ public class EncryptionUtils {
 	 */
 	public static String generateKey() throws Exception {
 		KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
-		keyGen.init(KEY_SIZE);
+		keyGen.init(KEY_BIT_SIZE);
 		SecretKey secretKey = keyGen.generateKey();
 		return Base64.getEncoder().encodeToString(secretKey.getEncoded());
 	}
@@ -47,7 +48,7 @@ public class EncryptionUtils {
 	 */
 	public static String encrypt(String plainText, String key) throws Exception {
 		SecretKeySpec secretKey = new SecretKeySpec(Base64.getDecoder().decode(key), ALGORITHM);
-		Cipher cipher = Cipher.getInstance(ALGORITHM);
+		Cipher cipher = Cipher.getInstance(TRANSFORMATION);
 		cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 		byte[] encryptedBytes = cipher.doFinal(plainText.getBytes());
 		return Base64.getEncoder().encodeToString(encryptedBytes);
@@ -68,7 +69,7 @@ public class EncryptionUtils {
 	 */
 	public static String decrypt(String encryptedText, String key) throws Exception {
 		SecretKeySpec secretKey = new SecretKeySpec(Base64.getDecoder().decode(key), ALGORITHM);
-		Cipher cipher = Cipher.getInstance(ALGORITHM);
+		Cipher cipher = Cipher.getInstance(TRANSFORMATION);
 		cipher.init(Cipher.DECRYPT_MODE, secretKey);
 		byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedText));
 		return new String(decryptedBytes);
