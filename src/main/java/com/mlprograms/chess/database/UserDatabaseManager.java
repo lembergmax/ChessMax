@@ -7,13 +7,17 @@
 package com.mlprograms.chess.database;
 
 import com.mlprograms.chess.player.Player;
+import com.mlprograms.chess.utils.ConfigReader;
 import com.mlprograms.chess.utils.Logger;
 
 import java.sql.*;
 
 public class UserDatabaseManager {
 
-	private static final String DATABASE_URL = "jdbc:sqlite:db/user_data.db";
+	private static final ConfigReader configReader = new ConfigReader();
+
+	private static final String DATABASE_SECTION = "Database";
+	private static final String DATABASE_URL = configReader.getValue(DATABASE_SECTION, "DATABASE_URL");
 
 	/**
 	 * Creates and returns a connection to the database.
