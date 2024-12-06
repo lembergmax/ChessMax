@@ -16,6 +16,18 @@ public class UserDatabaseManager {
 	private static final String DATABASE_URL = "jdbc:sqlite:db/user_data.db";
 
 	/**
+	 * Creates and returns a connection to the database.
+	 *
+	 * @return a Connection object
+	 *
+	 * @throws SQLException
+	 * 	if the connection fails
+	 */
+	public Connection getConnection() throws SQLException {
+		return DriverManager.getConnection(DATABASE_URL);
+	}
+
+	/**
 	 * Initializes the database and creates the user table if it does not exist.
 	 */
 	public void initializeDatabase() {
@@ -40,13 +52,13 @@ public class UserDatabaseManager {
 			);
 			""";
 
-		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		try (Connection connection = getConnection();
 		     Statement statement = connection.createStatement()) {
 
 			statement.execute(createTableSQL);
 			Logger.logSuccess("Database initialized successfully.");
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Logger.logError("Failed to initialize database: " + e.getMessage());
 		}
 	}
 
@@ -56,24 +68,22 @@ public class UserDatabaseManager {
 	 * @param player
 	 * 	the player to be added.
 	 *
-	 * @throws Exception
-	 * 	if insertion fails or if the player name already exists.
+	 * @return true if the player was added successfully, false otherwise.
 	 */
-	public void addUser(Player player) {
+	public boolean addUser(Player player) {
 		String insertSQL = """
-			INSERT INTO users (
-			    playerName, firstName, lastName, language, languageCode,
-			    eloGame, eloOfficial, birthDate, email, secondaryEmail, phoneNumber,
-			    password, passwordRecoveryQuestion, passwordRecoveryAnswer, timezone
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+			INSERT INTO users(
+				playerName, firstName, lastName, language, languageCode,
+				eloGame, eloOfficial, birthDate, email, secondaryEmail, phoneNumber,
+				password, passwordRecoveryQuestion, passwordRecoveryAnswer, timezone
+			) VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 			""";
 
-		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		try (Connection connection = getConnection();
 		     PreparedStatement preparedStatement = connection.prepareStatement(insertSQL)) {
 
 			if (isPlayerNameExists(player.getName().getUsername())) {
-				handleDuplicatePlayerName(player.getName().getUsername());
-				return;
+				return false;
 			}
 
 			preparedStatement.setString(1, player.getName().getUsername());
@@ -97,6 +107,8 @@ public class UserDatabaseManager {
 		} catch (Exception e) {
 			Logger.logError("Failed to add user: " + e.getMessage());
 		}
+
+		return true;
 	}
 
 	/**
@@ -106,19 +118,19 @@ public class UserDatabaseManager {
 	 * 	the player name to check.
 	 *
 	 * @return true if the player name exists, false otherwise.
-	 *
-	 * @throws SQLException
-	 * 	if the query fails.
 	 */
-	private boolean isPlayerNameExists(String playerName) throws SQLException {
+	private boolean isPlayerNameExists(String playerName) {
 		String querySQL = "SELECT COUNT(*) FROM users WHERE playerName = ?;";
-		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		try (Connection connection = getConnection();
 		     PreparedStatement preparedStatement = connection.prepareStatement(querySQL)) {
 			preparedStatement.setString(1, playerName);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				return resultSet.getInt(1) > 0;
 			}
+		} catch (SQLException e) {
+			Logger.logError("Failed to check player name: " + e.getMessage());
 		}
+		return false;
 	}
 
 	/**
@@ -126,14 +138,11 @@ public class UserDatabaseManager {
 	 *
 	 * @param playerId
 	 * 	the ID of the player to be deleted.
-	 *
-	 * @throws SQLException
-	 * 	if the deletion fails.
 	 */
 	public void deleteUserById(int playerId) {
 		String deleteSQL = "DELETE FROM users WHERE playerId = ?;";
 
-		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		try (Connection connection = getConnection();
 		     PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
 
 			preparedStatement.setInt(1, playerId);
@@ -154,14 +163,11 @@ public class UserDatabaseManager {
 	 *
 	 * @param playerName
 	 * 	the name of the player to be deleted.
-	 *
-	 * @throws SQLException
-	 * 	if the deletion fails.
 	 */
 	public void deleteUserByName(String playerName) {
 		String deleteSQL = "DELETE FROM users WHERE playerName = ?;";
 
-		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		try (Connection connection = getConnection();
 		     PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
 
 			preparedStatement.setString(1, playerName);
@@ -185,10 +191,10 @@ public class UserDatabaseManager {
 	 * @param params
 	 * 	optional parameters for the prepared statement.
 	 *
-	 * @return the Player object if found, null otherwise.
+	 * @return the ResultSet object if the query succeeds, null otherwise.
 	 */
 	public ResultSet executeSelectQuery(String query, Object... params) {
-		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		try (Connection connection = getConnection();
 		     PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
 			for (int i = 0; i < params.length; i++) {
@@ -200,16 +206,5 @@ public class UserDatabaseManager {
 			Logger.logError("Failed to execute SELECT query: " + e.getMessage());
 			return null;
 		}
-	}
-
-	/**
-	 * Handles the scenario when a duplicate player name is found.
-	 *
-	 * @param playerName
-	 * 	the duplicate player name.
-	 */
-	private void handleDuplicatePlayerName(String playerName) {
-		Logger.logError("Duplicate player name found: " + playerName);
-		// TODO: Custom logic for handling duplicate player names (e.g., logging, notifying the user)
 	}
 }
