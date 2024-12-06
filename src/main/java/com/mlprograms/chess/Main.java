@@ -14,21 +14,22 @@ import com.mlprograms.chess.account.ui.Startmenu;
  */
 public class Main {
 
-    /**
-     * Main method to start the application.
-     *
-     * @param args command-line arguments (not used)
-     */
-    public static void main(String[] args) {
-        initializeUI();
-    }
+	/**
+	 * Main method to start the application.
+	 *
+	 * @param args
+	 * 	command-line arguments (not used)
+	 */
+	public static void main(String[] args) {
+		initializeUI();
+	}
 
-    /**
-     * Loads and displays the start menu of the application.
-     */
-    private static void initializeUI() {
-        Startmenu startmenu = new Startmenu(); // Create a new instance of the Startmenu UI
-        startmenu.setVisible(true); // Make the start menu visible
-    }
+	/**
+	 * Loads and displays the start menu of the application.
+	 */
+	private static void initializeUI() {
+		Startmenu startmenu = new Startmenu(); // Create a new instance of the Startmenu UI
+		startmenu.setVisible(true); // Make the start menu visible
+	}
 
 }
