@@ -10,6 +10,7 @@
  */
 package com.mlprograms.chess.account.ui;
 
+import com.mlprograms.chess.account.AccountManager;
 import com.mlprograms.chess.utils.TabTraversalManager;
 import com.mlprograms.chess.utils.WindowPositionManager;
 
@@ -157,7 +158,7 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonSwitchToRegistrationActionPerformed
 
     private void jButtonLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLoginActionPerformed
-        // TODO add your handling code here:
+        AccountManager.login(this);
     }//GEN-LAST:event_jButtonLoginActionPerformed
 
     private void jButtonBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackActionPerformed
