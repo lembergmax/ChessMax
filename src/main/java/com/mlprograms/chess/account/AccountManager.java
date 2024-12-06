@@ -7,8 +7,8 @@
 package com.mlprograms.chess.account;
 
 import com.mlprograms.chess.account.ui.Login;
-import com.mlprograms.chess.database.UserDatabaseManager;
 import com.mlprograms.chess.player.*;
+import com.mlprograms.chess.server.database.UserDatabaseManager;
 import com.mlprograms.chess.utils.ConfigReader;
 import com.mlprograms.chess.utils.EncryptionUtils;
 import com.mlprograms.chess.utils.Logger;
@@ -24,14 +24,13 @@ import java.util.List;
 
 public class AccountManager {
 
-
 	private static final ArrayList<String> ACCOUNT_INFO = new ArrayList<>();
 	private static final UserDatabaseManager USER_DATABASE_MANAGER = new UserDatabaseManager();
 
 	private static final ConfigReader configReader = new ConfigReader();
 	private static final String SECRET_KEY = configReader.getValue("Security", "SECRET_KEY");
-	private static final String TEXT_SECTION = "Text";
 
+	private static final String TEXT_SECTION = "Text";
 	private static final String INFORMATION_MESSAGE_TITLE = configReader.getValue(TEXT_SECTION, "INFORMATION_MESSAGE_TITLE");
 
 	private static final String ERROR_MESSAGE_TITLE = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_TITLE");
@@ -84,7 +83,7 @@ public class AccountManager {
 			return;
 		}
 
-		showInformationMessage("Konto erfolgreich erstellt.");
+		showInformationMessage("Konto erfolgreich erstellt!");
 
 		// Redirect to login
 		window.dispose();
