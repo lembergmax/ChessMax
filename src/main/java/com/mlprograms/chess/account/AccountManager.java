@@ -10,6 +10,7 @@ import com.mlprograms.chess.account.ui.Login;
 import com.mlprograms.chess.database.UserDatabaseManager;
 import com.mlprograms.chess.player.*;
 import com.mlprograms.chess.utils.ConfigReader;
+import com.mlprograms.chess.utils.EncryptionUtils;
 import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.ErrorMessage;
 
@@ -17,16 +18,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountManager {
 
+
 	private static final ArrayList<String> ACCOUNT_INFO = new ArrayList<>();
 	private static final UserDatabaseManager USER_DATABASE_MANAGER = new UserDatabaseManager();
 
 	private static final ConfigReader configReader = new ConfigReader();
+
+	private static final String SECRET_KEY = configReader.getValue("Security", "SECRET_KEY");
 
 	private static final String TEXT_SECTION = "Text";
 	private static final String ERROR_MESSAGE_TITLE = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_TITLE");
@@ -62,12 +65,16 @@ public class AccountManager {
 			return;
 		}
 
-		if (isUserAlreadyExists(username, email)) {
+		if (userAlreadyExists(username, email)) {
 			showErrorMessage(ERROR_MESSAGE_USERNAME_OR_EMAIL_ALREADY_EXISTS);
 			return;
 		}
 
 		Player player = createPlayerObject(username, email, firstname, lastname, password);
+
+		if (player == null) {
+			return;
+		}
 
 		if (!USER_DATABASE_MANAGER.addUser(player)) {
 			showErrorMessage(ERROR_MESSAGE_CANNOT_ADD_USER_TO_DB);
@@ -78,6 +85,13 @@ public class AccountManager {
 		window.dispose();
 		new Login().setVisible(true);
 	}
+
+	public static void login(Window window) {
+
+		// TODO: Implement login functionality
+
+	}
+
 
 	/**
 	 * Checks if the input fields in the given window are empty.
@@ -102,19 +116,20 @@ public class AccountManager {
 	 *
 	 * @return true if the user exists; false otherwise
 	 */
-	private static boolean isUserAlreadyExists(String username, String email) {
+	private static boolean userAlreadyExists(String username, String email) {
 		String sqlQuery = "SELECT 1 FROM users WHERE playerName = ? OR email = ? LIMIT 1;";
 		try (PreparedStatement preparedStatement = USER_DATABASE_MANAGER.getConnection().prepareStatement(sqlQuery)) {
-			preparedStatement.setString(1, username);
-			preparedStatement.setString(2, email);
+			preparedStatement.setString(1, EncryptionUtils.encrypt(username, SECRET_KEY));
+			preparedStatement.setString(2, EncryptionUtils.encrypt(email, SECRET_KEY));
 
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				return resultSet.next(); // True if a user exists
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			Logger.logError("Error while checking username and email: " + e.getMessage());
-			return false;
 		}
+
+		return false;
 	}
 
 	/**
@@ -134,14 +149,33 @@ public class AccountManager {
 	 * @return a new Player object
 	 */
 	private static Player createPlayerObject(String username, String email, String firstname, String lastname, String password) {
+		String encryptedUsername;
+		String encryptedEmail;
+		String encryptedFirstname;
+		String encryptedLastname;
+		String encryptedPassword;
+
+		try {
+			encryptedUsername = EncryptionUtils.encrypt(username, SECRET_KEY);
+			encryptedEmail = EncryptionUtils.encrypt(email, SECRET_KEY);
+			encryptedFirstname = EncryptionUtils.encrypt(firstname, SECRET_KEY);
+			encryptedLastname = EncryptionUtils.encrypt(lastname, SECRET_KEY);
+			encryptedPassword = EncryptionUtils.encrypt(password, SECRET_KEY);
+
+		} catch (Exception e) {
+			Logger.logError("Error while encrypting user data: " + e.getMessage());
+			showErrorMessage(ERROR_MESSAGE_CANNOT_ADD_USER_TO_DB);
+			return null;
+		}
+
 		return new Player(
 			new Id("", ""),
-			new Name(username, firstname, lastname),
+			new Name(encryptedUsername, encryptedFirstname, encryptedLastname),
 			new Language("", ""),
 			new Elo(1600, 0),
 			new Birthday(0, 0, 0),
-			new Contact(email, "", ""),
-			password,
+			new Contact(encryptedEmail, "", ""),
+			encryptedPassword,
 			new PasswordRecovery("", ""),
 			""
 		);
