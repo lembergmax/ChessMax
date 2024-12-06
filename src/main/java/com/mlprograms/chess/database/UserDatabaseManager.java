@@ -42,7 +42,9 @@ public class UserDatabaseManager {
 
 		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
 		     Statement statement = connection.createStatement()) {
+
 			statement.execute(createTableSQL);
+			Logger.logSuccess("Database initialized successfully.");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -89,7 +91,9 @@ public class UserDatabaseManager {
 			preparedStatement.setString(13, player.getPasswordRecovery().getQuestion());
 			preparedStatement.setString(14, player.getPasswordRecovery().getAnswer());
 			preparedStatement.setString(15, player.getTimeZone());
+
 			preparedStatement.executeUpdate();
+			Logger.logSuccess("User successfully added: " + player.getName().getUsername());
 		} catch (Exception e) {
 			Logger.logError("Failed to add user: " + e.getMessage());
 		}
@@ -118,13 +122,94 @@ public class UserDatabaseManager {
 	}
 
 	/**
+	 * Deletes a user from the database by player ID.
+	 *
+	 * @param playerId
+	 * 	the ID of the player to be deleted.
+	 *
+	 * @throws SQLException
+	 * 	if the deletion fails.
+	 */
+	public void deleteUserById(int playerId) {
+		String deleteSQL = "DELETE FROM users WHERE playerId = ?;";
+
+		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		     PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
+
+			preparedStatement.setInt(1, playerId);
+
+			int affectedRows = preparedStatement.executeUpdate();
+			if (affectedRows == 0) {
+				Logger.logError("No user found with the given player ID: " + playerId);
+			} else {
+				Logger.logSuccess("User successfully deleted with ID: " + playerId);
+			}
+		} catch (SQLException e) {
+			Logger.logError("Failed to delete user by ID: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Deletes a user from the database by player name.
+	 *
+	 * @param playerName
+	 * 	the name of the player to be deleted.
+	 *
+	 * @throws SQLException
+	 * 	if the deletion fails.
+	 */
+	public void deleteUserByName(String playerName) {
+		String deleteSQL = "DELETE FROM users WHERE playerName = ?;";
+
+		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		     PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
+
+			preparedStatement.setString(1, playerName);
+
+			int affectedRows = preparedStatement.executeUpdate();
+			if (affectedRows == 0) {
+				Logger.logError("No user found with the given player name: " + playerName);
+			} else {
+				Logger.log("User successfully deleted with name: " + playerName);
+			}
+		} catch (SQLException e) {
+			Logger.logError("Failed to delete user by name: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Executes a SELECT query on the database.
+	 *
+	 * @param query
+	 * 	the SQL SELECT query to execute.
+	 * @param params
+	 * 	optional parameters for the prepared statement.
+	 *
+	 * @return the Player object if found, null otherwise.
+	 */
+	public ResultSet executeSelectQuery(String query, Object... params) {
+		try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+		     PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+			for (int i = 0; i < params.length; i++) {
+				preparedStatement.setObject(i + 1, params[ i ]);
+			}
+
+			return preparedStatement.executeQuery();
+		} catch (SQLException e) {
+			Logger.logError("Failed to execute SELECT query: " + e.getMessage());
+			return null;
+		}
+	}
+
+	/**
 	 * Handles the scenario when a duplicate player name is found.
 	 *
 	 * @param playerName
 	 * 	the duplicate player name.
 	 */
 	private void handleDuplicatePlayerName(String playerName) {
-		System.out.println("Duplicate player name found: " + playerName);
-		// Custom logic for handling duplicate player names (e.g., logging, notifying the user)
+		Logger.logError("Duplicate player name found: " + playerName);
+		// TODO: Custom logic for handling duplicate player names (e.g., logging, notifying the user)
 	}
 }
