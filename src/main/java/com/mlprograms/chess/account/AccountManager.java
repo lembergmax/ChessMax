@@ -13,6 +13,7 @@ import com.mlprograms.chess.utils.ConfigReader;
 import com.mlprograms.chess.utils.EncryptionUtils;
 import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.ErrorMessage;
+import com.mlprograms.chess.utils.ui.InformationMessage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,15 +29,17 @@ public class AccountManager {
 	private static final UserDatabaseManager USER_DATABASE_MANAGER = new UserDatabaseManager();
 
 	private static final ConfigReader configReader = new ConfigReader();
-
 	private static final String SECRET_KEY = configReader.getValue("Security", "SECRET_KEY");
-
 	private static final String TEXT_SECTION = "Text";
+
+	private static final String INFORMATION_MESSAGE_TITLE = configReader.getValue(TEXT_SECTION, "INFORMATION_MESSAGE_TITLE");
+
 	private static final String ERROR_MESSAGE_TITLE = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_TITLE");
 	private static final String ERROR_MESSAGE_FILL_ALL_FIELDS = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_FILL_ALL_FIELDS");
 	private static final String ERROR_MESSAGE_PASSWORDS_NOT_EQUAL = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_PASSWORDS_NOT_EQUAL");
 	private static final String ERROR_MESSAGE_USERNAME_OR_EMAIL_ALREADY_EXISTS = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_USERNAME_OR_EMAIL_ALREADY_EXISTS");
 	private static final String ERROR_MESSAGE_CANNOT_ADD_USER_TO_DB = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_CANNOT_ADD_USER_TO_DB");
+	private static final String ERROR_MESSAGE_WRONG_USERNAME_OR_PASSWORD = configReader.getValue(TEXT_SECTION, "ERROR_MESSAGE_WRONG_USERNAME_OR_PASSWORD");
 
 	/**
 	 * Creates a new account based on the input fields in the given window.
@@ -81,15 +84,54 @@ public class AccountManager {
 			return;
 		}
 
+		showInformationMessage("Konto erfolgreich erstellt.");
+
 		// Redirect to login
 		window.dispose();
 		new Login().setVisible(true);
 	}
 
 	public static void login(Window window) {
+		ACCOUNT_INFO.clear();
 
-		// TODO: Implement login functionality
+		if (areFieldsEmpty(window)) {
+			showErrorMessage(ERROR_MESSAGE_FILL_ALL_FIELDS);
+			return;
+		}
 
+		// Extract user data from fields
+		String username = ACCOUNT_INFO.get(1);
+		String password = ACCOUNT_INFO.get(0);
+
+		// Query to fetch user details
+		String sqlQuery = "SELECT playerName, password FROM users WHERE playerName = ? LIMIT 1;";
+
+		try (PreparedStatement preparedStatement = USER_DATABASE_MANAGER.getConnection().prepareStatement(sqlQuery)) {
+			preparedStatement.setString(1, EncryptionUtils.encrypt(username, SECRET_KEY));
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					String storedEncryptedPassword = resultSet.getString("password");
+					String storedDecryptedPassword = EncryptionUtils.decrypt(storedEncryptedPassword, SECRET_KEY);
+
+					if (storedDecryptedPassword.equals(password)) {
+						// Successful login
+						showInformationMessage("Login erfolgreich!");
+
+						// window.dispose();
+						// Redirect to main application window or dashboard
+						// Example: new Dashboard().setVisible(true);
+					} else {
+						showErrorMessage(ERROR_MESSAGE_WRONG_USERNAME_OR_PASSWORD);
+					}
+				} else {
+					showErrorMessage(ERROR_MESSAGE_WRONG_USERNAME_OR_PASSWORD);
+				}
+			}
+		} catch (Exception e) {
+			Logger.logError("Error during login process: " + e.getMessage());
+			showErrorMessage("Es ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut.");
+		}
 	}
 
 
@@ -192,7 +234,17 @@ public class AccountManager {
 	}
 
 	/**
-	 * Recursively collects text from JTextPane components within the given window.
+	 * Displays an information message in a dialog box.
+	 *
+	 * @param message
+	 * 	the information message to display
+	 */
+	private static void showInformationMessage(String message) {
+		new InformationMessage(AccountManager.INFORMATION_MESSAGE_TITLE, message);
+	}
+
+	/**
+	 * Recursively collects text from JTextPane and JPasswordField components within the given window.
 	 *
 	 * @param component
 	 * 	the current component to process
@@ -202,6 +254,8 @@ public class AccountManager {
 	private static void collectTextsFromWindow(Component component, List<String> collectedText) {
 		if (component instanceof JTextPane textPane) {
 			collectedText.add(textPane.getText().trim());
+		} else if (component instanceof JPasswordField passwordField) {
+			collectedText.add(new String(passwordField.getPassword()).trim()); // Passwort als String
 		} else if (component instanceof Container container) {
 			for (Component child : container.getComponents()) {
 				collectTextsFromWindow(child, collectedText);
