@@ -9,7 +9,7 @@ package com.mlprograms.chess.game;
 public class ChessMax {
 
 	public ChessMax() {
-		// TODO: create the game
+		// TODO: initialize the game
 	}
 
 	public void play() {
