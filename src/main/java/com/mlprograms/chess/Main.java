@@ -6,8 +6,8 @@
 
 package com.mlprograms.chess;
 
-import com.mlprograms.chess.game.utils.SoundPlayer;
-import com.mlprograms.chess.game.utils.Sounds;
+import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.game.ui.Frame;
 
 /**
  * The main entry point for the ChessMax application.
@@ -23,6 +23,8 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		initializeUI();
+
+		new Frame();
 	}
 
 	/**
