@@ -8,7 +8,7 @@ package com.mlprograms.chess.account;
 
 import com.mlprograms.chess.account.ui.Login;
 import com.mlprograms.chess.player.*;
-import com.mlprograms.chess.server.database.UserDatabaseManager;
+import com.mlprograms.chess.database.UserDatabaseManager;
 import com.mlprograms.chess.utils.ConfigReader;
 import com.mlprograms.chess.utils.EncryptionUtils;
 import com.mlprograms.chess.utils.Logger;
