@@ -6,26 +6,25 @@
 
 package com.mlprograms.chess.game.ui;
 
-import com.mlprograms.chess.game.utils.SoundPlayer;
-import com.mlprograms.chess.game.utils.Sounds;
-import com.mlprograms.chess.player.Player;
-import com.mlprograms.chess.utils.ConfigReader;
+import lombok.Getter;
 import lombok.Setter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+
+import static com.mlprograms.chess.utils.ConfigFetcher.fetchIntegerConfig;
+import static com.mlprograms.chess.utils.ConfigFetcher.fetchStringConfig;
 
 /**
  * Represents the game board for ChessMax.
  * Responsible for initializing board-specific configurations
  * and preparing the board for gameplay.
  */
+@Getter
+@Setter
 public class Board extends JPanel {
 
-	private final ConfigReader configReader;
-
+	private BoardPainter boardPainter;
 	private String title;
 	private String startingPosition;
 
@@ -47,77 +46,57 @@ public class Board extends JPanel {
 	private int lastMoveToColumn;
 	private int lastMoveToRow;
 
-	private Player player1;
-	private Player player2;
-
 	/**
-	 * Constructs the Board and initializes configuration values.
+	 * Constructs the Board and initializes its components and configurations.
+	 * Sets up the JFrame and prepares the chessboard layout.
 	 */
 	public Board() {
-		this.configReader = new ConfigReader();
+		this.boardPainter = new BoardPainter(this);
 		initializeBoardConfigurations();
-
-		this.player1 = player1;
-		this.player2 = player2;
-
-		player1.setWhite(true);
-		player2.setWhite(false);
-
-		this.setPreferredSize(new Dimension(columns * tileSize, rows * tileSize));
-		this.setLayout(null);
 	}
 
 	/**
-	 * Initializes board configurations by loading values from the configuration file.
-	 * Configurations are fetched from the "ChessGame" section of the configuration file.
+	 * Overrides the paintComponent method to customize the drawing of the chessboard.
+	 *
+	 * @param graphics
+	 * 	the Graphics object used for painting the component.
+	 */
+	@Override
+	public void paintComponent(Graphics graphics) {
+		super.paintComponent(graphics);
+		removeAll();
+
+		// Delegate drawing tasks to the BoardPainter
+		boardPainter.drawChessBoard((Graphics2D) graphics);
+		boardPainter.drawCoordinates((Graphics2D) graphics);
+	}
+
+	/**
+	 * Loads board-specific configurations from the configuration file.
+	 * Assigns values to various board-related attributes.
 	 */
 	private void initializeBoardConfigurations() {
-		this.title = fetchStringConfig("TITLE");
-		this.startingPosition = fetchStringConfig("STARTING_POSITION");
+		final String CHESS_SECTION = "ChessGame";
 
-		this.width = fetchIntegerConfig("WIDTH");
-		this.height = fetchIntegerConfig("HEIGHT");
-		this.padding = fetchIntegerConfig("PADDING");
-		this.blinkCount = fetchIntegerConfig("BLINK_COUNT");
-		this.delay = fetchIntegerConfig("DELAY");
-		this.tileSize = fetchIntegerConfig("TILE_SIZE");
-		this.columns = fetchIntegerConfig("COLUMNS");
-		this.rows = fetchIntegerConfig("ROWS");
-		this.halfMoveClock = fetchIntegerConfig("HALF_MOVE_CLOCK");
-		this.fullMoveNumber = fetchIntegerConfig("FULL_MOVE_NUMBER");
-		this.tempFullMoveNumber = fetchIntegerConfig("TEMP_FULL_MOVE_NUMBER");
-		this.targetColumn = fetchIntegerConfig("TARGET_COLUMN");
-		this.targetRow = fetchIntegerConfig("TARGET_ROW");
-		this.lastMoveFromColumn = fetchIntegerConfig("LAST_MOVE_FROM_COLUMN");
-		this.lastMoveFromRow = fetchIntegerConfig("LAST_MOVE_FROM_ROW");
-		this.lastMoveToColumn = fetchIntegerConfig("LAST_MOVE_TO_COLUMN");
-		this.lastMoveToRow = fetchIntegerConfig("LAST_MOVE_TO_ROW");
+		this.title = fetchStringConfig(CHESS_SECTION, "TITLE");
+		this.startingPosition = fetchStringConfig(CHESS_SECTION, "STARTING_POSITION");
+		this.width = fetchIntegerConfig(CHESS_SECTION, "WIDTH");
+		this.height = fetchIntegerConfig(CHESS_SECTION, "HEIGHT");
+		this.padding = fetchIntegerConfig(CHESS_SECTION, "PADDING");
+		this.blinkCount = fetchIntegerConfig(CHESS_SECTION, "BLINK_COUNT");
+		this.delay = fetchIntegerConfig(CHESS_SECTION, "DELAY");
+		this.tileSize = fetchIntegerConfig(CHESS_SECTION, "TILE_SIZE");
+		this.columns = fetchIntegerConfig(CHESS_SECTION, "COLUMNS");
+		this.rows = fetchIntegerConfig(CHESS_SECTION, "ROWS");
+		this.halfMoveClock = fetchIntegerConfig(CHESS_SECTION, "HALF_MOVE_CLOCK");
+		this.fullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "FULL_MOVE_NUMBER");
+		this.tempFullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "TEMP_FULL_MOVE_NUMBER");
+		this.targetColumn = fetchIntegerConfig(CHESS_SECTION, "TARGET_COLUMN");
+		this.targetRow = fetchIntegerConfig(CHESS_SECTION, "TARGET_ROW");
+		this.lastMoveFromColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_COLUMN");
+		this.lastMoveFromRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
+		this.lastMoveToColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
+		this.lastMoveToRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
 	}
 
-	/**
-	 * Fetches a string configuration value from the ChessGame section.
-	 *
-	 * @param key
-	 * 	The key of the configuration value.
-	 *
-	 * @return The string value associated with the key.
-	 */
-	private String fetchStringConfig(String key) {
-		return configReader.getValue("ChessGame", key);
-	}
-
-	/**
-	 * Fetches an integer configuration value from the ChessGame section.
-	 *
-	 * @param key
-	 * 	The key of the configuration value.
-	 *
-	 * @return The integer value associated with the key.
-	 *
-	 * @throws NumberFormatException
-	 * 	if the configuration value is not a valid integer.
-	 */
-	private int fetchIntegerConfig(String key) {
-		return Integer.parseInt(fetchStringConfig(key));
-	}
 }
