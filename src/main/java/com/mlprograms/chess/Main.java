@@ -6,7 +6,6 @@
 
 package com.mlprograms.chess;
 
-import com.mlprograms.chess.game.ui.Board;
 import com.mlprograms.chess.game.ui.Frame;
 
 /**

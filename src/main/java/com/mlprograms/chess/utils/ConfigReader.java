@@ -28,7 +28,7 @@ public class ConfigReader {
 	 */
 	public ConfigReader() {
 		try {
-			loadConfigFile("configuration.config");
+			loadConfigFile();
 		} catch (IOException e) {
 			// Logger.logError("Failed to read configuration file: " + e.getMessage());
 		}
@@ -55,14 +55,11 @@ public class ConfigReader {
 	 * The file should be structured in sections (e.g., [Section]) with key-value pairs.
 	 * </p>
 	 *
-	 * @param filePath
-	 * 	the path to the .config file
-	 *
 	 * @throws IOException
 	 * 	if an I/O error occurs
 	 */
-	private void loadConfigFile(String filePath) throws IOException {
-		try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+	private void loadConfigFile() throws IOException {
+		try (BufferedReader reader = new BufferedReader(new FileReader("configuration.config"))) {
 			String line;
 			String currentSection = null;
 

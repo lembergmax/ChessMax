@@ -13,9 +13,6 @@ import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 public class Frame extends JPanel {
 
-	private JFrame frame;
-	private Board board;
-
 	public Frame() {
 		initializeJFrame();
 	}
@@ -24,7 +21,7 @@ public class Frame extends JPanel {
 	 * Initializes the JFrame with essential properties such as title, size, and layout.
 	 */
 	private void initializeJFrame() {
-		this.frame = new JFrame(fetchStringConfig("ChessGame", "TITLE"));
+		JFrame frame = new JFrame(fetchStringConfig("ChessGame", "TITLE"));
 
 		frame.setLayout(new BorderLayout());
 		frame.setMinimumSize(new Dimension(
@@ -37,7 +34,7 @@ public class Frame extends JPanel {
 		frame.setResizable(false);
 
 		// Board is now a member of Frame, not a subclass
-		this.board = new Board();
+		Board board = new Board();
 		frame.add(board, BorderLayout.CENTER);
 		frame.setVisible(true);
 	}
