@@ -4,9 +4,7 @@
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.utils.ui;
-
-import com.mlprograms.chess.utils.ConfigReader;
+package com.mlprograms.chess.utils;
 
 import java.awt.*;
 
