@@ -6,7 +6,8 @@
 
 package com.mlprograms.chess;
 
-import com.mlprograms.chess.account.ui.Startmenu;
+import com.mlprograms.chess.game.utils.SoundPlayer;
+import com.mlprograms.chess.game.utils.Sounds;
 
 /**
  * The main entry point for the ChessMax application.
@@ -28,8 +29,11 @@ public class Main {
 	 * Loads and displays the start menu of the application.
 	 */
 	private static void initializeUI() {
-		Startmenu startmenu = new Startmenu(); // Create a new instance of the Startmenu UI
-		startmenu.setVisible(true); // Make the start menu visible
+
+		// TODO: outcomment the following lines to start the application
+		// Startmenu startmenu = new Startmenu(); // Create a new instance of the Startmenu UI
+		// startmenu.setVisible(true); // Make the start menu visible
+
 	}
 
 }
