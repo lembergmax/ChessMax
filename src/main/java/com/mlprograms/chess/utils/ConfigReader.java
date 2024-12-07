@@ -30,7 +30,7 @@ public class ConfigReader {
 		try {
 			loadConfigFile("configuration.config");
 		} catch (IOException e) {
-			Logger.logError("Failed to read configuration file: " + e.getMessage());
+			// Logger.logError("Failed to read configuration file: " + e.getMessage());
 		}
 	}
 
