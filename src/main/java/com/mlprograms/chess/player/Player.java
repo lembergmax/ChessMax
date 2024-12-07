@@ -2,8 +2,10 @@ package com.mlprograms.chess.player;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
+@Setter
 @Getter
 @EqualsAndHashCode
 @ToString
@@ -18,6 +20,7 @@ public class Player {
 	private String password;
 	private PasswordRecovery passwordRecovery;
 	private String timeZone;
+	private boolean isWhite;
 
 	public Player(Id id, Name name, Language language, Elo elo, Birthday birthday, Contact contact, String password, PasswordRecovery passwordRecovery, String timezone) {
 		this.id = id;
