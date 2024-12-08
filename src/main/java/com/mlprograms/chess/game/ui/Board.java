@@ -102,6 +102,8 @@ public class Board extends JPanel {
 		boardPainter.drawChessBoard((Graphics2D) graphics);
 		boardPainter.drawCoordinates((Graphics2D) graphics);
 
+		boardPainter.highlightPossibleMoves((Graphics2D) graphics);
+
 		boardPainter.paintPieces((Graphics2D) graphics);
 	}
 
@@ -185,71 +187,72 @@ public class Board extends JPanel {
 	}
 
 	/**
-	 * Executes the given move, updating the game state and the board.
+	 * Executes a chess move, updating the game state accordingly.
 	 *
 	 * @param move
-	 * 	The move to be made, including the piece and its new position.
+	 * 	the Move object containing details of the move to be executed.
 	 */
 	public void makeMove(Move move) {
-		// Get the piece involved in the move
+		// Get the piece being moved
 		Piece piece = move.getPiece();
 
-		// Store the coordinates of the move for later reference (e.g., for move history)
+		// Update the last move's start and end positions
 		lastMoveFromColumn = move.getOldColumn();
 		lastMoveFromRow = move.getOldRow();
 		lastMoveToColumn = move.getNewColumn();
 		lastMoveToRow = move.getNewRow();
 
-		// Increment the move count for the piece
+		// Increment move counts and other related updates
 		incrementMoveCounts(move, piece);
 
-		// Handle pawn-specific movement (e.g., moving two squares or en passant)
+		// Handle pawn-specific logic
 		if (piece instanceof Pawn) {
-			movePawn(move); // Special pawn movement logic
+			int colorIndex = piece.isWhite() ? 1 : -1; // Determines direction based on pawn color
+
+			// Check for en passant capture
+			if (getTileNumber(move.getNewColumn(), move.getNewRow()) == enPassantTile) {
+				move.setCapturedPiece(getPieceAt(move.getNewColumn(), move.getNewRow() + colorIndex));
+			}
+
+			// Set en passant tile for future moves if the pawn moved two rows
+			if (Math.abs(piece.getRow() - move.getNewRow()) == 2) {
+				enPassantTile = getTileNumber(move.getNewColumn(), move.getNewRow() + colorIndex);
+			} else {
+				enPassantTile = -1; // Reset en passant tile if not applicable
+			}
 		} else {
-			enPassantTile = -1; // Reset en passant if the piece is not a pawn
+			enPassantTile = -1; // Reset en passant tile for non-pawn moves
 		}
 
-		// Handle king-specific movement (e.g., castling)
+		// Handle king-specific logic, such as castling
 		if (piece instanceof King) {
-			moveKing(move); // Special king movement logic (e.g., castling)
+			moveKing(move);
 		}
 
-		// TODO: If pawn promotion is not triggered, add the move to the move history
-		// if (!pawnPromotion) {
-		// 	addMoveToMoveHistory(move); // Save the move in the history
-		// }
-
-		// If the move is not a drag, animate the piece's movement
+		// Animate the move or update the piece position directly if dragging
 		if (!mouseIsDragged) {
-			animateMove(piece, move.getNewColumn(), move.getNewRow()); // Animation for the move
+			animateMove(piece, move.getNewColumn(), move.getNewRow());
 		} else {
-			// If the piece was dragged, update its position without animation
+			// Update piece's position immediately if mouse dragging is active
 			piece.setColumn(move.getNewColumn());
 			piece.setRow(move.getNewRow());
 			piece.setXPos(move.getNewColumn() * getTileSize());
 			piece.setYPos(move.getNewRow() * getTileSize());
 		}
 
-		// Play the move sound effect
-		// TODO: playGameSounds(move); // Play sound for the move
-
-		// Mark the piece as no longer being its first move
+		// Mark the piece as no longer being in its initial state
 		piece.setFirstMove(false);
 
-		// Handle any captured pieces
-		capturePiece(move); // Capture any piece if applicable
+		// Handle capturing of opponent pieces, if any
+		capturePiece(move);
 
-		// Switch turns between white and black players
+		// Toggle the turn to the other player
 		isWhiteTurn = !isWhiteTurn;
 
-		// Update the game state after the move (e.g., check for checkmate, stalemate)
-		// TODO: updateGameState();
-
-		// Clear any possible moves highlighted on the board
+		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
 
-		// Reset the target column and row (used for marking the target field)
+		// Reset target column and row indicators
 		targetColumn = -1;
 		targetRow = -1;
 	}
@@ -549,17 +552,23 @@ public class Board extends JPanel {
 	}
 
 	/**
-	 * Displays the possible moves for the given piece.
+	 * Displays possible moves for the given piece by calculating and highlighting them on the board.
 	 *
 	 * @param piece
-	 * 	The piece whose possible moves are to be calculated and displayed.
+	 * 	the piece for which to show possible moves
 	 */
 	public void showPossibleMoves(Piece piece) {
-		// Check if the piece is not null before calculating possible moves
-		if (piece != null) {
-			// Calculate the possible moves for the given piece and update the list
-			setPossibleMoves(calculatePossibleMoves(piece));
-		}
+		// Clear any previously displayed possible moves
+		possibleMoves.clear();
+
+		// Calculate all valid moves for the given piece
+		List<Move> calculatedMoves = calculatePossibleMoves(piece);
+
+		// Add the calculated moves to the board's possible moves list
+		possibleMoves.addAll(calculatedMoves);
+
+		// Repaint the board to visually display the possible moves
+		repaint();
 	}
 
 	/**

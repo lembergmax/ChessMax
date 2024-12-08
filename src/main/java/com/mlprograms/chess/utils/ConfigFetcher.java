@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
- * Licenced under the CC BY-NC 4.0 License.
+ * Licensed under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -8,6 +8,9 @@ package com.mlprograms.chess.utils;
 
 import java.awt.*;
 
+/**
+ * Utility class for fetching configuration values from a configuration reader.
+ */
 public class ConfigFetcher {
 
 	private static final ConfigReader CONFIG_READER = new ConfigReader();
@@ -28,8 +31,6 @@ public class ConfigFetcher {
 
 	/**
 	 * Fetches an integer configuration value based on the given section and key.
-	 * <p>
-	 * This method retrieves the value as a string and converts it to an integer.
 	 *
 	 * @param section
 	 * 	the configuration section to look into (e.g., "General", "Settings").
@@ -42,24 +43,66 @@ public class ConfigFetcher {
 	 * 	if the fetched value is not a valid integer.
 	 */
 	public static int fetchIntegerConfig(String section, String key) {
-		return Integer.parseInt(fetchStringConfig(section, key));
+		String value = fetchStringConfig(section, key);
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException(
+				String.format("Invalid integer value for section '%s', key '%s': %s", section, key, value), e
+			);
+		}
 	}
 
 	/**
-	 * Fetches an integer configuration value from the "Colors" section based on the provided key.
-	 * <p>
-	 * This method is specialized for retrieving color-related configuration values.
+	 * Fetches a color configuration value from the "Colors" section based on the provided key.
 	 *
 	 * @param key
 	 * 	the key whose value is to be fetched from the "Colors" section.
 	 *
-	 * @return the configuration value as an integer.
+	 * @return the configuration value as a {@link Color}.
 	 *
 	 * @throws NumberFormatException
-	 * 	if the fetched value is not a valid integer.
+	 * 	if the fetched value is not a valid hexadecimal color code.
 	 */
 	public static Color fetchColorConfig(String key) {
-		return Color.decode(fetchStringConfig("Colors", key));
+		return decodeColor(fetchStringConfig("Colors", key));
+	}
+
+	/**
+	 * Fetches a color configuration value from the "Colors" section with a specific alpha value.
+	 *
+	 * @param key
+	 * 	the key whose value is to be fetched from the "Colors" section.
+	 * @param alpha
+	 * 	the alpha value for the color (0-255).
+	 *
+	 * @return the configuration value as a {@link Color} with the specified alpha value.
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the alpha value is out of the valid range (0-255).
+	 */
+	public static Color fetchColorWithAlphaConfig(String key, int alpha) {
+		if (alpha < 0 || alpha > 255) {
+			throw new IllegalArgumentException("Alpha value must be between 0 and 255: " + alpha);
+		}
+
+		Color baseColor = decodeColor(fetchStringConfig("Colors", key));
+		return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha);
+	}
+
+	/**
+	 * Decodes a color from a hexadecimal string.
+	 *
+	 * @param hex
+	 * 	the hexadecimal color string (e.g., "#FFFFFF").
+	 *
+	 * @return the decoded {@link Color}.
+	 *
+	 * @throws NumberFormatException
+	 * 	if the string is not a valid hexadecimal color code.
+	 */
+	private static Color decodeColor(String hex) {
+		return Color.decode(hex);
 	}
 
 }

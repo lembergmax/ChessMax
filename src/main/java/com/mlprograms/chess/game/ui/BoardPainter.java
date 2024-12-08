@@ -6,11 +6,14 @@
 
 package com.mlprograms.chess.game.ui;
 
+import com.mlprograms.chess.game.action.Move;
+import com.mlprograms.chess.game.pieces.Pawn;
 import com.mlprograms.chess.game.pieces.Piece;
 
 import java.awt.*;
 
 import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorConfig;
+import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorWithAlphaConfig;
 
 public class BoardPainter {
 
@@ -33,6 +36,51 @@ public class BoardPainter {
 			// Delegate the painting of each piece to its paint method
 			piece.paint(graphics2D);
 		}
+	}
+
+	/**
+	 * Highlights all possible moves for the currently selected piece on the board.
+	 *
+	 * @param graphics2D
+	 * 	the graphics context used for drawing
+	 */
+	public void highlightPossibleMoves(Graphics2D graphics2D) {
+		if (BOARD.getPossibleMoves() == null || BOARD.getSelectedPiece() == null) {
+			return; // No moves or no selected piece, nothing to highlight
+		}
+
+		for (Move move : BOARD.getPossibleMoves()) {
+			int column = move.getNewColumn();
+			int row = move.getNewRow();
+
+			// Determine highlight color based on the move type
+			if (isCaptureMove(column, row)) {
+				graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT_CAPTURE", 135)); // Capture move color
+			} else {
+				graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT", 135));
+			}
+
+			// Draw the highlight on the corresponding tile
+			graphics2D.fillRect(column * BOARD.getTileSize(), row * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
+		}
+	}
+
+	/**
+	 * Checks if the move to the given tile is a capture move.
+	 *
+	 * @param column
+	 * 	the target column of the move
+	 * @param row
+	 * 	the target row of the move
+	 *
+	 * @return true if the move is a capture, false otherwise
+	 */
+	private boolean isCaptureMove(int column, int row) {
+		Piece targetPiece = BOARD.getPieceAt(column, row);
+
+		// Check for direct captures or special en passant moves
+		return targetPiece != null ||
+			       (BOARD.getSelectedPiece() instanceof Pawn && BOARD.getTileNumber(column, row) == BOARD.getEnPassantTile());
 	}
 
 	/**

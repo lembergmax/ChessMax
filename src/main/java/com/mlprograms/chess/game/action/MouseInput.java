@@ -15,7 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Handles mouse interactions for the chessboard, including selecting and moving pieces.
+ * Handles mouse interactions for the chessboard, including piece selection, dragging, and moving.
  */
 @Getter
 @Setter
@@ -27,7 +27,7 @@ public class MouseInput extends MouseAdapter {
 	private boolean isDragging = false;
 
 	/**
-	 * Constructor to initialize the MouseInput with the game board.
+	 * Initializes the MouseInput with the game board.
 	 *
 	 * @param board
 	 * 	the game board instance
@@ -37,10 +37,10 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Handles mouse press events. Selects a piece or attempts to move a selected piece.
+	 * Handles mouse press events to manage piece selection and initial move validation.
 	 *
 	 * @param event
-	 * 	the mouse event
+	 * 	the mouse press event
 	 */
 	@Override
 	public void mousePressed(MouseEvent event) {
@@ -50,61 +50,99 @@ public class MouseInput extends MouseAdapter {
 		Piece clickedPiece = board.getPieceAt(column, row);
 		Piece selectedPiece = board.getSelectedPiece();
 
-		if (!isDragging) {
-			if (selectedPiece == null) {
-				selectPiece(clickedPiece);
-			} else {
-				attemptMove(selectedPiece, column, row);
-			}
+		if (clickedPiece != null && clickedPiece == selectedPiece) {
+			clearSelection(); // Deselect the piece if it's already selected
+		} else if (clickedPiece != null && clickedPiece.isWhite() == board.isWhiteTurn()) {
+			selectPiece(clickedPiece); // Select the clicked piece if it matches the turn
+		} else if (selectedPiece != null) {
+			attemptMove(selectedPiece, column, row); // Attempt to move the selected piece
 		}
 
-		board.repaint();
+		board.repaint(); // Redraw the board to reflect changes
 	}
 
 	/**
-	 * Handles mouse drag events. Updates the position of the selected piece for a dragging effect.
+	 * Handles mouse drag events to update the position of the selected piece.
 	 *
 	 * @param event
-	 * 	the mouse event
+	 * 	the mouse drag event
 	 */
 	@Override
 	public void mouseDragged(MouseEvent event) {
 		Piece selectedPiece = board.getSelectedPiece();
 		if (selectedPiece != null) {
 			isDragging = true;
-			updatePiecePositionDuringDrag(selectedPiece, event);
-			board.repaint();
+			updatePiecePositionDuringDrag(selectedPiece, event); // Update piece position during drag
+			board.showPossibleMoves(selectedPiece); // Display possible moves for the dragged piece
+			board.repaint(); // Redraw the board during dragging
 		}
 	}
 
 	/**
-	 * Handles mouse release events. Finalizes the move if dragging, or resets piece position if invalid.
+	 * Handles the mouse release event during a piece drag operation on the chessboard.
+	 * This method determines whether the drag should result in an attempted move
+	 * or reset the piece to its original position based on the drag distance.
+	 * <p>
+	 * - If the drag distance is less than or equal to 25 pixels, the piece remains
+	 * selected, and its possible moves are displayed.
+	 * - If the drag distance is greater than 25 pixels, the method attempts to move
+	 * the piece to the calculated destination tile.
 	 *
 	 * @param event
-	 * 	the mouse event
+	 * 	the MouseEvent triggered upon releasing the mouse button.
 	 */
 	@Override
 	public void mouseReleased(MouseEvent event) {
+		// Check if a drag operation was in progress
 		if (isDragging) {
-			finalizeMove(event);
+			// Retrieve the currently selected piece
+			Piece selectedPiece = board.getSelectedPiece();
+
+			// Calculate the target tile coordinates based on the mouse release position
+			int column = event.getX() / board.getTileSize();
+			int row = event.getY() / board.getTileSize();
+
+			// Calculate the drag distance from the piece's original position
+			int draggedX = event.getX();
+			int draggedY = event.getY();
+			int originalX = originalColumn * board.getTileSize() + board.getTileSize() / 2;
+			int originalY = originalRow * board.getTileSize() + board.getTileSize() / 2;
+			double distance = Math.sqrt(Math.pow(draggedX - originalX, 2) + Math.pow(draggedY - originalY, 2));
+
+			// If the drag distance is within 25 pixels, reset the piece's position
+			if (distance <= 25) {
+				resetPiecePosition(selectedPiece);
+				board.showPossibleMoves(selectedPiece); // Keep showing possible moves
+			} else {
+				// Otherwise, attempt to move the piece to the new tile
+				attemptMove(selectedPiece, column, row);
+			}
+
+			// End the drag operation and repaint the board
 			isDragging = false;
 			board.repaint();
 		}
 	}
 
 	/**
-	 * Selects a piece on the board and highlights possible moves.
+	 * Clears the current piece selection and resets possible moves.
+	 */
+	private void clearSelection() {
+		board.setSelectedPiece(null);
+		board.getPossibleMoves().clear();
+	}
+
+	/**
+	 * Selects the given piece and highlights its possible moves.
 	 *
 	 * @param piece
 	 * 	the piece to select
 	 */
 	private void selectPiece(Piece piece) {
-		if (piece != null) {
-			board.setSelectedPiece(piece);
-			originalColumn = piece.getColumn();
-			originalRow = piece.getRow();
-			board.showPossibleMoves(piece);
-		}
+		board.setSelectedPiece(piece);
+		originalColumn = piece.getColumn();
+		originalRow = piece.getRow();
+		board.showPossibleMoves(piece); // Highlight possible moves for the selected piece
 	}
 
 	/**
@@ -120,11 +158,11 @@ public class MouseInput extends MouseAdapter {
 	private void attemptMove(Piece selectedPiece, int column, int row) {
 		Move move = new Move(board, selectedPiece, column, row);
 		if (board.isValidMove(move)) {
-			executeMove(selectedPiece, move);
+			executeMove(selectedPiece, move); // Execute the move if valid
 		} else {
-			resetPiecePosition(selectedPiece);
+			resetPiecePosition(selectedPiece); // Reset the piece to its original position
 		}
-		clearSelection();
+		clearSelection(); // Clear selection after the move
 	}
 
 	/**
@@ -133,62 +171,40 @@ public class MouseInput extends MouseAdapter {
 	 * @param piece
 	 * 	the piece being dragged
 	 * @param event
-	 * 	the mouse event
+	 * 	the mouse drag event
 	 */
 	private void updatePiecePositionDuringDrag(Piece piece, MouseEvent event) {
 		int offsetX = board.getTileSize() / 2;
 		int offsetY = board.getTileSize() / 2;
-		piece.setXPos(event.getX() - offsetX);
-		piece.setYPos(event.getY() - offsetY);
+		piece.setXPos(event.getX() - offsetX); // Adjust X position based on drag
+		piece.setYPos(event.getY() - offsetY); // Adjust Y position based on drag
 	}
 
 	/**
-	 * Finalizes the move after releasing the mouse. Validates and processes the move.
-	 *
-	 * @param event
-	 * 	the mouse event
-	 */
-	private void finalizeMove(MouseEvent event) {
-		Piece selectedPiece = board.getSelectedPiece();
-		if (selectedPiece != null) {
-			int column = event.getX() / board.getTileSize();
-			int row = event.getY() / board.getTileSize();
-			attemptMove(selectedPiece, column, row);
-		}
-	}
-
-	/**
-	 * Executes a valid move, capturing an opponent piece if necessary.
+	 * Executes the move by updating the piece's position and handling captures.
 	 *
 	 * @param selectedPiece
-	 * 	the piece being moved
+	 * 	the piece to move
 	 * @param move
 	 * 	the move to execute
 	 */
 	private void executeMove(Piece selectedPiece, Move move) {
 		Piece capturedPiece = board.getPieceAt(move.getNewColumn(), move.getNewRow());
 		if (capturedPiece != null && capturedPiece.isWhite() != selectedPiece.isWhite()) {
-			board.getPieceList().remove(capturedPiece);
+			board.getPieceList().remove(capturedPiece); // Remove captured piece
 		}
-		selectedPiece.setPosition(move.getNewColumn(), move.getNewRow());
-		board.makeMove(move);
+		selectedPiece.setPosition(move.getNewColumn(), move.getNewRow()); // Update piece position
+		board.makeMove(move); // Execute the move on the board
 	}
 
 	/**
-	 * Resets the position of a piece to its original position if the move is invalid.
+	 * Resets the piece's position to its original location if the move is invalid.
 	 *
 	 * @param piece
 	 * 	the piece to reset
 	 */
 	private void resetPiecePosition(Piece piece) {
-		piece.setPosition(originalColumn, originalRow);
+		piece.setPosition(originalColumn, originalRow); // Revert to the original position
 	}
 
-	/**
-	 * Clears the current selection and possible moves from the board.
-	 */
-	private void clearSelection() {
-		board.setSelectedPiece(null);
-		board.getPossibleMoves().clear();
-	}
 }
