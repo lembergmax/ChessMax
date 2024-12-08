@@ -23,7 +23,7 @@ public class Frame extends JPanel {
 	private void initializeJFrame() {
 		JFrame frame = new JFrame(fetchStringConfig("ChessGame", "TITLE"));
 
-		frame.setLayout(new BorderLayout());
+		frame.setLayout(new GridBagLayout());
 		frame.setMinimumSize(new Dimension(
 			fetchIntegerConfig("ChessGame", "WIDTH"),
 			fetchIntegerConfig("ChessGame", "HEIGHT")
@@ -33,9 +33,16 @@ public class Frame extends JPanel {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
-		// Board is now a member of Frame, not a subclass
+		// Board ist jetzt ein Mitglied von Frame, nicht eine Unterklasse
 		Board board = new Board();
-		frame.add(board, BorderLayout.CENTER);
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+
+		frame.add(board.getBoardContainer(), gbc);
 		frame.setVisible(true);
 	}
 

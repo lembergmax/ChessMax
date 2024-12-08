@@ -6,6 +6,8 @@
 
 package com.mlprograms.chess.game.ui;
 
+import com.mlprograms.chess.game.pieces.Piece;
+
 import java.awt.*;
 
 import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorConfig;
@@ -16,6 +18,21 @@ public class BoardPainter {
 
 	public BoardPainter(Board board) {
 		this.BOARD = board;
+	}
+
+	/**
+	 * Paints all the pieces currently on the board.
+	 * Iterates through the list of pieces managed by the board and calls their respective paint methods.
+	 *
+	 * @param graphics2D
+	 * 	the Graphics2D object used to render the pieces on the board
+	 */
+	public void paintPieces(Graphics2D graphics2D) {
+		// Iterate through all pieces on the board
+		for (Piece piece : BOARD.getPieceList()) {
+			// Delegate the painting of each piece to its paint method
+			piece.paint(graphics2D);
+		}
 	}
 
 	/**

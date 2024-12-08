@@ -6,6 +6,7 @@
 
 package com.mlprograms.chess;
 
+import com.mlprograms.chess.account.ui.Startmenu;
 import com.mlprograms.chess.game.ui.Frame;
 
 /**
@@ -22,7 +23,6 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		initializeUI();
-
 		new Frame();
 	}
 
@@ -30,11 +30,10 @@ public class Main {
 	 * Loads and displays the start menu of the application.
 	 */
 	private static void initializeUI() {
-
-		// TODO: outcomment the following lines to start the application
-		// Startmenu startmenu = new Startmenu(); // Create a new instance of the Startmenu UI
-		// startmenu.setVisible(true); // Make the start menu visible
-
+		// Startmenu startmenu = new Startmenu();
+		// startmenu.setVisible(true);
 	}
+
+	// TODO: initialize the database if it doesn't exists
 
 }
