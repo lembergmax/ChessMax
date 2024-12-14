@@ -181,23 +181,6 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Executes the move by updating the piece's position and handling captures.
-	 *
-	 * @param selectedPiece
-	 * 	the piece to move
-	 * @param move
-	 * 	the move to execute
-	 */
-	private void executeMove(Piece selectedPiece, Move move) {
-		Piece capturedPiece = board.getPieceAt(move.getNewColumn(), move.getNewRow());
-		if (capturedPiece != null && capturedPiece.isWhite() != selectedPiece.isWhite()) {
-			board.getPieceList().remove(capturedPiece); // Remove captured piece
-		}
-		selectedPiece.setPosition(move.getNewColumn(), move.getNewRow()); // Update piece position
-		board.makeMove(move); // Execute the move on the board
-	}
-
-	/**
 	 * Resets the piece's position to its original location if the move is invalid.
 	 *
 	 * @param piece
