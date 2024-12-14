@@ -49,12 +49,12 @@ public class Pawn extends Piece {
 		}
 
 		// en passant left
-		if (getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == this.getColumn() - 1 && row == this.getRow() - colorIndex && getBoard().getPieceAt(column, row + colorIndex) != null) {
+		if (getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == this.getColumn() - 1 && row == this.getRow() - colorIndex) {
 			return true;
 		}
 
 		// en passant right
-		return getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == this.getColumn() + 1 && row == this.getRow() - colorIndex && getBoard().getPieceAt(column, row + colorIndex) != null;
+		return getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == this.getColumn() + 1 && row == this.getRow() - colorIndex;
 	}
 
 	@Override

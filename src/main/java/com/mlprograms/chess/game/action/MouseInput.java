@@ -24,7 +24,6 @@ public class MouseInput extends MouseAdapter {
 	private final Board board;
 	private int originalColumn;
 	private int originalRow;
-	private boolean isDragging = false;
 
 	/**
 	 * Initializes the MouseInput with the game board.
@@ -44,6 +43,7 @@ public class MouseInput extends MouseAdapter {
 	 */
 	@Override
 	public void mousePressed(MouseEvent event) {
+		board.setMouseIsDragged(false);
 		int column = event.getX() / board.getTileSize();
 		int row = event.getY() / board.getTileSize();
 
@@ -71,7 +71,7 @@ public class MouseInput extends MouseAdapter {
 	public void mouseDragged(MouseEvent event) {
 		Piece selectedPiece = board.getSelectedPiece();
 		if (selectedPiece != null) {
-			isDragging = true;
+			board.setMouseIsDragged(true);
 			updatePiecePositionDuringDrag(selectedPiece, event); // Update piece position during drag
 			board.showPossibleMoves(selectedPiece); // Display possible moves for the dragged piece
 			board.repaint(); // Redraw the board during dragging
@@ -94,7 +94,7 @@ public class MouseInput extends MouseAdapter {
 	@Override
 	public void mouseReleased(MouseEvent event) {
 		// Check if a drag operation was in progress
-		if (isDragging) {
+		if (board.isMouseIsDragged()) {
 			// Retrieve the currently selected piece
 			Piece selectedPiece = board.getSelectedPiece();
 
@@ -119,7 +119,7 @@ public class MouseInput extends MouseAdapter {
 			}
 
 			// End the drag operation and repaint the board
-			isDragging = false;
+			board.setMouseIsDragged(false);
 			board.repaint();
 		}
 	}
@@ -158,7 +158,7 @@ public class MouseInput extends MouseAdapter {
 	private void attemptMove(Piece selectedPiece, int column, int row) {
 		Move move = new Move(board, selectedPiece, column, row);
 		if (board.isValidMove(move)) {
-			executeMove(selectedPiece, move); // Execute the move if valid
+			board.makeMove(move); // Execute the move if valid
 		} else {
 			resetPiecePosition(selectedPiece); // Reset the piece to its original position
 		}

@@ -207,19 +207,7 @@ public class Board extends JPanel {
 
 		// Handle pawn-specific logic
 		if (piece instanceof Pawn) {
-			int colorIndex = piece.isWhite() ? 1 : -1; // Determines direction based on pawn color
-
-			// Check for en passant capture
-			if (getTileNumber(move.getNewColumn(), move.getNewRow()) == enPassantTile) {
-				move.setCapturedPiece(getPieceAt(move.getNewColumn(), move.getNewRow() + colorIndex));
-			}
-
-			// Set en passant tile for future moves if the pawn moved two rows
-			if (Math.abs(piece.getRow() - move.getNewRow()) == 2) {
-				enPassantTile = getTileNumber(move.getNewColumn(), move.getNewRow() + colorIndex);
-			} else {
-				enPassantTile = -1; // Reset en passant tile if not applicable
-			}
+			movePawn(move);
 		} else {
 			enPassantTile = -1; // Reset en passant tile for non-pawn moves
 		}
