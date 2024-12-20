@@ -628,6 +628,8 @@ public class Board extends JPanel {
 			return false; // The move is blocked by another piece
 		}
 
+		// TODO: update when wouldMovePutKingInCheck logic works
+
 		return true;
 
 		// Ensure the move doesn't place the king in check
