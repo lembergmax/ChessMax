@@ -1,8 +1,15 @@
+/*
+ * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
+ * See "http://creativecommons.org/licenses/by-nc/4.0/".
+ */
+
 package com.mlprograms.tests.ui;
 
 import com.mlprograms.chess.game.action.Move;
-import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.game.pieces.Pawn;
 import com.mlprograms.chess.game.pieces.Piece;
+import com.mlprograms.chess.game.ui.Board;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,25 +50,30 @@ class BoardTest {
 	}
 
 	@Test
-	void testInvalidMove() {
-		Piece piece = board.getPieceAt(0, 1);
-		assertNotNull(piece, "Es sollte eine Figur auf der Position (0, 1) geben.");
-		board.makeMove(new Move(board, piece, 0, 4));
-		assertEquals(piece, board.getPieceAt(0, 1), "Die Figur sollte sich immer noch auf der Position (0, 1) befinden.");
-		assertNull(board.getPieceAt(0, 4), "Es sollte keine Figur auf der Position (0, 4) geben.");
+	void testLoadPositionFromFen() {
+		String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+		board.loadPositionFromFen(fen);
+		assertEquals(32, board.getPieceList().size(), "Es sollten 32 Figuren auf dem Brett sein.");
+	}
+
+	@Test
+	void testMakeMove() {
+		Piece piece = board.getPieceAt(1, 1);
+		Move move = new Move(board, piece, 1, 3);
+		board.makeMove(move);
+		assertEquals(piece, board.getPieceAt(1, 3), "Die Figur sollte sich jetzt auf der Position (1, 3) befinden.");
 	}
 
 	@Test
 	void testCapturePiece() {
-		Piece whitePawn = board.getPieceAt(0, 1);
-		Piece blackPawn = board.getPieceAt(0, 6);
-		assertNotNull(whitePawn, "Es sollte eine weiße Figur auf der Position (0, 1) geben.");
-		assertNotNull(blackPawn, "Es sollte eine schwarze Figur auf der Position (0, 6) geben.");
-		board.makeMove(new Move(board, whitePawn, 0, 3));
-		board.makeMove(new Move(board, blackPawn, 0, 4));
-		board.makeMove(new Move(board, whitePawn, 0, 4));
-		assertEquals(whitePawn, board.getPieceAt(0, 4), "Die weiße Figur sollte sich jetzt auf der Position (0, 4) befinden.");
-		assertNull(board.getPieceAt(0, 3), "Es sollte keine Figur mehr auf der Position (0, 3) geben.");
-		assertNull(board.getPieceAt(0, 6), "Es sollte keine Figur mehr auf der Position (0, 6) geben.");
+		Piece whitePawn = new Pawn(board, 4, 6, true);
+		Piece blackPawn = new Pawn(board, 4, 4, false);
+		board.getPieceList().add(whitePawn);
+		board.getPieceList().add(blackPawn);
+		Move move = new Move(board, whitePawn, 4, 4);
+		board.makeMove(move);
+		assertNull(board.getPieceAt(4, 6), "Es sollte keine Figur mehr auf der Position (4, 6) geben.");
+		assertEquals(whitePawn, board.getPieceAt(4, 4), "Die weiße Figur sollte sich jetzt auf der Position (4, 4) befinden.");
+		assertFalse(board.getPieceList().contains(blackPawn), "Die schwarze Figur sollte entfernt worden sein.");
 	}
 }

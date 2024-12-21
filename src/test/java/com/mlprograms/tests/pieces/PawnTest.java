@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
+ * See "http://creativecommons.org/licenses/by-nc/4.0/".
+ */
+
 package com.mlprograms.tests.pieces;
 
 import com.mlprograms.chess.game.pieces.Pawn;
