@@ -9,6 +9,7 @@ package com.mlprograms.chess.game.ui;
 import com.mlprograms.chess.game.action.MouseInput;
 import com.mlprograms.chess.game.action.Move;
 import com.mlprograms.chess.game.pieces.*;
+import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -56,10 +57,10 @@ public class Board extends JPanel {
 	private int tempFullMoveNumber;
 	private int targetColumn;
 	private int targetRow;
-	private int lastMoveFromColumn;
-	private int lastMoveFromRow;
-	private int lastMoveToColumn;
-	private int lastMoveToRow;
+	private int oldColumn;
+	private int oldRow;
+	private int newColumn;
+	private int newRow;
 	private int enPassantTile = -1;
 
 	private boolean isWhiteTurn = true;
@@ -129,10 +130,10 @@ public class Board extends JPanel {
 		this.tempFullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "TEMP_FULL_MOVE_NUMBER");
 		this.targetColumn = fetchIntegerConfig(CHESS_SECTION, "TARGET_COLUMN");
 		this.targetRow = fetchIntegerConfig(CHESS_SECTION, "TARGET_ROW");
-		this.lastMoveFromColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_COLUMN");
-		this.lastMoveFromRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
-		this.lastMoveToColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
-		this.lastMoveToRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
+		this.oldColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_COLUMN");
+		this.oldRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
+		this.newColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
+		this.newRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
 	}
 
 	/**
@@ -197,10 +198,10 @@ public class Board extends JPanel {
 		Piece piece = move.getPiece();
 
 		// Update the last move's start and end positions
-		lastMoveFromColumn = move.getOldColumn();
-		lastMoveFromRow = move.getOldRow();
-		lastMoveToColumn = move.getNewColumn();
-		lastMoveToRow = move.getNewRow();
+		oldColumn = move.getOldColumn();
+		oldRow = move.getOldRow();
+		newColumn = move.getNewColumn();
+		newRow = move.getNewRow();
 
 		// Increment move counts and other related updates
 		incrementMoveCounts(move, piece);
