@@ -39,43 +39,7 @@ public class Bishop extends Piece {
 
 	@Override
 	public boolean moveCollidesWithPiece(int column, int row) {
-		// up left
-		if (this.getColumn() > column && this.getRow() > row) {
-			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
-				if (getBoard().getPieceAt(this.getColumn() - i, this.getRow() - i) != null) {
-					return true;
-				}
-			}
-		}
-
-		// up right
-		if (this.getColumn() < column && this.getRow() > row) {
-			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
-				if (getBoard().getPieceAt(this.getColumn() + i, this.getRow() - i) != null) {
-					return true;
-				}
-			}
-		}
-
-		// down left
-		if (this.getColumn() > column && this.getRow() < row) {
-			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
-				if (getBoard().getPieceAt(this.getColumn() - i, this.getRow() + i) != null) {
-					return true;
-				}
-			}
-		}
-
-		// down right
-		if (this.getColumn() < column && this.getRow() < row) {
-			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
-				if (getBoard().getPieceAt(this.getColumn() + i, this.getRow() + i) != null) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return diagonalCollision(column, row);
 	}
 
 }

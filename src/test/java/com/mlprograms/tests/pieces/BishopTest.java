@@ -22,6 +22,7 @@ class BishopTest {
 	@BeforeEach
 	void setUp() {
 		board = new Board();
+		board.getPieceList().clear();
 		whiteBishop = new Bishop(board, 2, 0, true);
 		blackBishop = new Bishop(board, 2, 7, false);
 		board.getPieceList().add(whiteBishop);
@@ -29,41 +30,57 @@ class BishopTest {
 	}
 
 	@Test
-	void testWhiteBishopValidMove() {
+	void testWhiteBishopValidMoveDiagonalUpRight() {
 		assertTrue(whiteBishop.isValidMovement(4, 2));
 	}
 
 	@Test
-	void testWhiteBishopInvalidMove() {
-		assertFalse(whiteBishop.isValidMovement(4, 3));
+	void testWhiteBishopValidMoveDiagonalUpLeft() {
+		assertTrue(whiteBishop.isValidMovement(0, 2));
 	}
 
 	@Test
-	void testBlackBishopValidMove() {
+	void testWhiteBishopValidMoveDiagonalDownRight() {
+		whiteBishop.setPosition(4, 4);
+		assertTrue(whiteBishop.isValidMovement(6, 6));
+	}
+
+	@Test
+	void testWhiteBishopValidMoveDiagonalDownLeft() {
+		whiteBishop.setPosition(4, 4);
+		assertTrue(whiteBishop.isValidMovement(2, 6));
+	}
+
+	@Test
+	void testWhiteBishopInvalidMoveHorizontal() {
+		assertFalse(whiteBishop.isValidMovement(4, 0));
+	}
+
+	@Test
+	void testWhiteBishopInvalidMoveVertical() {
+		assertFalse(whiteBishop.isValidMovement(2, 2));
+	}
+
+	@Test
+	void testBlackBishopValidMoveDiagonalUpRight() {
+		blackBishop.setPosition(4, 4);
+		assertTrue(blackBishop.isValidMovement(6, 6));
+	}
+
+	@Test
+	void testBlackBishopValidMoveDiagonalUpLeft() {
+		blackBishop.setPosition(4, 4);
+		assertTrue(blackBishop.isValidMovement(2, 6));
+	}
+
+	@Test
+	void testBlackBishopValidMoveDiagonalDownRight() {
 		assertTrue(blackBishop.isValidMovement(4, 5));
 	}
 
 	@Test
-	void testBlackBishopInvalidMove() {
-		assertFalse(blackBishop.isValidMovement(4, 4));
-	}
-
-	@Test
-	void testMoveCollidesWithPiece() {
-		Bishop blockingBishop = new Bishop(board, 3, 1, true);
-		board.getPieceList().add(blockingBishop);
-		assertTrue(whiteBishop.moveCollidesWithPiece(4, 2));
-	}
-
-	@Test
-	void testMoveDoesNotCollideWithPiece() {
-		// Set up the board and pieces
-		board.getPieceList().clear();
-		board.getPieceList().add(whiteBishop);
-		board.getPieceList().add(blackBishop);
-
-		// Test that the move does not collide with any piece
-		assertFalse(whiteBishop.moveCollidesWithPiece(5, 3));
+	void testBlackBishopValidMoveDiagonalDownLeft() {
+		assertTrue(blackBishop.isValidMovement(0, 5));
 	}
 
 	@Test
@@ -78,7 +95,6 @@ class BishopTest {
 
 	@Test
 	void testCaptureOpponentPiece() {
-		board.getPieceList().clear();
 		Bishop blackBishopToCapture = new Bishop(board, 4, 2, false);
 		board.getPieceList().add(blackBishopToCapture);
 		assertTrue(whiteBishop.isValidMovement(4, 2));
@@ -86,38 +102,16 @@ class BishopTest {
 
 	@Test
 	void testCannotCaptureOwnPiece() {
-		board.getPieceList().clear();
 		Bishop whiteBishopToBlock = new Bishop(board, 4, 2, true);
 		board.getPieceList().add(whiteBishopToBlock);
 		assertFalse(whiteBishop.isValidMovement(4, 2));
 	}
 
 	@Test
-	void testMoveDiagonallyUpRight() {
-		assertTrue(whiteBishop.isValidMovement(5, 3));
-	}
-
-	@Test
-	void testMoveDiagonallyUpLeft() {
-		assertTrue(whiteBishop.isValidMovement(0, 2));
-	}
-
-	@Test
-	void testMoveDiagonallyDownRight() {
-		assertTrue(blackBishop.isValidMovement(4, 5));
-	}
-
-	@Test
-	void testMoveDiagonallyDownLeft() {
-		assertTrue(blackBishop.isValidMovement(0, 5));
-	}
-
-	@Test
 	void testMoveBlockedByPiece() {
-		board.getPieceList().clear();
-		Bishop blockingBishop = new Bishop(board, 3, 3, true);
+		Bishop blockingBishop = new Bishop(board, 3, 1, true);
 		board.getPieceList().add(blockingBishop);
-		assertFalse(whiteBishop.isValidMovement(5, 5));
+		assertFalse(whiteBishop.isValidMovement(4, 2));
 	}
 
 	@Test

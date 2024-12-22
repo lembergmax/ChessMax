@@ -28,12 +28,16 @@ public class Queen extends Piece {
 			return false;
 		}
 
-		return false;
+		return this.getColumn() == column || this.getRow() == row || Math.abs(this.getColumn() - column) == Math.abs(this.getRow() - row);
 	}
 
 	@Override
 	public boolean moveCollidesWithPiece(int column, int row) {
-		return false;
+		if(this.getColumn() == column || this.getRow() == row) {
+			return linearCollision(column, row);
+		} else {
+			return diagonalCollision(column, row);
+		}
 	}
 
 }

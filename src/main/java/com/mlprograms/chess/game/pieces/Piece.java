@@ -18,6 +18,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -112,7 +113,115 @@ public abstract class Piece {
 			return false;
 		}
 
+		if (moveCollidesWithPiece(column, row)) {
+			return false;
+		}
+
 		return true;
+	}
+
+	/**
+	 * Checks for collisions along the diagonal path between the current position
+	 * and the target position. Iterates over all tiles on the diagonal to ensure
+	 * no pieces block the path.
+	 *
+	 * @param column
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 *
+	 * @return true if a collision is detected along the diagonal, false otherwise
+	 */
+	protected boolean diagonalCollision(int column, int row) {
+		// up left
+		if (this.getColumn() > column && this.getRow() > row) {
+			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
+				if (getBoard().getPieceAt(this.getColumn() - i, this.getRow() - i) != null) {
+					return true;
+				}
+			}
+		}
+
+		// up right
+		if (this.getColumn() < column && this.getRow() > row) {
+			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
+				if (getBoard().getPieceAt(this.getColumn() + i, this.getRow() - i) != null) {
+					return true;
+				}
+			}
+		}
+
+		// down left
+		if (this.getColumn() > column && this.getRow() < row) {
+			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
+				if (getBoard().getPieceAt(this.getColumn() - i, this.getRow() + i) != null) {
+					return true;
+				}
+			}
+		}
+
+		// down right
+		if (this.getColumn() < column && this.getRow() < row) {
+			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
+				if (getBoard().getPieceAt(this.getColumn() + i, this.getRow() + i) != null) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks for collisions along the linear path (horizontal or vertical)
+	 * between the current position and the target position. Iterates over all
+	 * tiles in the path to ensure no pieces block the way.
+	 *
+	 * @param column
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 *
+	 * @return true if a collision is detected along the linear path, false otherwise
+	 */
+	protected boolean linearCollision(int column, int row) {
+		// left
+		if (this.getColumn() > column) {
+			for (int c = this.getColumn() - 1; c > column; c--) {
+				if (getBoard().getPieceAt(c, this.getRow()) != null) {
+					return true;
+				}
+			}
+		}
+
+		// right
+		if (this.getColumn() < column) {
+			for (int c = this.getColumn() + 1; c < column; c++) {
+				if (getBoard().getPieceAt(c, this.getRow()) != null) {
+					return true;
+				}
+			}
+		}
+
+		// up
+		if (this.getRow() > row) {
+			for (int r = this.getRow() - 1; r > row; r--) {
+				if (getBoard().getPieceAt(this.getColumn(), r) != null) {
+					return true;
+				}
+			}
+		}
+
+		// down
+		if (this.getRow() < row) {
+			for (int r = this.getRow() + 1; r < row; r++) {
+				if (getBoard().getPieceAt(this.getColumn(), r) != null) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -135,16 +244,58 @@ public abstract class Piece {
 	}
 
 	/**
-	 * Retrieves the list of all legal moves for this piece.
+	 * Retrieves a list of all legal moves for this piece on the given board.
 	 *
 	 * @param board
 	 * 	the board to evaluate moves on
 	 *
-	 * @return a list of legal moves or null if not implemented
+	 * @return a list of legal moves; an empty list if none exist
 	 */
 	public List<Move> getLegalMoves(Board board) {
-		// TODO: Implement logic to calculate possible moves for this piece
-		return null;
+		List<Move> legalMoves = new ArrayList<>();
+
+		for (int col = 0; col < board.getColumns(); col++) {
+			for (int row = 0; row < board.getRows(); row++) {
+				addLegalMoveIfValid(board, legalMoves, col, row);
+			}
+		}
+
+		return legalMoves;
+	}
+
+	/**
+	 * Validates and adds a move to the list of legal moves if it's valid.
+	 *
+	 * @param board
+	 * 	the board to evaluate moves on
+	 * @param legalMoves
+	 * 	the list of legal moves to add to
+	 * @param col
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 */
+	private void addLegalMoveIfValid(Board board, List<Move> legalMoves, int col, int row) {
+		if (isValidMovement(col, row)) {
+			Move move = new Move(board, this, col, row);
+			if (isLegalMove(board, move)) {
+				legalMoves.add(move);
+			}
+		}
+	}
+
+	/**
+	 * Checks if a move is legal, i.e., it does not put the king in check.
+	 *
+	 * @param board
+	 * 	the board to evaluate the move on
+	 * @param move
+	 * 	the move to validate
+	 *
+	 * @return true if the move is legal; false otherwise
+	 */
+	private boolean isLegalMove(Board board, Move move) {
+		return !board.getCheckScanner().wouldMovePutKingInCheck(move);
 	}
 
 	/**

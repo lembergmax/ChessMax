@@ -6,6 +6,7 @@
 
 package com.mlprograms.chess.game.ui;
 
+import com.mlprograms.chess.game.CheckScanner;
 import com.mlprograms.chess.game.action.MouseInput;
 import com.mlprograms.chess.game.action.Move;
 import com.mlprograms.chess.game.pieces.*;
@@ -30,6 +31,8 @@ import static com.mlprograms.chess.utils.ConfigFetcher.*;
 @Getter
 @Setter
 public class Board extends JPanel {
+
+	private final CheckScanner checkScanner;
 
 	private final String FEN_STARTING_POSITION = fetchStringConfig("ChessGame", "STARTING_POSITION");
 	private String title;
@@ -71,6 +74,7 @@ public class Board extends JPanel {
 	 * Sets up the JFrame and prepares the chessboard layout.
 	 */
 	public Board() {
+		this.checkScanner = new CheckScanner(this);
 		this.boardPainter = new BoardPainter(this);
 		this.boardContainer = new JPanel(new GridBagLayout());
 
