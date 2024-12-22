@@ -22,8 +22,8 @@ public class Main {
 	 * 	command-line arguments (not used)
 	 */
 	public static void main(String[] args) {
-		initializeUI();
-		// new Frame();
+		// initializeUI();
+		new Frame();
 	}
 
 	/**

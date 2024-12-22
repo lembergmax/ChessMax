@@ -24,6 +24,15 @@ public class Rook extends Piece {
 
 	@Override
 	public boolean isValidMovement(int column, int row) {
+		if(!isValidPieceMove(column, row)) {
+			return false;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean moveCollidesWithPiece(int column, int row) {
 		return false;
 	}
 

@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
+ * See "http://creativecommons.org/licenses/by-nc/4.0/".
+ */
+
 package com.mlprograms.chess.game.pieces;
 
 import com.mlprograms.chess.game.ui.Board;
@@ -24,6 +30,51 @@ public class Bishop extends Piece {
 
 	@Override
 	public boolean isValidMovement(int column, int row) {
+		if(!isValidPieceMove(column, row)) {
+			return false;
+		}
+
+		return Math.abs(this.getColumn() - column) == Math.abs(this.getRow() - row);
+	}
+
+	@Override
+	public boolean moveCollidesWithPiece(int column, int row) {
+		// up left
+		if (this.getColumn() > column && this.getRow() > row) {
+			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
+				if (getBoard().getPieceAt(this.getColumn() - i, this.getRow() - i) != null) {
+					return true;
+				}
+			}
+		}
+
+		// up right
+		if (this.getColumn() < column && this.getRow() > row) {
+			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
+				if (getBoard().getPieceAt(this.getColumn() + i, this.getRow() - i) != null) {
+					return true;
+				}
+			}
+		}
+
+		// down left
+		if (this.getColumn() > column && this.getRow() < row) {
+			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
+				if (getBoard().getPieceAt(this.getColumn() - i, this.getRow() + i) != null) {
+					return true;
+				}
+			}
+		}
+
+		// down right
+		if (this.getColumn() < column && this.getRow() < row) {
+			for (int i = 1; i < Math.abs(this.getColumn() - column); i++) {
+				if (getBoard().getPieceAt(this.getColumn() + i, this.getRow() + i) != null) {
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 

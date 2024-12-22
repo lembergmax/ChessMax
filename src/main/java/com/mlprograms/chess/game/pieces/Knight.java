@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
+ * See "http://creativecommons.org/licenses/by-nc/4.0/".
+ */
+
 package com.mlprograms.chess.game.pieces;
 
 import com.mlprograms.chess.game.ui.Board;
@@ -24,6 +30,15 @@ public class Knight extends Piece {
 
 	@Override
 	public boolean isValidMovement(int column, int row) {
+		if(!isValidPieceMove(column, row)) {
+			return false;
+		}
+
+		return Math.abs(column - this.getColumn()) * Math.abs(row - this.getRow()) == 2;
+	}
+
+	@Override
+	public boolean moveCollidesWithPiece(int column, int row) {
 		return false;
 	}
 

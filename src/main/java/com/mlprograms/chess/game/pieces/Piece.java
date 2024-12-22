@@ -90,6 +90,32 @@ public abstract class Piece {
 	}
 
 	/**
+	 * Checks if the target position is a valid move for the piece.
+	 *
+	 * @param column
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 *
+	 * @return true if the move is valid, false otherwise
+	 */
+	protected boolean isValidPieceMove(int column, int row) {
+		if (column < 0 || column >= getBoard().getColumns() || row < 0 || row >= getBoard().getRows()) {
+			return false;
+		}
+
+		if (this.getColumn() == column && this.getRow() == row) {
+			return false;
+		}
+
+		if (this.getBoard().sameTeam(this, getBoard().getPieceAt(column, row))) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Sets the position of the piece on the board.
 	 * Updates the pixel-based coordinates and repaints the board.
 	 *
@@ -134,7 +160,8 @@ public abstract class Piece {
 	public abstract boolean isValidMovement(int column, int row);
 
 	/**
-	 * Checks if the movement to the target position collides with another piece.
+	 * Checks if the movement to the target position collides with another piece. Only needed for Bishop, Rook, and
+	 * Queen.
 	 *
 	 * @param column
 	 * 	the target column

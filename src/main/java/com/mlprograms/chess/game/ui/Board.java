@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
- * Licensed under the CC BY-NC 4.0 License.
+ * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -9,7 +9,6 @@ package com.mlprograms.chess.game.ui;
 import com.mlprograms.chess.game.action.MouseInput;
 import com.mlprograms.chess.game.action.Move;
 import com.mlprograms.chess.game.pieces.*;
-import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,7 +25,7 @@ import static com.mlprograms.chess.utils.ConfigFetcher.*;
 /**
  * Represents the game board for ChessMax.
  * Responsible for initializing board-specific configurations
- * and preparing the board for gameplay.
+ * and preparing the board for gameplay. It also handles the inputs from the user and updates the game state.
  */
 @Getter
 @Setter
@@ -622,8 +621,11 @@ public class Board extends JPanel {
 			return false; // The move doesn't comply with the piece's movement rules
 		}
 
+		// Ensure the move doesn't collide with another piece
+		if (move.getPiece().moveCollidesWithPiece(move.getNewColumn(), move.getNewRow())) {
+			return false; // The move is blocked by another piece
+		}
 
-		// TODO: update when wouldMovePutKingInCheck logic works
 		return true;
 
 		// Ensure the move doesn't place the king in check

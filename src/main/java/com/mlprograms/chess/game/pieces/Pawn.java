@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
+ * See "http://creativecommons.org/licenses/by-nc/4.0/".
+ */
+
 package com.mlprograms.chess.game.pieces;
 
 import com.mlprograms.chess.game.ui.Board;
@@ -24,6 +30,10 @@ public class Pawn extends Piece {
 
 	@Override
 	public boolean isValidMovement(int column, int row) {
+		if(!isValidPieceMove(column, row)) {
+			return false;
+		}
+
 		int colorIndex = isWhite() ? 1 : -1;
 
 		// push on 1
@@ -53,6 +63,11 @@ public class Pawn extends Piece {
 
 		// en passant right
 		return getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == this.getColumn() + 1 && row == this.getRow() - colorIndex;
+	}
+
+	@Override
+	public boolean moveCollidesWithPiece(int column, int row) {
+		return false;
 	}
 
 }

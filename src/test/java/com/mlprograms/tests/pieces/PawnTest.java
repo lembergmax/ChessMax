@@ -109,4 +109,26 @@ class PawnTest {
 		board.setEnPassantTile(board.getTileNumber(5, 2));
 		assertTrue(blackPawn.isValidMovement(5, 2));
 	}
+
+	@Test
+	void testMoveToSamePosition() {
+		assertFalse(whitePawn.isValidMovement(4, 6));
+	}
+
+	@Test
+	void testMoveOutOfBounds() {
+		assertFalse(whitePawn.isValidMovement(4, -1));
+	}
+
+	@Test
+	void testMoveBlockedByPiece() {
+		Pawn blockingPawn = new Pawn(board, 4, 5, true);
+		board.getPieceList().add(blockingPawn);
+		assertFalse(whitePawn.isValidMovement(4, 5));
+	}
+
+	@Test
+	void testMoveNotBlockedByPiece() {
+		assertTrue(whitePawn.isValidMovement(4, 5));
+	}
 }
