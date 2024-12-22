@@ -146,18 +146,6 @@ public abstract class Piece {
 	public abstract boolean moveCollidesWithPiece(int column, int row);
 
 	/**
-	 * Evaluates if moving the piece to a specific position results in a check.
-	 *
-	 * @param column
-	 * 	the target column
-	 * @param row
-	 * 	the target row
-	 *
-	 * @return true if the position results in a check, false otherwise
-	 */
-	abstract boolean inCheck(int column, int row);
-
-	/**
 	 * Renders the piece on the board using its sprite.
 	 *
 	 * @param graphics2D
