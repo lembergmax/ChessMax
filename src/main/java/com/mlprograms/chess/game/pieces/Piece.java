@@ -117,6 +117,8 @@ public abstract class Piece {
 			return false;
 		}
 
+		// TODO: Check if the move puts the king in check
+
 		return true;
 	}
 
@@ -276,11 +278,9 @@ public abstract class Piece {
 	 * 	the target row
 	 */
 	private void addLegalMoveIfValid(Board board, List<Move> legalMoves, int col, int row) {
-		if (isValidMovement(col, row)) {
-			Move move = new Move(board, this, col, row);
-			if (isLegalMove(board, move)) {
-				legalMoves.add(move);
-			}
+		Move move = new Move(board, this, col, row);
+		if (isLegalMove(board, move)) {
+			legalMoves.add(move);
 		}
 	}
 

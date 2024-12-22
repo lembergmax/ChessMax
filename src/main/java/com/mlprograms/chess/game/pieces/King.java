@@ -34,9 +34,9 @@ public class King extends Piece {
 		}
 
 		// Check if castling is possible (king moves 2 squares)
-		// if (Math.abs(column - this.getColumn()) == 2 && this.getRow() == row && canCastle(column, row)) {
-		// return true;
-		// }
+		if (Math.abs(column - this.getColumn()) == 2 && this.getRow() == row && canCastle(column, row)) {
+			return true;
+		}
 
 		return false;
 	}

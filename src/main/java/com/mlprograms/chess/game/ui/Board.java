@@ -10,6 +10,7 @@ import com.mlprograms.chess.game.CheckScanner;
 import com.mlprograms.chess.game.action.MouseInput;
 import com.mlprograms.chess.game.action.Move;
 import com.mlprograms.chess.game.pieces.*;
+import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -610,11 +611,6 @@ public class Board extends JPanel {
 			return false; // The move is out of bounds
 		}
 
-		// TODO: Check if the game is over (no more moves allowed)
-		// if (isGameOver) {
-		// 	return false; // No moves are allowed if the game is over
-		// }
-
 		// Ensure the move doesn't involve capturing a piece from the same team
 		if (sameTeam(move.getPiece(), move.getCapturedPiece())) {
 			return false; // Can't capture pieces of the same color
@@ -628,6 +624,11 @@ public class Board extends JPanel {
 		// Ensure the move doesn't collide with another piece
 		if (move.getPiece().moveCollidesWithPiece(move.getNewColumn(), move.getNewRow())) {
 			return false; // The move is blocked by another piece
+		}
+
+		// TODO: Check if the game is over (no more moves allowed)
+		if (checkScanner.isCheckmate() || checkScanner.isStalemate()) {
+			return false; // No moves are allowed if the game is over
 		}
 
 		return true;
@@ -654,6 +655,29 @@ public class Board extends JPanel {
 
 		// Return true if both pieces have the same color (white or black)
 		return piece.isWhite() == otherPiece.isWhite();
+	}
+
+	/**
+	 * Sets a piece on the board at the specified column and row.
+	 * Updates the piece's position and triggers a repaint.
+	 *
+	 * @param column
+	 * 	the column to place the piece
+	 * @param row
+	 * 	the row to place the piece
+	 * @param piece
+	 * 	the piece to be placed, must not be null
+	 */
+	public void setPieceAt(int column, int row, Piece piece) {
+		if (piece == null) {
+			return;
+		}
+
+		piece.setColumn(column);
+		piece.setRow(row);
+		piece.setXPos(column * getTileSize());
+		piece.setYPos(row * getTileSize());
+		repaint();
 	}
 
 }
