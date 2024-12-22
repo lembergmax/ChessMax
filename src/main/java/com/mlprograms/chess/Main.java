@@ -23,15 +23,15 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		initializeUI();
-		new Frame();
+		// new Frame();
 	}
 
 	/**
 	 * Loads and displays the start menu of the application.
 	 */
 	private static void initializeUI() {
-		// Startmenu startmenu = new Startmenu();
-		// startmenu.setVisible(true);
+		Startmenu startmenu = new Startmenu();
+		startmenu.setVisible(true);
 	}
 
 	// TODO: initialize the database if it doesn't exists

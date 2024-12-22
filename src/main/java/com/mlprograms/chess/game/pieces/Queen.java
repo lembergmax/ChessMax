@@ -27,13 +27,4 @@ public class Queen extends Piece {
 		return false;
 	}
 
-	@Override
-	public boolean moveCollidesWithPiece(int column, int row) {
-		return false;
-	}
-
-	@Override
-	boolean inCheck(int column, int row) {
-		return false;
-	}
 }

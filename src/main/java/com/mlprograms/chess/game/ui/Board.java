@@ -221,12 +221,12 @@ public class Board extends JPanel {
 		// Animate the move or update the piece position directly if dragging
 		if (!mouseIsDragged) {
 			animateMove(piece, move.getNewColumn(), move.getNewRow());
+		} else {
+			piece.setColumn(move.getNewColumn());
+			piece.setRow(move.getNewRow());
+			piece.setXPos(move.getNewColumn() * getTileSize());
+			piece.setYPos(move.getNewRow() * getTileSize());
 		}
-
-		piece.setColumn(move.getNewColumn());
-		piece.setRow(move.getNewRow());
-		piece.setXPos(move.getNewColumn() * getTileSize());
-		piece.setYPos(move.getNewRow() * getTileSize());
 
 		// Mark the piece as no longer being in its initial state
 		piece.setFirstMove(false);
@@ -622,13 +622,8 @@ public class Board extends JPanel {
 			return false; // The move doesn't comply with the piece's movement rules
 		}
 
-		// Ensure the move doesn't collide with another piece
-		if (move.getPiece().moveCollidesWithPiece(move.getNewColumn(), move.getNewRow())) {
-			return false; // The move is blocked by another piece
-		}
 
 		// TODO: update when wouldMovePutKingInCheck logic works
-
 		return true;
 
 		// Ensure the move doesn't place the king in check
