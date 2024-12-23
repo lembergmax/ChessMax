@@ -113,13 +113,7 @@ public abstract class Piece {
 			return false;
 		}
 
-		if (moveCollidesWithPiece(column, row)) {
-			return false;
-		}
-
-		// TODO: Check if the move puts the king in check
-
-		return true;
+		return !moveCollidesWithPiece(column, row);
 	}
 
 	/**
