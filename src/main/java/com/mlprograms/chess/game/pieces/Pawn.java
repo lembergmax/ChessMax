@@ -37,32 +37,32 @@ public class Pawn extends Piece {
 		int colorIndex = isWhite() ? 1 : -1;
 
 		// push on 1
-		if (this.getColumn() == column && row == this.getRow() - colorIndex && getBoard().getPieceAt(column, row) == null) {
+		if (getColumn() == column && row == getRow() - colorIndex && getBoard().getPieceAt(column, row) == null) {
 			return true;
 		}
 
 		// push on 2
-		if (this.getRow() == (isWhite() ? 6 : 1) && this.getColumn() == column && row == this.getRow() - colorIndex * 2 && getBoard().getPieceAt(column, row) == null && getBoard().getPieceAt(column, row + colorIndex) == null) {
+		if (getRow() == (isWhite() ? 6 : 1) && getColumn() == column && row == getRow() - colorIndex * 2 && getBoard().getPieceAt(column, row) == null && getBoard().getPieceAt(column, row + colorIndex) == null) {
 			return true;
 		}
 
 		// capture to left
-		if (column == this.getColumn() - 1 && row == this.getRow() - colorIndex && getBoard().getPieceAt(column, row) != null) {
+		if (column == getColumn() - 1 && row == getRow() - colorIndex && getBoard().getPieceAt(column, row) != null) {
 			return true;
 		}
 
 		// capture to right
-		if (column == this.getColumn() + 1 && row == this.getRow() - colorIndex && getBoard().getPieceAt(column, row) != null) {
+		if (column == getColumn() + 1 && row == getRow() - colorIndex && getBoard().getPieceAt(column, row) != null) {
 			return true;
 		}
 
 		// en passant left
-		if (getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == this.getColumn() - 1 && row == this.getRow() - colorIndex) {
+		if (getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == getColumn() - 1 && row == getRow() - colorIndex) {
 			return true;
 		}
 
 		// en passant right
-		return getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == this.getColumn() + 1 && row == this.getRow() - colorIndex;
+		return getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == getColumn() + 1 && row == getRow() - colorIndex;
 	}
 
 	@Override
