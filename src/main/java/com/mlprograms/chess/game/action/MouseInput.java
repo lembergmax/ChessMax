@@ -73,7 +73,6 @@ public class MouseInput extends MouseAdapter {
 		if (selectedPiece != null) {
 			board.setMouseIsDragged(true);
 			updatePiecePositionDuringDrag(selectedPiece, event); // Update piece position during drag
-			board.showPossibleMoves(selectedPiece); // Display possible moves for the dragged piece
 			board.repaint(); // Redraw the board during dragging
 		}
 	}
