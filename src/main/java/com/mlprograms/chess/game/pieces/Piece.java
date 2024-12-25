@@ -113,7 +113,11 @@ public abstract class Piece {
 			return false;
 		}
 
-		return !moveCollidesWithPiece(column, row);
+		if (moveCollidesWithPiece(column, row)) {
+			return false;
+		}
+
+		return !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, column, row));
 	}
 
 	/**

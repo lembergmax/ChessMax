@@ -8,7 +8,6 @@ package com.mlprograms.chess.game;
 
 import com.mlprograms.chess.game.action.Move;
 import com.mlprograms.chess.game.pieces.King;
-import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.ui.Board;
 import lombok.Getter;
 
@@ -33,8 +32,7 @@ public class CheckScanner {
 	 * @return true if the current player is in checkmate, false otherwise.
 	 */
 	public boolean isCheckmate() {
-		// TODO: check if checkmate
-		return false;
+		return isKingInCheck() && canPlayerDoAnyValidMove();
 	}
 
 	/**
@@ -47,29 +45,18 @@ public class CheckScanner {
 	 * @return true if the current player is in stalemate, false otherwise.
 	 */
 	public boolean isStalemate() {
-		// TODO: check if stalemate
-		return false;
+		return !isKingInCheck() && canPlayerDoAnyValidMove();
+	}
+
+	// TODO: write java doc
+	public boolean canPlayerDoAnyValidMove() {
+		return getBoard().getPieceList().stream()
+			       .allMatch(piece -> piece.getLegalMoves(getBoard()).isEmpty());
 	}
 
 	// TODO: check before each move if king is after move in check
 	public boolean wouldMovePutKingInCheck(Move move) {
-		Piece originalPiece = getBoard().getPieceAt(move.getNewColumn(), move.getNewRow());
-		Piece movingPiece = move.getPiece();
-
-		int originalColumn = movingPiece.getColumn();
-		int originalRow = movingPiece.getRow();
-
-		getBoard().setPieceAt(move.getNewColumn(), move.getNewRow(), movingPiece);
-		getBoard().setPieceAt(originalColumn, originalRow, null);
-		movingPiece.setPosition(move.getNewColumn(), move.getNewRow());
-
-		boolean inCheck = isKingInCheck();
-
-		getBoard().setPieceAt(originalColumn, originalRow, movingPiece);
-		getBoard().setPieceAt(move.getNewColumn(), move.getNewRow(), originalPiece);
-		movingPiece.setPosition(originalColumn, originalRow);
-
-		return inCheck;
+		return false;
 	}
 
 	// TODO: write java doc
