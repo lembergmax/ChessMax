@@ -28,6 +28,7 @@ public class Pawn extends Piece {
 		setSprite(getSheet().getSubimage(5 * sheetScale, isWhite ? 0 : sheetScale, sheetScale, sheetScale).getScaledInstance(sheetScale, sheetScale, BufferedImage.SCALE_SMOOTH));
 	}
 
+	// TODO: hier möglicherweise Fehler, irgendwas kann sein
 	@Override
 	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
 		if(!isValidPieceMove(column, row, checkForKingSafety)) {
