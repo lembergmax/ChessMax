@@ -66,8 +66,13 @@ public class CheckScanner {
 
 	// TODO: write java doc
 	public boolean isKingInCheck(Board board, boolean whiteKing) {
-		int kingColumn = findKing(whiteKing).getColumn();
-		int kingRow = findKing(whiteKing).getRow();
+		King king = findKing(whiteKing);
+		if (king == null) {
+			return false;
+		}
+
+		int kingColumn = king.getColumn();
+		int kingRow = king.getRow();
 
 		return board.getPieceList().stream()
 			       .filter(piece -> piece.isWhite() != whiteKing)
