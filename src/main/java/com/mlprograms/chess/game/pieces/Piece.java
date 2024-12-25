@@ -91,6 +91,47 @@ public abstract class Piece {
 	}
 
 	/**
+	 * Determines whether the piece can move to a specific position.
+	 *
+	 * @param column
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 *
+	 * @return true if the movement is valid, false otherwise
+	 */
+	public boolean isValidMovement(int column, int row) {
+		return isValidMovement(column, row, true);
+	}
+
+	/**
+	 * Determines whether the piece can move to a specific position and checks for king safety if specified.
+	 *
+	 * @param column
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 * @param checkForKingSafety
+	 * 	whether to check for king safety after the move
+	 *
+	 * @return true if the movement is valid, false otherwise
+	 */
+	public abstract boolean isValidMovement(int column, int row, boolean checkForKingSafety);
+
+	/**
+	 * Checks if the movement to the target position collides with another piece. Only needed for Bishop, Rook, and
+	 * Queen.
+	 *
+	 * @param column
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 *
+	 * @return true if a collision occurs, false otherwise
+	 */
+	public abstract boolean moveCollidesWithPiece(int column, int row);
+
+	/**
 	 * Checks if the target position is a valid move for the piece.
 	 *
 	 * @param column
@@ -100,7 +141,7 @@ public abstract class Piece {
 	 *
 	 * @return true if the move is valid, false otherwise
 	 */
-	protected boolean isValidPieceMove(int column, int row) {
+	protected boolean isValidPieceMove(int column, int row, boolean checkForKingSafety) {
 		if (column < 0 || column >= getBoard().getColumns() || row < 0 || row >= getBoard().getRows()) {
 			return false;
 		}
@@ -117,7 +158,92 @@ public abstract class Piece {
 			return false;
 		}
 
-		return !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, column, row));
+		if (checkForKingSafety) {
+			return getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, column, row));
+		}
+
+		return false;
+	}
+
+	/**
+	 * Sets the position of the piece on the board.
+	 * Updates the pixel-based coordinates and repaints the board.
+	 *
+	 * @param column
+	 * 	the new column position
+	 * @param row
+	 * 	the new row position
+	 */
+	public void setPosition(int column, int row) {
+		this.column = column;
+		this.row = row;
+		this.xPos = column * board.getTileSize();
+		this.yPos = row * board.getTileSize();
+
+		// Trigger a repaint of the board to reflect the new position
+		board.repaint();
+	}
+
+	/**
+	 * Retrieves a list of all legal moves for this piece on the given board.
+	 *
+	 * @param board
+	 * 	the board to evaluate moves on
+	 *
+	 * @return a list of legal moves; an empty list if none exist
+	 */
+	public List<Move> getValidMoves(Board board) {
+		List<Move> legalMoves = new ArrayList<>();
+
+		for (int col = 0; col < board.getColumns(); col++) {
+			for (int row = 0; row < board.getRows(); row++) {
+				addMoveIfValid(board, legalMoves, col, row);
+			}
+		}
+
+		return legalMoves;
+	}
+
+	/**
+	 * Validates and adds a move to the list of legal moves if it's valid.
+	 *
+	 * @param board
+	 * 	the board to evaluate moves on
+	 * @param legalMoves
+	 * 	the list of legal moves to add to
+	 * @param col
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 */
+	private void addMoveIfValid(Board board, List<Move> legalMoves, int col, int row) {
+		Move move = new Move(board, this, col, row);
+		if (isValidMove(move)) {
+			legalMoves.add(move);
+		}
+	}
+
+	/**
+	 * Checks if a move is legal, i.e., it does not put the king in check.
+	 *
+	 * @param move
+	 * 	the move to validate
+	 *
+	 * @return true if the move is legal; false otherwise
+	 */
+	private boolean isValidMove(Move move) {
+		return !move.getPiece().isValidMovement(move.getNewColumn(), move.getNewRow(), true);
+	}
+
+	/**
+	 * Renders the piece on the board using its sprite.
+	 *
+	 * @param graphics2D
+	 * 	the graphics context used for rendering
+	 */
+	public void paint(Graphics2D graphics2D) {
+		// Draw the sprite of the piece at its current position
+		graphics2D.drawImage(sprite, xPos, yPos, board.getTileSize(), board.getTileSize(), null);
 	}
 
 	/**
@@ -222,113 +348,5 @@ public abstract class Piece {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Sets the position of the piece on the board.
-	 * Updates the pixel-based coordinates and repaints the board.
-	 *
-	 * @param column
-	 * 	the new column position
-	 * @param row
-	 * 	the new row position
-	 */
-	public void setPosition(int column, int row) {
-		this.column = column;
-		this.row = row;
-		this.xPos = column * board.getTileSize();
-		this.yPos = row * board.getTileSize();
-
-		// Trigger a repaint of the board to reflect the new position
-		board.repaint();
-	}
-
-	/**
-	 * Retrieves a list of all legal moves for this piece on the given board.
-	 *
-	 * @param board
-	 * 	the board to evaluate moves on
-	 *
-	 * @return a list of legal moves; an empty list if none exist
-	 */
-	public List<Move> getLegalMoves(Board board) {
-		List<Move> legalMoves = new ArrayList<>();
-
-		for (int col = 0; col < board.getColumns(); col++) {
-			for (int row = 0; row < board.getRows(); row++) {
-				addLegalMoveIfValid(board, legalMoves, col, row);
-			}
-		}
-
-		return legalMoves;
-	}
-
-	/**
-	 * Validates and adds a move to the list of legal moves if it's valid.
-	 *
-	 * @param board
-	 * 	the board to evaluate moves on
-	 * @param legalMoves
-	 * 	the list of legal moves to add to
-	 * @param col
-	 * 	the target column
-	 * @param row
-	 * 	the target row
-	 */
-	private void addLegalMoveIfValid(Board board, List<Move> legalMoves, int col, int row) {
-		Move move = new Move(board, this, col, row);
-		if (isLegalMove(board, move)) {
-			legalMoves.add(move);
-		}
-	}
-
-	/**
-	 * Checks if a move is legal, i.e., it does not put the king in check.
-	 *
-	 * @param board
-	 * 	the board to evaluate the move on
-	 * @param move
-	 * 	the move to validate
-	 *
-	 * @return true if the move is legal; false otherwise
-	 */
-	private boolean isLegalMove(Board board, Move move) {
-		return !board.getCheckScanner().wouldMovePutKingInCheck(move);
-	}
-
-	/**
-	 * Determines whether the piece can move to a specific position.
-	 *
-	 * @param column
-	 * 	the target column
-	 * @param row
-	 * 	the target row
-	 *
-	 * @return true if the movement is valid, false otherwise
-	 */
-	public abstract boolean isValidMovement(int column, int row);
-
-	/**
-	 * Checks if the movement to the target position collides with another piece. Only needed for Bishop, Rook, and
-	 * Queen.
-	 *
-	 * @param column
-	 * 	the target column
-	 * @param row
-	 * 	the target row
-	 *
-	 * @return true if a collision occurs, false otherwise
-	 */
-	public abstract boolean moveCollidesWithPiece(int column, int row);
-
-	/**
-	 * Renders the piece on the board using its sprite.
-	 *
-	 * @param graphics2D
-	 * 	the graphics context used for rendering
-	 */
-	public void paint(Graphics2D graphics2D) {
-		// Draw the sprite of the piece at its current position
-		graphics2D.drawImage(sprite, xPos, yPos, board.getTileSize(), board.getTileSize(), null);
 	}
 }
