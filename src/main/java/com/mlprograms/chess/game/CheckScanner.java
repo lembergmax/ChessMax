@@ -8,6 +8,7 @@ package com.mlprograms.chess.game;
 
 import com.mlprograms.chess.game.action.Move;
 import com.mlprograms.chess.game.pieces.King;
+import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.ui.Board;
 import lombok.Getter;
 
@@ -61,7 +62,23 @@ public class CheckScanner {
 
 	// TODO: implement
 	public boolean wouldMovePutKingInCheck(Move move) {
-		return false;
+		Piece originalPiece = board.getPieceAt(move.getNewColumn(), move.getNewRow());
+		Piece movingPiece = move.getPiece();
+
+		int originalColumn = movingPiece.getColumn();
+		int originalRow = movingPiece.getRow();
+
+		board.setPieceAt(move.getNewColumn(), move.getNewRow(), movingPiece);
+		board.setPieceAt(originalColumn, originalRow, null);
+		movingPiece.setPosition(move.getNewColumn(), move.getNewRow());
+
+		boolean inCheck = isKingInCheck();
+
+		board.setPieceAt(originalColumn, originalRow, movingPiece);
+		board.setPieceAt(move.getNewColumn(), move.getNewRow(), originalPiece);
+		movingPiece.setPosition(originalColumn, originalRow);
+
+		return inCheck;
 	}
 
 	/**
@@ -96,7 +113,7 @@ public class CheckScanner {
 
 		return board.getPieceList().stream()
 			       .filter(piece -> piece.isWhite() != whiteKing)
-			       .anyMatch(piece -> piece.isValidMovement(kingColumn, kingRow));
+			       .anyMatch(piece -> piece.isValidMovement(kingColumn, kingRow, false));
 	}
 
 	/**

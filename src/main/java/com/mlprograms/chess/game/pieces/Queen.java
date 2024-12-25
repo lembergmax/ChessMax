@@ -23,8 +23,8 @@ public class Queen extends Piece {
 	}
 
 	@Override
-	public boolean isValidMovement(int column, int row) {
-		if(!isValidPieceMove(column, row)) {
+	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
+		if (!isValidPieceMove(column, row, checkForKingSafety)) {
 			return false;
 		}
 
@@ -33,7 +33,7 @@ public class Queen extends Piece {
 
 	@Override
 	public boolean moveCollidesWithPiece(int column, int row) {
-		if(this.getColumn() == column || this.getRow() == row) {
+		if (this.getColumn() == column || this.getRow() == row) {
 			return linearCollision(column, row);
 		} else {
 			return diagonalCollision(column, row);

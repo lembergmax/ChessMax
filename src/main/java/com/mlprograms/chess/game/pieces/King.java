@@ -23,8 +23,8 @@ public class King extends Piece {
 	}
 
 	@Override
-	public boolean isValidMovement(int column, int row) {
-		if (!isValidPieceMove(column, row)) {
+	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
+		if (!isValidPieceMove(column, row, checkForKingSafety)) {
 			return false;
 		}
 
@@ -34,11 +34,7 @@ public class King extends Piece {
 		}
 
 		// Check if castling is possible (king moves 2 squares)
-		if (Math.abs(column - this.getColumn()) == 2 && this.getRow() == row && canCastle(column, row)) {
-			return true;
-		}
-
-		return false;
+		return Math.abs(column - this.getColumn()) == 2 && this.getRow() == row && canCastle(column, row);
 	}
 
 	public boolean canCastle(int column, int row) {

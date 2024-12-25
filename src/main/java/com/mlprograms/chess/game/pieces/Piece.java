@@ -105,14 +105,14 @@ public abstract class Piece {
 	}
 
 	/**
-	 * Determines whether the piece can move to a specific position and checks for king safety if specified.
+	 * Determines whether the piece can move to a specific position.
 	 *
 	 * @param column
 	 * 	the target column
 	 * @param row
 	 * 	the target row
 	 * @param checkForKingSafety
-	 * 	whether to check for king safety after the move
+	 * 	whether to check if the move puts the king in check
 	 *
 	 * @return true if the movement is valid, false otherwise
 	 */
@@ -159,10 +159,63 @@ public abstract class Piece {
 		}
 
 		if (checkForKingSafety) {
-			return getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, column, row));
+			return !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, column, row));
 		}
 
-		return false;
+		return true;
+	}
+
+	/**
+	 * Retrieves a list of all legal moves for this piece on the given board.
+	 *
+	 * @param board
+	 * 	the board to evaluate moves on
+	 *
+	 * @return a list of legal moves; an empty list if none exist
+	 */
+	public List<Move> getLegalMoves(Board board) {
+		List<Move> legalMoves = new ArrayList<>();
+
+		for (int col = 0; col < board.getColumns(); col++) {
+			for (int row = 0; row < board.getRows(); row++) {
+				addMoveToArrayIfValid(board, legalMoves, col, row);
+			}
+		}
+
+		return legalMoves;
+	}
+
+	/**
+	 * Validates and adds a move to the list of legal moves if it's valid.
+	 *
+	 * @param board
+	 * 	the board to evaluate moves on
+	 * @param legalMoves
+	 * 	the list of legal moves to add to
+	 * @param col
+	 * 	the target column
+	 * @param row
+	 * 	the target row
+	 */
+	private void addMoveToArrayIfValid(Board board, List<Move> legalMoves, int col, int row) {
+		Move move = new Move(board, this, col, row);
+		if (isLegalMove(board, move)) {
+			legalMoves.add(move);
+		}
+	}
+
+	/**
+	 * Checks if a move is legal, i.e., it does not put the king in check.
+	 *
+	 * @param board
+	 * 	the board to evaluate the move on
+	 * @param move
+	 * 	the move to validate
+	 *
+	 * @return true if the move is legal; false otherwise
+	 */
+	private boolean isLegalMove(Board board, Move move) {
+		return !board.getCheckScanner().wouldMovePutKingInCheck(move) && isValidMovement(move.getNewColumn(), move.getNewRow());
 	}
 
 	/**
@@ -182,57 +235,6 @@ public abstract class Piece {
 
 		// Trigger a repaint of the board to reflect the new position
 		board.repaint();
-	}
-
-	/**
-	 * Retrieves a list of all legal moves for this piece on the given board.
-	 *
-	 * @param board
-	 * 	the board to evaluate moves on
-	 *
-	 * @return a list of legal moves; an empty list if none exist
-	 */
-	public List<Move> getValidMoves(Board board) {
-		List<Move> legalMoves = new ArrayList<>();
-
-		for (int col = 0; col < board.getColumns(); col++) {
-			for (int row = 0; row < board.getRows(); row++) {
-				addMoveIfValid(board, legalMoves, col, row);
-			}
-		}
-
-		return legalMoves;
-	}
-
-	/**
-	 * Validates and adds a move to the list of legal moves if it's valid.
-	 *
-	 * @param board
-	 * 	the board to evaluate moves on
-	 * @param legalMoves
-	 * 	the list of legal moves to add to
-	 * @param col
-	 * 	the target column
-	 * @param row
-	 * 	the target row
-	 */
-	private void addMoveIfValid(Board board, List<Move> legalMoves, int col, int row) {
-		Move move = new Move(board, this, col, row);
-		if (isValidMove(move)) {
-			legalMoves.add(move);
-		}
-	}
-
-	/**
-	 * Checks if a move is legal, i.e., it does not put the king in check.
-	 *
-	 * @param move
-	 * 	the move to validate
-	 *
-	 * @return true if the move is legal; false otherwise
-	 */
-	private boolean isValidMove(Move move) {
-		return !move.getPiece().isValidMovement(move.getNewColumn(), move.getNewRow(), true);
 	}
 
 	/**
