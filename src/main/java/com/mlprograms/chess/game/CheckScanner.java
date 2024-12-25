@@ -21,7 +21,6 @@ public class CheckScanner {
 		this.board = board;
 	}
 
-
 	/**
 	 * Determines if the current player is in checkmate. A player is in checkmate if:
 	 * <p>
@@ -48,23 +47,44 @@ public class CheckScanner {
 		return !isKingInCheck() && canPlayerDoAnyValidMove();
 	}
 
-	// TODO: write java doc
+	/**
+	 * Determines whether the current player can make any valid moves.
+	 * A valid move is a move that adheres to the game's rules and does not leave
+	 * the player's king in check.
+	 *
+	 * @return true if the current player can make at least one valid move, false otherwise.
+	 */
 	public boolean canPlayerDoAnyValidMove() {
 		return getBoard().getPieceList().stream()
 			       .allMatch(piece -> piece.getLegalMoves(getBoard()).isEmpty());
 	}
 
-	// TODO: check before each move if king is after move in check
+	// TODO: implement
 	public boolean wouldMovePutKingInCheck(Move move) {
 		return false;
 	}
 
-	// TODO: write java doc
+	/**
+	 * Checks if the current player's king is in check.
+	 * A king is in check if it is under direct attack by an opponent's piece.
+	 *
+	 * @return true if the current player's king is in check, false otherwise.
+	 */
 	public boolean isKingInCheck() {
 		return isKingInCheck(getBoard(), getBoard().isWhiteTurn());
 	}
 
-	// TODO: write java doc
+	/**
+	 * Checks if the specified king is in check on the given board.
+	 * A king is in check if it is under direct attack by an opponent's piece.
+	 *
+	 * @param board
+	 * 	the board state to evaluate.
+	 * @param whiteKing
+	 * 	true if evaluating the white king, false for the black king.
+	 *
+	 * @return true if the specified king is in check, false otherwise.
+	 */
 	public boolean isKingInCheck(Board board, boolean whiteKing) {
 		King king = findKing(whiteKing);
 		if (king == null) {
@@ -79,12 +99,23 @@ public class CheckScanner {
 			       .anyMatch(piece -> piece.isValidMovement(kingColumn, kingRow));
 	}
 
-	// TODO: write java doc
+	/**
+	 * Finds the current player's king on the board.
+	 *
+	 * @return the current player's king, or null if the king is not found.
+	 */
 	public King findKing() {
 		return findKing(getBoard().isWhiteTurn());
 	}
 
-	// TODO: write java doc
+	/**
+	 * Finds the king of the specified color on the board.
+	 *
+	 * @param whiteKing
+	 * 	true if searching for the white king, false for the black king.
+	 *
+	 * @return the specified king, or null if the king is not found.
+	 */
 	public King findKing(boolean whiteKing) {
 		return getBoard().getPieceList().stream()
 			       .filter(piece -> piece instanceof King && piece.isWhite() == whiteKing)
