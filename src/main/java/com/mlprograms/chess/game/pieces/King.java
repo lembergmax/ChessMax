@@ -23,23 +23,27 @@ public class King extends Piece {
 	}
 
 	@Override
-	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
-		if (!isValidPieceMove(column, row, checkForKingSafety)) {
+	public boolean isValidMovement(int column, int row) {
+		if (!isValidPieceMove(column, row)) {
 			return false;
 		}
 
 		// Check the normal king movements (1 square in any direction)
-		if (Math.abs(column - this.getColumn()) <= 1 && Math.abs(row - this.getRow()) <= 1) {
+		if (Math.abs(column - getColumn()) <= 1 && Math.abs(row - getRow()) <= 1) {
 			return true;
 		}
 
 		// Check if castling is possible (king moves 2 squares)
-		return Math.abs(column - this.getColumn()) == 2 && this.getRow() == row && canCastle(column, row);
+		if (Math.abs(column - getColumn()) == 2 && getRow() == row && canCastle(column, row)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public boolean canCastle(int column, int row) {
 		// Check if the king is moving on the same row
-		if (this.getRow() == row && this.isFirstMove() && !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, this.getColumn(), this.getRow()))) {
+		if (getRow() == row && isFirstMove() && !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, getColumn(), getRow()))) {
 			Piece rook;
 
 			// Short castling (kingside)
@@ -47,7 +51,7 @@ public class King extends Piece {
 				rook = getBoard().getPieceAt(7, row);
 
 				// Check if the rook exists, has the same color, is its first move, and all squares in between are empty
-				if (rook instanceof Rook && rook.isWhite() == this.isWhite() && rook.isFirstMove()) {
+				if (rook instanceof Rook && rook.isWhite() == isWhite() && rook.isFirstMove()) {
 					return getBoard().getPieceAt(5, row) == null &&
 						       getBoard().getPieceAt(6, row) == null &&
 						       !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, 5, row)) && // Ensure the king is not in check when passing through square 5
@@ -60,7 +64,7 @@ public class King extends Piece {
 				rook = getBoard().getPieceAt(0, row);
 
 				// Check if the rook exists, has the same color, is its first move, and all squares in between are empty
-				if (rook instanceof Rook && rook.isWhite() == this.isWhite() && rook.isFirstMove()) {
+				if (rook instanceof Rook && rook.isWhite() == isWhite() && rook.isFirstMove()) {
 					return getBoard().getPieceAt(1, row) == null &&
 						       getBoard().getPieceAt(2, row) == null &&
 						       getBoard().getPieceAt(3, row) == null &&

@@ -8,7 +8,6 @@ package com.mlprograms.chess.game;
 
 import com.mlprograms.chess.game.action.Move;
 import com.mlprograms.chess.game.pieces.King;
-import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.ui.Board;
 import lombok.Getter;
 
@@ -60,53 +59,33 @@ public class CheckScanner {
 			       .allMatch(piece -> piece.getLegalMoves(getBoard()).isEmpty());
 	}
 
-	// TODO: implement and write java doc
+	// TODO: implement
 	public boolean wouldMovePutKingInCheck(Move move) {
-		Piece originalPiece = board.getPieceAt(move.getNewColumn(), move.getNewRow());
-		Piece movingPiece = move.getPiece();
-
-		int originalColumn = movingPiece.getColumn();
-		int originalRow = movingPiece.getRow();
-
-		if(movingPiece != null) {
-			board.getPieceList().remove(movingPiece);
-		}
-
-		board.setPieceAt(move.getNewColumn(), move.getNewRow(), movingPiece);
-		board.setPieceAt(originalColumn, originalRow, null);
-		movingPiece.setPosition(move.getNewColumn(), move.getNewRow());
-
-		boolean inCheck = isKingInCheck();
-
-		if(movingPiece != null) {
-			board.getPieceList().add(movingPiece);
-		}
-
-		board.setPieceAt(originalColumn, originalRow, movingPiece);
-		board.setPieceAt(move.getNewColumn(), move.getNewRow(), originalPiece);
-		movingPiece.setPosition(originalColumn, originalRow);
-
-		return inCheck;
+		return false;
 	}
 
 	/**
 	 * Checks if the current player's king is in check.
+	 * A king is in check if it is under direct attack by an opponent's piece.
 	 *
 	 * @return true if the current player's king is in check, false otherwise.
 	 */
 	public boolean isKingInCheck() {
-		return isKingInCheck(getBoard().isWhiteTurn());
+		return isKingInCheck(getBoard(), getBoard().isWhiteTurn());
 	}
 
 	/**
 	 * Checks if the specified king is in check on the given board.
+	 * A king is in check if it is under direct attack by an opponent's piece.
 	 *
+	 * @param board
+	 * 	the board state to evaluate.
 	 * @param whiteKing
 	 * 	true if evaluating the white king, false for the black king.
 	 *
 	 * @return true if the specified king is in check, false otherwise.
 	 */
-	public boolean isKingInCheck(boolean whiteKing) {
+	public boolean isKingInCheck(Board board, boolean whiteKing) {
 		King king = findKing(whiteKing);
 		if (king == null) {
 			return false;
@@ -115,9 +94,9 @@ public class CheckScanner {
 		int kingColumn = king.getColumn();
 		int kingRow = king.getRow();
 
-		return getBoard().getPieceList().stream()
-			       .filter(piece -> piece.isWhite() != whiteKing) // get all pieces from the opposite color
-			       .anyMatch(piece -> piece.isValidMovement(kingColumn, kingRow, false));
+		return board.getPieceList().stream()
+			       .filter(piece -> piece.isWhite() != whiteKing)
+			       .anyMatch(piece -> piece.isValidMovement(kingColumn, kingRow));
 	}
 
 	/**
