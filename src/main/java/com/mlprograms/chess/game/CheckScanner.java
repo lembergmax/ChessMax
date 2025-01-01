@@ -60,25 +60,51 @@ public class CheckScanner {
 			       .allMatch(piece -> piece.getLegalMoves(getBoard()).isEmpty());
 	}
 
-	// TODO: implement and write java doc
+	/**
+	 * Determines if making the specified move would put the player's own king in check.
+	 * <p>
+	 * This method temporarily applies the move to the board, checks if the king
+	 * is in check after the move, and then restores the board to its original state.
+	 *
+	 * @param move
+	 * 	The move to evaluate.
+	 *
+	 * @return true if the move would result in the player's king being in check, false otherwise.
+	 */
 	public boolean wouldMovePutKingInCheck(Move move) {
-		Piece originalPiece = board.getPieceAt(move.getNewColumn(), move.getNewRow());
+		// The piece currently located on the target square (if any)
+		Piece targetPiece = board.getPieceAt(move.getNewColumn(), move.getNewRow());
+
+		// The piece that is being moved
 		Piece movingPiece = move.getPiece();
 
-		int originalColumn = movingPiece.getColumn();
-		int originalRow = movingPiece.getRow();
+		// The original position of the piece being moved
+		int movingPieceOriginalColumn = movingPiece.getColumn();
+		int movingPieceOriginalRow = movingPiece.getRow();
 
+		// Temporarily remove the target piece from the board (if it exists)
+		if (targetPiece != null) {
+			board.getPieceList().remove(targetPiece);
+		}
+
+		// Move the piece to the target square
 		board.setPieceAt(move.getNewColumn(), move.getNewRow(), movingPiece);
-		board.setPieceAt(originalColumn, originalRow, null);
+		board.setPieceAt(movingPieceOriginalColumn, movingPieceOriginalRow, null);
 		movingPiece.setPosition(move.getNewColumn(), move.getNewRow());
 
-		boolean inCheck = isKingInCheck();
+		// Check if the king is in check after the move
+		boolean isKingInCheckAfterMove = isKingInCheck();
 
-		board.setPieceAt(originalColumn, originalRow, movingPiece);
-		board.setPieceAt(move.getNewColumn(), move.getNewRow(), originalPiece);
-		movingPiece.setPosition(originalColumn, originalRow);
+		// Restore the board to its original state
+		if (targetPiece != null) {
+			board.getPieceList().add(targetPiece);
+		}
 
-		return inCheck;
+		board.setPieceAt(movingPieceOriginalColumn, movingPieceOriginalRow, movingPiece);
+		board.setPieceAt(move.getNewColumn(), move.getNewRow(), targetPiece);
+		movingPiece.setPosition(movingPieceOriginalColumn, movingPieceOriginalRow);
+
+		return isKingInCheckAfterMove;
 	}
 
 	/**
@@ -108,7 +134,7 @@ public class CheckScanner {
 		int kingRow = king.getRow();
 
 		return getBoard().getPieceList().stream()
-			       .filter(piece -> piece.isWhite() != whiteKing)
+			       .filter(piece -> piece.isWhite() != whiteKing && !(piece instanceof King))
 			       .anyMatch(piece -> piece.isValidMovement(kingColumn, kingRow, false));
 	}
 
