@@ -6,7 +6,7 @@
 
 package com.mlprograms.chess.game.ui;
 
-import com.mlprograms.chess.game.action.Move;
+import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.pieces.Pawn;
 import com.mlprograms.chess.game.pieces.Piece;
 

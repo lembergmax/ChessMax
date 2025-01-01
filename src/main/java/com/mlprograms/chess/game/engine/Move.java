@@ -4,7 +4,7 @@
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.game.action;
+package com.mlprograms.chess.game.engine;
 
 import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.ui.Board;

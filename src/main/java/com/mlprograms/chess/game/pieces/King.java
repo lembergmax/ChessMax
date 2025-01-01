@@ -1,6 +1,6 @@
 package com.mlprograms.chess.game.pieces;
 
-import com.mlprograms.chess.game.action.Move;
+import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.ui.Board;
 
 import java.awt.image.BufferedImage;
@@ -37,7 +37,6 @@ public class King extends Piece {
 		return Math.abs(column - getColumn()) == 2 && getRow() == row && canCastle(column, row);
 	}
 
-	// TODO: Methode nochmal überarbeiten
 	public boolean canCastle(int column, int row) {
 		// Check if the king is moving on the same row
 		if (getRow() == row && isFirstMove() && !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, getColumn(), getRow()))) {

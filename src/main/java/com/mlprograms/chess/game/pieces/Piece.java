@@ -6,7 +6,7 @@
 
 package com.mlprograms.chess.game.pieces;
 
-import com.mlprograms.chess.game.action.Move;
+import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.ui.Board;
 import com.mlprograms.chess.utils.Logger;
 import lombok.EqualsAndHashCode;

@@ -6,11 +6,10 @@
 
 package com.mlprograms.chess.game.ui;
 
-import com.mlprograms.chess.game.CheckScanner;
-import com.mlprograms.chess.game.action.MouseInput;
-import com.mlprograms.chess.game.action.Move;
+import com.mlprograms.chess.game.engine.CheckScanner;
+import com.mlprograms.chess.game.engine.MouseInput;
+import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.pieces.*;
-import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -627,7 +626,7 @@ public class Board extends JPanel {
 		}
 
 		// TODO: Check if the game is over (no more moves allowed)
-		if (checkScanner.isCheckmate() || checkScanner.isStalemate()) {
+		if (checkForGameEnd()) {
 			return false; // No moves are allowed if the game is over
 		}
 
@@ -635,6 +634,18 @@ public class Board extends JPanel {
 
 		// Ensure the move doesn't place the king in check
 		// TODO: return !checkScanner.wouldMovePutKingInCheck(move); // Check if the move puts the king in check
+	}
+
+	public boolean checkForGameEnd() {
+		if(checkScanner.isCheckmate()) {
+			return true;
+		}
+
+		if(checkScanner.isStalemate()) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
