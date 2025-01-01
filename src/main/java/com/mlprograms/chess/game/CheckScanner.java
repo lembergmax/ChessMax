@@ -82,11 +82,6 @@ public class CheckScanner {
 		int movingPieceOriginalColumn = movingPiece.getColumn();
 		int movingPieceOriginalRow = movingPiece.getRow();
 
-		// Temporarily remove the target piece from the board (if it exists)
-		if (targetPiece != null) {
-			board.getPieceList().remove(targetPiece);
-		}
-
 		// Move the piece to the target square
 		board.setPieceAt(move.getNewColumn(), move.getNewRow(), movingPiece);
 		board.setPieceAt(movingPieceOriginalColumn, movingPieceOriginalRow, null);
@@ -94,11 +89,6 @@ public class CheckScanner {
 
 		// Check if the king is in check after the move
 		boolean isKingInCheckAfterMove = isKingInCheck();
-
-		// Restore the board to its original state
-		if (targetPiece != null) {
-			board.getPieceList().add(targetPiece);
-		}
 
 		board.setPieceAt(movingPieceOriginalColumn, movingPieceOriginalRow, movingPiece);
 		board.setPieceAt(move.getNewColumn(), move.getNewRow(), targetPiece);
