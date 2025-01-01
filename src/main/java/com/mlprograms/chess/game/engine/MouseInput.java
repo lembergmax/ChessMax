@@ -43,7 +43,7 @@ public class MouseInput extends MouseAdapter {
 	 */
 	@Override
 	public void mousePressed(MouseEvent event) {
-		board.setMouseIsDragged(false);
+		board.setMouseDragged(false);
 		int column = event.getX() / board.getTileSize();
 		int row = event.getY() / board.getTileSize();
 
@@ -71,7 +71,7 @@ public class MouseInput extends MouseAdapter {
 	public void mouseDragged(MouseEvent event) {
 		Piece selectedPiece = board.getSelectedPiece();
 		if (selectedPiece != null) {
-			board.setMouseIsDragged(true);
+			board.setMouseDragged(true);
 			updatePiecePositionDuringDrag(selectedPiece, event); // Update piece position during drag
 			board.repaint(); // Redraw the board during dragging
 		}
@@ -93,7 +93,7 @@ public class MouseInput extends MouseAdapter {
 	@Override
 	public void mouseReleased(MouseEvent event) {
 		// Check if a drag operation was in progress
-		if (board.isMouseIsDragged()) {
+		if (board.isMouseDragged()) {
 			// Retrieve the currently selected piece
 			Piece selectedPiece = board.getSelectedPiece();
 
@@ -118,7 +118,7 @@ public class MouseInput extends MouseAdapter {
 			}
 
 			// End the drag operation and repaint the board
-			board.setMouseIsDragged(false);
+			board.setMouseDragged(false);
 			board.repaint();
 		}
 	}

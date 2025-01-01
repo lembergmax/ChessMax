@@ -6,9 +6,10 @@
 
 package com.mlprograms.chess.game.ui;
 
-import com.mlprograms.chess.game.engine.CheckScanner;
+import com.mlprograms.chess.game.engine.GameEnding;
 import com.mlprograms.chess.game.engine.MouseInput;
 import com.mlprograms.chess.game.engine.Move;
+import com.mlprograms.chess.game.engine.MoveValidator;
 import com.mlprograms.chess.game.pieces.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,7 +33,7 @@ import static com.mlprograms.chess.utils.ConfigFetcher.*;
 @Setter
 public class Board extends JPanel {
 
-	private final CheckScanner checkScanner;
+	private final MoveValidator moveValidator;
 
 	private final String FEN_STARTING_POSITION = fetchStringConfig("ChessGame", "STARTING_POSITION");
 	private String title;
@@ -41,10 +42,10 @@ public class Board extends JPanel {
 	private BoardPainter boardPainter;
 	private JPanel boardContainer;
 
+	private List<Move> possibleMoves = new ArrayList<>();
+	private List<Move> moveHistory = new ArrayList<>();
 	private List<Piece> pieceList = new ArrayList<>();
 	private Piece selectedPiece;
-
-	private List<Move> possibleMoves = new ArrayList<>();
 
 	private int width;
 	private int height;
@@ -66,7 +67,7 @@ public class Board extends JPanel {
 	private int enPassantTile = -1;
 
 	private boolean isWhiteTurn = true;
-	private boolean mouseIsDragged = false;
+	private boolean mouseDragged = false;
 	private boolean hasCastled = false;
 
 	/**
@@ -74,7 +75,7 @@ public class Board extends JPanel {
 	 * Sets up the JFrame and prepares the chessboard layout.
 	 */
 	public Board() {
-		this.checkScanner = new CheckScanner(this);
+		this.moveValidator = new MoveValidator(this);
 		this.boardPainter = new BoardPainter(this);
 		this.boardContainer = new JPanel(new GridBagLayout());
 
@@ -201,10 +202,10 @@ public class Board extends JPanel {
 		Piece piece = move.getPiece();
 
 		// Update the last move's start and end positions
-		oldColumn = move.getOldColumn();
-		oldRow = move.getOldRow();
-		newColumn = move.getNewColumn();
-		newRow = move.getNewRow();
+		setOldColumn(move.getOldColumn());
+		setOldRow(move.getOldRow());
+		setNewColumn(move.getNewColumn());
+		setNewRow(move.getNewRow());
 
 		// Increment move counts and other related updates
 		incrementMoveCounts(move, piece);
@@ -213,7 +214,7 @@ public class Board extends JPanel {
 		if (piece instanceof Pawn) {
 			movePawn(move);
 		} else {
-			enPassantTile = -1; // Reset en passant tile for non-pawn moves
+			setEnPassantTile(-1); // Reset en passant tile for non-pawn moves
 		}
 
 		// Handle king-specific logic, such as castling
@@ -222,7 +223,7 @@ public class Board extends JPanel {
 		}
 
 		// Animate the move or update the piece position directly if dragging
-		if (!mouseIsDragged) {
+		if (!isMouseDragged()) {
 			animateMove(piece, move.getNewColumn(), move.getNewRow());
 		} else {
 			piece.setColumn(move.getNewColumn());
@@ -238,14 +239,16 @@ public class Board extends JPanel {
 		capturePiece(move);
 
 		// Toggle the turn to the other player
-		isWhiteTurn = !isWhiteTurn;
+		setWhiteTurn(!isWhiteTurn());
 
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
 
 		// Reset target column and row indicators
-		targetColumn = -1;
-		targetRow = -1;
+		setTargetColumn(-1);
+		setTargetRow(-1);
+
+		getMoveHistory().add(move);
 	}
 
 	/**
@@ -328,7 +331,7 @@ public class Board extends JPanel {
 			}
 
 			// If the mouse is not being dragged, animate the rook's move as well
-			if (!mouseIsDragged) {
+			if (!mouseDragged) {
 				hasCastled = true;
 				animateMove(rook, targetColumn, move.getPiece().getRow());
 			} else {
@@ -626,26 +629,28 @@ public class Board extends JPanel {
 		}
 
 		// TODO: Check if the game is over (no more moves allowed)
-		if (checkForGameEnd()) {
+		if (checkForGameEnding() != GameEnding.IN_PROGRESS) {
 			return false; // No moves are allowed if the game is over
 		}
 
 		return true;
-
-		// Ensure the move doesn't place the king in check
-		// TODO: return !checkScanner.wouldMovePutKingInCheck(move); // Check if the move puts the king in check
 	}
 
-	public boolean checkForGameEnd() {
-		if(checkScanner.isCheckmate()) {
-			return true;
+	public GameEnding checkForGameEnding() {
+
+		if (getMoveValidator().isCheckmate()) {
+			return GameEnding.CHECKMATE;
 		}
 
-		if(checkScanner.isStalemate()) {
-			return true;
+		if (getMoveValidator().isStalemate()) {
+			return GameEnding.STALEMATE;
 		}
 
-		return false;
+		if (getMoveValidator().isDraw()) {
+			return GameEnding.DRAW;
+		}
+
+		return GameEnding.IN_PROGRESS;
 	}
 
 	/**

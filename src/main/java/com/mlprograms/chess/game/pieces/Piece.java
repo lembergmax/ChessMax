@@ -159,7 +159,7 @@ public abstract class Piece {
 		}
 
 		if (checkForKingSafety) {
-			return !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, column, row));
+			return !getBoard().getMoveValidator().wouldMovePutKingInCheck(new Move(getBoard(), this, column, row));
 		}
 
 		return true;
@@ -215,7 +215,7 @@ public abstract class Piece {
 	 * @return true if the move is legal; false otherwise
 	 */
 	private boolean isLegalMove(Board board, Move move) {
-		return !board.getCheckScanner().wouldMovePutKingInCheck(move) && isValidMovement(move.getNewColumn(), move.getNewRow());
+		return !board.getMoveValidator().wouldMovePutKingInCheck(move) && isValidMovement(move.getNewColumn(), move.getNewRow());
 	}
 
 	/**

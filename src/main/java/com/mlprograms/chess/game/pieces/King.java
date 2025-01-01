@@ -39,7 +39,7 @@ public class King extends Piece {
 
 	public boolean canCastle(int column, int row) {
 		// Check if the king is moving on the same row
-		if (getRow() == row && isFirstMove() && !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, getColumn(), getRow()))) {
+		if (getRow() == row && isFirstMove() && !getBoard().getMoveValidator().wouldMovePutKingInCheck(new Move(getBoard(), this, getColumn(), getRow()))) {
 			Piece rook;
 
 			// Short castling (kingside)
@@ -50,8 +50,8 @@ public class King extends Piece {
 				if (rook instanceof Rook && rook.isWhite() == isWhite() && rook.isFirstMove()) {
 					return getBoard().getPieceAt(5, row) == null &&
 						       getBoard().getPieceAt(6, row) == null &&
-						       !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, 5, row)) && // Ensure the king is not in check when passing through square 5
-						       !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, 6, row));  // Ensure the destination square is not under threat
+						       !getBoard().getMoveValidator().wouldMovePutKingInCheck(new Move(getBoard(), this, 5, row)) && // Ensure the king is not in check when passing through square 5
+						       !getBoard().getMoveValidator().wouldMovePutKingInCheck(new Move(getBoard(), this, 6, row));  // Ensure the destination square is not under threat
 				}
 			}
 
@@ -64,8 +64,8 @@ public class King extends Piece {
 					return getBoard().getPieceAt(1, row) == null &&
 						       getBoard().getPieceAt(2, row) == null &&
 						       getBoard().getPieceAt(3, row) == null &&
-						       !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, 3, row)) && // Ensure the king is not in check when passing through square 3
-						       !getBoard().getCheckScanner().wouldMovePutKingInCheck(new Move(getBoard(), this, 2, row));  // Ensure the destination square is not under threat
+						       !getBoard().getMoveValidator().wouldMovePutKingInCheck(new Move(getBoard(), this, 3, row)) && // Ensure the king is not in check when passing through square 3
+						       !getBoard().getMoveValidator().wouldMovePutKingInCheck(new Move(getBoard(), this, 2, row));  // Ensure the destination square is not under threat
 				}
 			}
 		}
