@@ -625,23 +625,6 @@ public class Board extends JPanel {
 	}
 
 	/**
-	 * Sets the target position on the grid.
-	 *
-	 * @param column
-	 * 	The column of the target position.
-	 * @param row
-	 * 	The row of the target position.
-	 */
-	public void setTargetPosition(int column, int row) {
-		// Assign the given column and row values to the target position
-		this.targetColumn = column;
-		this.targetRow = row;
-
-		// Trigger a repaint to update the display with the new target position
-		repaint();
-	}
-
-	/**
 	 * Displays possible moves for the given piece by calculating and highlighting them on the board.
 	 *
 	 * @param piece
