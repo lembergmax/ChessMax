@@ -11,9 +11,9 @@ import java.awt.*;
 
 import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
-public class Frame extends JPanel {
+public class GameFrame extends JPanel {
 
-	public Frame() {
+	public GameFrame() {
 		initializeJFrame();
 	}
 
