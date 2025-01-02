@@ -7,7 +7,7 @@
 package com.mlprograms.chess;
 
 import com.mlprograms.chess.account.ui.Startmenu;
-import com.mlprograms.chess.game.ui.GameFrame;
+import com.mlprograms.chess.game.ChessMax;
 
 /**
  * The main entry point for the ChessMax application.
@@ -23,7 +23,7 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		// initializeUI();
-		new GameFrame();
+		new ChessMax().play();
 	}
 
 	/**

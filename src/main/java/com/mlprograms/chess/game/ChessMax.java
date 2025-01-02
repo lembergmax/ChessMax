@@ -6,14 +6,52 @@
 
 package com.mlprograms.chess.game;
 
+import com.mlprograms.chess.game.ui.Board;
+
+import javax.swing.*;
+import java.awt.*;
+
+import static com.mlprograms.chess.utils.ConfigFetcher.*;
+
 public class ChessMax {
 
+	private JFrame frame;
+
 	public ChessMax() {
-		// TODO: initialize the game
+		initializeJFrame();
+	}
+
+	/**
+	 * Initializes the JFrame with essential properties such as title, size, and layout.
+	 */
+	private void initializeJFrame() {
+		frame = new JFrame(fetchStringConfig("ChessGame", "TITLE"));
+
+		frame.setLayout(new GridBagLayout());
+		frame.setMinimumSize(new Dimension(
+			fetchIntegerConfig("ChessGame", "WIDTH"),
+			fetchIntegerConfig("ChessGame", "HEIGHT")
+		));
+		frame.setLocationRelativeTo(null);
+		frame.getContentPane().setBackground(fetchColorConfig("BACKGROUND"));
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setResizable(false);
+
+		// Board ist jetzt ein Mitglied von Frame, nicht eine Unterklasse
+		Board board = new Board();
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+
+		frame.add(board.getBoardContainer(), gbc);
+		frame.setVisible(false);
 	}
 
 	public void play() {
-		// TODO: start the game
+		frame.setVisible(true);
 	}
 
 }
