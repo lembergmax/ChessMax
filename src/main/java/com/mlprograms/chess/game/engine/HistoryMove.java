@@ -6,23 +6,19 @@
 
 package com.mlprograms.chess.game.engine;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
 public class HistoryMove {
 
 	private Move madeMove;
-	private FenNotation fen;
+	private FenNotation fenNotation;
 
 	public HistoryMove(Move madeMove, FenNotation fen) {
 		this.madeMove = madeMove;
-		this.fen = fen;
+		this.fenNotation = fen;
 	}
 
 }

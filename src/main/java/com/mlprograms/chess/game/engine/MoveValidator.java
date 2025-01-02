@@ -14,7 +14,9 @@ import com.mlprograms.chess.game.ui.Board;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 // TODO: write many tests for this class
@@ -24,6 +26,24 @@ public class MoveValidator {
 
 	public MoveValidator(Board board) {
 		this.board = board;
+	}
+
+	public static <T> int getMaxFrequency(ArrayList<T> list) {
+		// Häufigkeit der Elemente zählen
+		Map<T, Integer> frequencyMap = new HashMap<>();
+		for (T element : list) {
+			frequencyMap.put(element, frequencyMap.getOrDefault(element, 0) + 1);
+		}
+
+		// Maximalwert finden
+		int maxFrequency = 0;
+		for (int frequency : frequencyMap.values()) {
+			if (frequency > maxFrequency) {
+				maxFrequency = frequency;
+			}
+		}
+
+		return maxFrequency;
 	}
 
 	/**
@@ -79,7 +99,7 @@ public class MoveValidator {
 
 		// Check the conditions for insufficient material
 		if (countOthers > 0) {
-			return true; // There are pieces on the board which can cause a checkmate
+			return false; // There are pieces on the board which can cause a checkmate
 		}
 
 		if (countKings == pieces.size()) {
@@ -97,6 +117,14 @@ public class MoveValidator {
 		return false;
 	}
 
+	/**
+	 * Checks if all bishops on the board are of the same color.
+	 *
+	 * @param pieces
+	 * 	The list of pieces on the board.
+	 *
+	 * @return true if all bishops are of the same color, false otherwise.
+	 */
 	private boolean areBishopsSameColor(List<Piece> pieces) {
 		boolean isFirstBishopWhite = false;
 		boolean isFirstBishopSet = false;
@@ -114,28 +142,44 @@ public class MoveValidator {
 		return true;
 	}
 
+	/**
+	 * Checks if the fifty-move rule applies. The fifty-move rule states that a player can claim a draw
+	 * if no pawn has been moved and no capture has been made in the last fifty moves by each player.
+	 *
+	 * @return true if the fifty-move rule applies, false otherwise.
+	 */
 	public boolean isFiftyMoveRule() {
 		return getBoard().getHalfMoveClock() >= 50;
 	}
 
+	/**
+	 * Determines if the current board position has occurred three times.
+	 * The threefold repetition rule allows a player to claim a draw if the same position
+	 * occurs three times with the same player to move and all possible moves.
+	 *
+	 * @return true if the current position has occurred three times, false otherwise.
+	 */
 	public boolean isThreefoldRepetition() {
+		// Count the number of repetitions of the current position
+		int repetitions = (int) getBoard().getMoveHistory().stream()
+			                        .map(historyMove -> historyMove.getFenNotation().getFenString())
+			                        .filter(fenString -> fenString.equals(getBoard().getCurrentPositionsFenNotation().getFenString()))
+			                        .count();
+		return repetitions >= 3;
+	}
+
+	// TODO: implement this method
+	public boolean isTimeForfeit() {
 		return false;
 	}
 
+	// TODO: implement this method
 	public boolean isResignation() {
 		return false;
 	}
 
-	public boolean timeForfeit() {
-		return false;
-	}
-
-	public boolean agreedDraw() {
-		return false;
-	}
-
-	public boolean isDraw() {
-		// isInsufficientMaterial() || isFiftyMoveRule() || isThreefoldRepetition() || isResignation() || timeForfeit() || agreedDraw()
+	// TODO: implement this method
+	public boolean isAgreedDraw() {
 		return false;
 	}
 
@@ -174,7 +218,7 @@ public class MoveValidator {
 		int movingPieceOriginalColumn = movingPiece.getColumn();
 		int movingPieceOriginalRow = movingPiece.getRow();
 
-		if(targetPiece != null) {
+		if (targetPiece != null) {
 			getBoard().getPieceList().remove(targetPiece);
 		}
 
@@ -186,7 +230,7 @@ public class MoveValidator {
 		// Check if the king is in check after the move
 		boolean isKingInCheckAfterMove = isKingInCheck();
 
-		if(targetPiece != null) {
+		if (targetPiece != null) {
 			getBoard().getPieceList().add(targetPiece);
 		}
 
@@ -224,7 +268,7 @@ public class MoveValidator {
 		int kingRow = king.getRow();
 
 		return getBoard().getPieceList().stream()
-			       .filter(piece -> piece.isWhite() != whiteKing && !(piece instanceof King))
+			       .filter(piece -> piece.isWhite() != whiteKing)
 			       .anyMatch(piece -> piece.isValidMovement(kingColumn, kingRow, false));
 	}
 

@@ -273,7 +273,7 @@ public class Board extends JPanel {
 
 		// Create FenNotation object
 		FenNotation fenNotation = new FenNotation();
-		fenNotation.setFen(fen.toString());
+		fenNotation.setFenString(fen.toString());
 		fenNotation.setCastlingRights(castlingRights.toString());
 		fenNotation.setEnPassantTile(enPassantTarget);
 		fenNotation.setHalfMoveClock(halfMoveClock);
@@ -339,6 +339,12 @@ public class Board extends JPanel {
 		// Reset target column and row indicators
 		setTargetColumn(-1);
 		setTargetRow(-1);
+
+		// TODO: improve and implement
+		GameEnding gameEnding = checkForGameEnding();
+		if (gameEnding != GameEnding.IN_PROGRESS) {
+			Logger.logSuccess(gameEnding);
+		}
 
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
 	}
@@ -720,11 +726,6 @@ public class Board extends JPanel {
 			return false; // The move is blocked by another piece
 		}
 
-		// TODO: Check if the game is over (no more moves allowed)
-		if (checkForGameEnding() != GameEnding.IN_PROGRESS) {
-			return false; // No moves are allowed if the game is over
-		}
-
 		return true;
 	}
 
@@ -738,8 +739,28 @@ public class Board extends JPanel {
 			return GameEnding.STALEMATE;
 		}
 
-		if (getMoveValidator().isDraw()) {
-			return GameEnding.DRAW;
+		if (getMoveValidator().isInsufficientMaterial()) {
+			return GameEnding.INSUFFICIENT_MATERIAL;
+		}
+
+		if (getMoveValidator().isFiftyMoveRule()) {
+			return GameEnding.FIFTY_MOVE_RULE;
+		}
+
+		if (getMoveValidator().isThreefoldRepetition()) {
+			return GameEnding.THREEFOLD_REPETITION;
+		}
+
+		if (getMoveValidator().isTimeForfeit()) {
+			return GameEnding.TIME_FORFEIT;
+		}
+
+		if (getMoveValidator().isResignation()) {
+			return GameEnding.RESIGNATION;
+		}
+
+		if (getMoveValidator().isAgreedDraw()) {
+			return GameEnding.AGREED_DRAW;
 		}
 
 		return GameEnding.IN_PROGRESS;

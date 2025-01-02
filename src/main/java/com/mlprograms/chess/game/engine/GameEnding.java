@@ -9,7 +9,6 @@ package com.mlprograms.chess.game.engine;
 public enum GameEnding {
 	CHECKMATE,             // The king is in check and cannot escape; opponent wins.
 	STALEMATE,             // The player has no legal moves, but the king is not in check; results in a draw.
-	DRAW,                  // General draw condition, encompassing all possible draw scenarios.
 	AGREED_DRAW,           // Both players agree to end the game as a draw.
 	INSUFFICIENT_MATERIAL, // Neither player has enough material to deliver a checkmate; game ends in a draw.
 	FIFTY_MOVE_RULE,       // No pawn moves or captures in the last 50 moves; can result in a draw.

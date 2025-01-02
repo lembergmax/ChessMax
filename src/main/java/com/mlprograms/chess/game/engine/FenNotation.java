@@ -6,18 +6,14 @@
 
 package com.mlprograms.chess.game.engine;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
 public class FenNotation {
 
-	private String fen;
+	private String fenString;
 	private String castlingRights;
 	private String enPassantTile;
 	private int halfMoveClock;
