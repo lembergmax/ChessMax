@@ -6,11 +6,9 @@
 
 package com.mlprograms.chess.game.ui;
 
-import com.mlprograms.chess.game.engine.GameEnding;
-import com.mlprograms.chess.game.engine.MouseInput;
-import com.mlprograms.chess.game.engine.Move;
-import com.mlprograms.chess.game.engine.MoveValidator;
+import com.mlprograms.chess.game.engine.*;
 import com.mlprograms.chess.game.pieces.*;
+import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,8 +40,8 @@ public class Board extends JPanel {
 	private BoardPainter boardPainter;
 	private JPanel boardContainer;
 
+	private List<HistoryMove> moveHistory = new ArrayList<>();
 	private List<Move> possibleMoves = new ArrayList<>();
-	private List<Move> moveHistory = new ArrayList<>();
 	private List<Piece> pieceList = new ArrayList<>();
 	private Piece selectedPiece;
 
@@ -138,6 +136,7 @@ public class Board extends JPanel {
 		this.oldRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
 		this.newColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
 		this.newRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
+		this.enPassantTile = fetchIntegerConfig(CHESS_SECTION, "EN_PASSANT_TILE");
 	}
 
 	/**
@@ -189,6 +188,99 @@ public class Board extends JPanel {
 
 		// Redraw the board to reflect the new position
 		repaint();
+	}
+
+	/**
+	 * Generates the current FEN notation as an object of FenNotation.
+	 * The FEN notation includes piece positions, turn, castling rights,
+	 * en passant target square, halfmove clock, and fullmove number.
+	 *
+	 * @return a FenNotation object representing the current board position
+	 */
+	public FenNotation getCurrentPositionsFenNotation() {
+		StringBuilder fen = new StringBuilder();
+
+		// Piece positions
+		for (int row = 0; row < getRows(); row++) {
+			int emptyCount = 0;
+			for (int col = 0; col < getColumns(); col++) {
+				Piece piece = getPieceAt(col, row);
+				if (piece == null) {
+					emptyCount++;
+				} else {
+					if (emptyCount > 0) {
+						fen.append(emptyCount);
+						emptyCount = 0;
+					}
+					String pieceCharacter = switch (piece.getName()) {
+						case "Knight" -> "N";
+						case "Bishop" -> "B";
+						case "Rook" -> "R";
+						case "Queen" -> "Q";
+						case "King" -> "K";
+						default -> "P"; // Pawn
+					};
+
+					fen.append(piece.isWhite() ? pieceCharacter.toUpperCase() : pieceCharacter.toLowerCase());
+				}
+			}
+			if (emptyCount > 0) {
+				fen.append(emptyCount);
+			}
+			if (row < getRows() - 1) {
+				fen.append('/');
+			}
+		}
+
+		// Turn
+		fen.append(isWhiteTurn ? " w " : " b ");
+
+		// Castling rights
+		StringBuilder castlingRights = new StringBuilder();
+		if (getMoveValidator().findKing(true).isFirstMove()) {
+			if (getPieceAt(7, 7) instanceof Rook && getPieceAt(7, 7).isFirstMove()) castlingRights.append('K');
+			if (getPieceAt(0, 7) instanceof Rook && getPieceAt(0, 7).isFirstMove()) castlingRights.append('Q');
+		}
+
+		if (getMoveValidator().findKing(false).isFirstMove()) {
+			if (getPieceAt(7, 0) instanceof Rook && getPieceAt(7, 0).isFirstMove()) castlingRights.append('k');
+			if (getPieceAt(0, 0) instanceof Rook && getPieceAt(0, 0).isFirstMove()) castlingRights.append('q');
+		}
+
+		if (castlingRights.isEmpty()) {
+			castlingRights.append('-');
+		}
+
+		return getFenNotation(fen, castlingRights);
+	}
+
+	/**
+	 * Creates a FenNotation object representing the current board state.
+	 * The FEN notation includes piece positions, turn, castling rights,
+	 * en passant target square, halfmove clock, and fullmove number.
+	 *
+	 * @param fen
+	 * 	the StringBuilder containing the piece positions in FEN format.
+	 * @param castlingRights
+	 * 	the StringBuilder containing the castling rights in FEN format.
+	 *
+	 * @return a FenNotation object representing the current board state.
+	 */
+	private FenNotation getFenNotation(StringBuilder fen, StringBuilder castlingRights) {
+		// En passant target square
+		String enPassantTarget = enPassantTile == -1 ? "-" :
+			                         String.valueOf((char) ('a' + (enPassantTile % 8))) + (8 - (enPassantTile / 8));
+
+		// Create FenNotation object
+		FenNotation fenNotation = new FenNotation();
+		fenNotation.setFen(fen.toString());
+		fenNotation.setCastlingRights(castlingRights.toString());
+		fenNotation.setEnPassantTile(enPassantTarget);
+		fenNotation.setHalfMoveClock(halfMoveClock);
+		fenNotation.setFullMoveNumber(fullMoveNumber);
+		fenNotation.setWhiteToMove(isWhiteTurn);
+
+		return fenNotation;
 	}
 
 	/**
@@ -248,7 +340,7 @@ public class Board extends JPanel {
 		setTargetColumn(-1);
 		setTargetRow(-1);
 
-		getMoveHistory().add(move);
+		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
 	}
 
 	/**
