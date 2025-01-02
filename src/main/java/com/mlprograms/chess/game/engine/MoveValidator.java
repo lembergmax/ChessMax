@@ -14,9 +14,7 @@ import com.mlprograms.chess.game.ui.Board;
 import lombok.Getter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 // TODO: write many tests for this class
@@ -26,24 +24,6 @@ public class MoveValidator {
 
 	public MoveValidator(Board board) {
 		this.board = board;
-	}
-
-	public static <T> int getMaxFrequency(ArrayList<T> list) {
-		// Häufigkeit der Elemente zählen
-		Map<T, Integer> frequencyMap = new HashMap<>();
-		for (T element : list) {
-			frequencyMap.put(element, frequencyMap.getOrDefault(element, 0) + 1);
-		}
-
-		// Maximalwert finden
-		int maxFrequency = 0;
-		for (int frequency : frequencyMap.values()) {
-			if (frequency > maxFrequency) {
-				maxFrequency = frequency;
-			}
-		}
-
-		return maxFrequency;
 	}
 
 	/**
