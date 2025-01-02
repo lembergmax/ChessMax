@@ -36,7 +36,8 @@ public class MoveValidator {
 	 * @return true if the current player is in checkmate, false otherwise.
 	 */
 	public boolean isCheckmate() {
-		return isKingInCheck() && canPlayerDoAnyValidMove();
+		// TODO: fix: Checkmate isn't recognized correctly
+		return isKingInCheck() && !canPlayerDoAnyValidMove();
 	}
 
 	/**
@@ -49,7 +50,21 @@ public class MoveValidator {
 	 * @return true if the current player is in stalemate, false otherwise.
 	 */
 	public boolean isStalemate() {
-		return !isKingInCheck() && canPlayerDoAnyValidMove();
+		// TODO: fix: Stalemate isn't recognized correctly
+		return !isKingInCheck() && !canPlayerDoAnyValidMove();
+	}
+
+	/**
+	 * Determines whether the current player can make any valid moves.
+	 * A valid move is a move that adheres to the game's rules and does not leave
+	 * the player's king in check.
+	 *
+	 * @return true if the current player can make at least one valid move, false otherwise.
+	 */
+	public boolean canPlayerDoAnyValidMove() {
+		List<Piece> pieces = new ArrayList<>(getBoard().getPieceList());
+		return pieces.stream()
+			       .anyMatch(piece -> !piece.getLegalMoves(getBoard()).isEmpty());
 	}
 
 	/**
@@ -148,32 +163,19 @@ public class MoveValidator {
 		return repetitions >= 3;
 	}
 
-	// TODO: implement this method
+	// TODO: implement this method later
 	public boolean isTimeForfeit() {
 		return false;
 	}
 
-	// TODO: implement this method
+	// TODO: implement this method later
 	public boolean isResignation() {
 		return false;
 	}
 
-	// TODO: implement this method
+	// TODO: implement this method later
 	public boolean isAgreedDraw() {
 		return false;
-	}
-
-	/**
-	 * Determines whether the current player can make any valid moves.
-	 * A valid move is a move that adheres to the game's rules and does not leave
-	 * the player's king in check.
-	 *
-	 * @return true if the current player can make at least one valid move, false otherwise.
-	 */
-	public boolean canPlayerDoAnyValidMove() {
-		List<Piece> pieces = new ArrayList<>(getBoard().getPieceList());
-		return pieces.stream()
-			       .allMatch(piece -> piece.getLegalMoves(getBoard()).isEmpty());
 	}
 
 	/**
