@@ -38,43 +38,87 @@ public class King extends Piece {
 	}
 
 	public boolean canCastle(int column, int row) {
-		// Check if the king is moving on the same row
-		if (getRow() == row && isFirstMove() /*&& !getBoard().getMoveValidator().wouldMovePutKingInCheck(new Move(getBoard(), this, getColumn(), getRow()))*/) {
-			Piece rook;
-
-			// Short castling (kingside)
-			if (column == 6) {
-				rook = getBoard().getPieceAt(7, row);
-
-				// Check if the rook exists, has the same color, is its first move, and all squares in between are empty
-				if (rook instanceof Rook && rook.isWhite() == isWhite() && rook.isFirstMove()) {
-					return getBoard().getPieceAt(5, row) == null &&
-						       getBoard().getPieceAt(6, row) == null &&
-
-						       !targetsEnemyPieceSpecificTile(5, row) &&
-						       !targetsEnemyPieceSpecificTile(6, row);
-				}
-			}
-
-			// Long castling (queenside)
-			else if (column == 2) {
-				rook = getBoard().getPieceAt(0, row);
-
-				// Check if the rook exists, has the same color, is its first move, and all squares in between are empty
-				if (rook instanceof Rook && rook.isWhite() == isWhite() && rook.isFirstMove()) {
-					return getBoard().getPieceAt(1, row) == null &&
-						       getBoard().getPieceAt(2, row) == null &&
-						       getBoard().getPieceAt(3, row) == null &&
-
-						       !targetsEnemyPieceSpecificTile(3, row) &&
-						       !targetsEnemyPieceSpecificTile(2, row);
-				}
-			}
+		// Check if the king is moving on the same row and is making its first move
+		if (getRow() != row || !isFirstMove()) {
+			return false;
 		}
 
+		Piece rook = getRookForCastling(column, row);
+		if (!(rook instanceof Rook) || rook.isWhite() != isWhite() || !rook.isFirstMove()) {
+			return false;
+		}
+
+		// Check the squares between the king and rook
+		return areCastlingSquaresEmpty(column, row) && !isCastlingMoveUnderAttack(column, row);
+	}
+
+	/**
+	 * Retrieves the rook involved in castling based on the target column.
+	 *
+	 * @param column
+	 * 	the target column for the king's move
+	 * @param row
+	 * 	the row of the king and rook
+	 *
+	 * @return the rook involved in castling, or null if the column is invalid
+	 */
+	private Piece getRookForCastling(int column, int row) {
+		if (column == 6) {
+			return getBoard().getPieceAt(7, row); // Kingside (Short Castling)
+		} else if (column == 2) {
+			return getBoard().getPieceAt(0, row); // Queenside (Long Castling)
+		}
+		return null; // Invalid column for castling
+	}
+
+	/**
+	 * Checks if the squares between the king and rook are empty for castling.
+	 *
+	 * @param column
+	 * 	the target column for the king's move
+	 * @param row
+	 * 	the row of the king and rook
+	 *
+	 * @return true if the squares are empty, false otherwise
+	 */
+	private boolean areCastlingSquaresEmpty(int column, int row) {
+		if (column == 6) {
+			return getBoard().getPieceAt(5, row) == null && getBoard().getPieceAt(6, row) == null;
+		} else if (column == 2) {
+			return getBoard().getPieceAt(1, row) == null && getBoard().getPieceAt(2, row) == null && getBoard().getPieceAt(3, row) == null;
+		}
 		return false;
 	}
 
+	/**
+	 * Checks if the castling move would place the king under attack.
+	 *
+	 * @param column
+	 * 	the target column for the king's move
+	 * @param row
+	 * 	the row of the king and rook
+	 *
+	 * @return true if the castling move is under attack, false otherwise
+	 */
+	private boolean isCastlingMoveUnderAttack(int column, int row) {
+		if (column == 6) {
+			return targetsEnemyPieceSpecificTile(5, row) || targetsEnemyPieceSpecificTile(6, row);
+		} else if (column == 2) {
+			return targetsEnemyPieceSpecificTile(2, row) || targetsEnemyPieceSpecificTile(3, row);
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if an enemy piece targets a specific tile.
+	 *
+	 * @param column
+	 * 	the column of the tile
+	 * @param row
+	 * 	the row of the tile
+	 *
+	 * @return true if an enemy piece targets the tile, false otherwise
+	 */
 	private boolean targetsEnemyPieceSpecificTile(int column, int row) {
 		return getBoard().getPieceList().stream().anyMatch(piece -> piece.isWhite() != isWhite() && piece.isValidMovement(column, row, false));
 	}
