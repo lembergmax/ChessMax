@@ -17,6 +17,7 @@ public class King extends Piece {
 
 		setWhite(isWhite);
 		setName("King");
+		setFenChar(isWhite ? 'K' : 'k');
 
 		int sheetScale = getSheetScale();
 		setSprite(getSheet().getSubimage(0, isWhite ? 0 : sheetScale, sheetScale, sheetScale).getScaledInstance(sheetScale, sheetScale, BufferedImage.SCALE_SMOOTH));

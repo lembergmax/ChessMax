@@ -23,6 +23,7 @@ public class Pawn extends Piece {
 		setPieceValue(1);
 		setWhite(isWhite);
 		setName("Pawn");
+		setFenChar(isWhite ? 'P' : 'p');
 
 		int sheetScale = getSheetScale();
 		setSprite(getSheet().getSubimage(5 * sheetScale, isWhite ? 0 : sheetScale, sheetScale, sheetScale).getScaledInstance(sheetScale, sheetScale, BufferedImage.SCALE_SMOOTH));

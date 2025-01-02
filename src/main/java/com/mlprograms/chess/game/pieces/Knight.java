@@ -23,6 +23,7 @@ public class Knight extends Piece {
 		setPieceValue(3);
 		setWhite(isWhite);
 		setName("Knight");
+		setFenChar(isWhite ? 'N' : 'n');
 
 		int sheetScale = getSheetScale();
 		setSprite(getSheet().getSubimage(3 * sheetScale, isWhite ? 0 : sheetScale, sheetScale, sheetScale).getScaledInstance(sheetScale, sheetScale, BufferedImage.SCALE_SMOOTH));

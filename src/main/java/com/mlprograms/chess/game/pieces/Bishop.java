@@ -23,6 +23,7 @@ public class Bishop extends Piece {
 		setPieceValue(3);
 		setWhite(isWhite);
 		setName("Bishop");
+		setFenChar(isWhite ? 'B' : 'b');
 
 		int sheetScale = getSheetScale();
 		setSprite(getSheet().getSubimage(2 * sheetScale, isWhite ? 0 : sheetScale, sheetScale, sheetScale).getScaledInstance(sheetScale, sheetScale, BufferedImage.SCALE_SMOOTH));

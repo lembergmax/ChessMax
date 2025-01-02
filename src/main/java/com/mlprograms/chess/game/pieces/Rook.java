@@ -17,6 +17,7 @@ public class Rook extends Piece {
 		setPieceValue(5);
 		setWhite(isWhite);
 		setName("Rook");
+		setFenChar(isWhite ? 'R' : 'r');
 
 		int sheetScale = getSheetScale();
 		setSprite(getSheet().getSubimage(4 * sheetScale, isWhite ? 0 : sheetScale, sheetScale, sheetScale).getScaledInstance(sheetScale, sheetScale, BufferedImage.SCALE_SMOOTH));

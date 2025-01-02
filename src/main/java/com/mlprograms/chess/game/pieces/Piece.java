@@ -34,6 +34,9 @@ public abstract class Piece {
 	// Name of the piece, e.g., "Pawn", "Rook"
 	private String name;
 
+	// FEN character representing the piece
+	private char fenChar;
+
 	// Current column position of the piece on the board
 	private int column;
 
