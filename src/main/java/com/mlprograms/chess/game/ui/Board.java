@@ -506,7 +506,7 @@ public class Board extends JPanel {
 
 		// If the captured piece is not null and the scoreboard is available, add it to the scoreboard
 		if (move.getCapturedPiece() != null) {
-			// TODO: Uncomment and implement scoreboard functionality to track captured pieces
+			// TODO: implement scoreboard functionality to track captured pieces
 			// scoreboard.addCapturedPiece(move.capturedPiece);
 		}
 
