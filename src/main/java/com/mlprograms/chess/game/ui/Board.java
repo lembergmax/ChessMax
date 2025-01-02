@@ -340,7 +340,6 @@ public class Board extends JPanel {
 		setTargetColumn(-1);
 		setTargetRow(-1);
 
-		// TODO: improve and implement
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding != GameEnding.IN_PROGRESS) {
 			Logger.logSuccess(gameEnding);
@@ -652,44 +651,11 @@ public class Board extends JPanel {
 		// Clear any previously displayed possible moves
 		possibleMoves.clear();
 
-		// Calculate all valid moves for the given piece
-		List<Move> calculatedMoves = calculatePossibleMoves(piece);
-
 		// Add the calculated moves to the board's possible moves list
-		possibleMoves.addAll(calculatedMoves);
+		possibleMoves.addAll(piece.getLegalMoves(this));
 
 		// Repaint the board to visually display the possible moves
 		repaint();
-	}
-
-	/**
-	 * Calculates all valid possible moves for the given piece.
-	 *
-	 * @param piece
-	 * 	The piece for which the possible moves are to be calculated.
-	 *
-	 * @return A list of valid moves for the given piece.
-	 */
-	public List<Move> calculatePossibleMoves(Piece piece) {
-		// Initialize a list to store valid moves
-		List<Move> moves = new ArrayList<>();
-
-		// Iterate through all the rows and columns of the board
-		for (int r = 0; r < getRows(); r++) {
-			for (int c = 0; c < getColumns(); c++) {
-				// Create a move object for the current position
-				Move move = new Move(this, piece, c, r);
-
-				// Check if the move is valid
-				if (isValidMove(move)) {
-					// Add valid moves to the list
-					moves.add(move);
-				}
-			}
-		}
-
-		// Return the list of valid moves
-		return moves;
 	}
 
 	/**
@@ -702,7 +668,7 @@ public class Board extends JPanel {
 	 */
 	public boolean isValidMove(Move move) {
 		// Check if the piece's color matches the current player's turn
-		if (move.getPiece().isWhite() != isWhiteTurn) {
+		if (move.getPiece().isWhite() != isWhiteTurn()) {
 			return false; // The piece cannot move if it's not the correct player's turn
 		}
 
