@@ -13,6 +13,7 @@ import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.ui.Board;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -146,7 +147,8 @@ public class MoveValidator {
 	 * @return true if the current player can make at least one valid move, false otherwise.
 	 */
 	public boolean canPlayerDoAnyValidMove() {
-		return getBoard().getPieceList().stream()
+		List<Piece> pieces = new ArrayList<>(getBoard().getPieceList());
+		return pieces.stream()
 			       .allMatch(piece -> piece.getLegalMoves(getBoard()).isEmpty());
 	}
 
@@ -172,11 +174,9 @@ public class MoveValidator {
 		int movingPieceOriginalColumn = movingPiece.getColumn();
 		int movingPieceOriginalRow = movingPiece.getRow();
 
-		/* TODO: Piece entfernen, damit es nach dem schlagen nicht mehr exitsiert, jedoch kann die getPieceList() nicht manipunliert werden
 		if(targetPiece != null) {
 			getBoard().getPieceList().remove(targetPiece);
 		}
-		 */
 
 		// Move the piece to the target square
 		getBoard().setPieceAt(move.getNewColumn(), move.getNewRow(), movingPiece);
@@ -186,11 +186,9 @@ public class MoveValidator {
 		// Check if the king is in check after the move
 		boolean isKingInCheckAfterMove = isKingInCheck();
 
-		/* TODO: Piece entfernen, damit es nach dem schlagen nicht mehr exitsiert, jedoch kann die getPieceList() nicht manipunliert werden
 		if(targetPiece != null) {
 			getBoard().getPieceList().add(targetPiece);
 		}
-		 */
 
 		getBoard().setPieceAt(movingPieceOriginalColumn, movingPieceOriginalRow, movingPiece);
 		getBoard().setPieceAt(move.getNewColumn(), move.getNewRow(), targetPiece);
