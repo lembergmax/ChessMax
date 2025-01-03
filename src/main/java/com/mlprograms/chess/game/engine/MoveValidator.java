@@ -36,7 +36,6 @@ public class MoveValidator {
 	 * @return true if the current player is in checkmate, false otherwise.
 	 */
 	public boolean isCheckmate() {
-		// TODO: fix: Checkmate isn't recognized correctly
 		return isKingInCheck() && !canPlayerDoAnyValidMove();
 	}
 
@@ -50,7 +49,6 @@ public class MoveValidator {
 	 * @return true if the current player is in stalemate, false otherwise.
 	 */
 	public boolean isStalemate() {
-		// TODO: fix: Stalemate isn't recognized correctly
 		return !isKingInCheck() && !canPlayerDoAnyValidMove();
 	}
 
@@ -63,8 +61,7 @@ public class MoveValidator {
 	 */
 	public boolean canPlayerDoAnyValidMove() {
 		List<Piece> pieces = new ArrayList<>(getBoard().getPieceList());
-		return pieces.stream()
-			       .anyMatch(piece -> !piece.getLegalMoves(getBoard()).isEmpty());
+		return pieces.stream().anyMatch(piece -> piece.isWhite() == getBoard().isWhiteTurn() && !piece.getLegalMoves(getBoard()).isEmpty());
 	}
 
 	/**
