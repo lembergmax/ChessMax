@@ -8,9 +8,11 @@ package com.mlprograms.chess.game.engine;
 
 import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.game.utils.Sounds;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -100,6 +102,13 @@ public class MouseInput extends MouseAdapter {
 		// Retrieve the currently selected piece
 		Piece selectedPiece = getBoard().getSelectedPiece();
 
+		// If the King is in Check and the Player selects a Piece without any legal moves play a warning sound
+		// and highlight the tile where the King is located
+		if (getBoard().getMoveValidator().isKingInCheck() && selectedPiece.getLegalMoves(getBoard()).isEmpty()) {
+			getBoard().getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
+			getBoard().getBoardPainter().blinkKingsTile((Graphics2D) getBoard().getGraphics(), getBoard().isWhiteTurn());
+		}
+
 		// Calculate the target tile coordinates based on the mouse release position
 		int column = event.getX() / getBoard().getTileSize();
 		int row = event.getY() / getBoard().getTileSize();
@@ -158,9 +167,9 @@ public class MouseInput extends MouseAdapter {
 	 */
 	private void attemptMove(Piece selectedPiece, int column, int row) {
 		Piece pieceToCapture = getBoard().getPieceList().stream()
-				.filter(p -> p.getColumn() == column && p.getRow() == row && !selectedPiece.equals(p))
-				.findFirst()
-				.orElse(null);
+			                       .filter(p -> p.getColumn() == column && p.getRow() == row && !selectedPiece.equals(p))
+			                       .findFirst()
+			                       .orElse(null);
 
 		Move move = new Move(getBoard(), selectedPiece, column, row, pieceToCapture);
 

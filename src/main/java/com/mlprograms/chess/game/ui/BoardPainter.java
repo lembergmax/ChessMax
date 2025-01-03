@@ -6,10 +6,12 @@
 
 package com.mlprograms.chess.game.ui;
 
-import com.mlprograms.chess.game.engine.HistoryMove;
 import com.mlprograms.chess.game.engine.Move;
+import com.mlprograms.chess.game.pieces.King;
 import com.mlprograms.chess.game.pieces.Pawn;
 import com.mlprograms.chess.game.pieces.Piece;
+import com.mlprograms.chess.game.utils.Sounds;
+import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 
 import java.awt.*;
@@ -69,9 +71,18 @@ public class BoardPainter {
 			graphics2D.fillRect(column * getBoard().getTileSize(), row * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
 		}
 	}
-	
+
+	/**
+	 * Highlights the last move made on the chessboard.
+	 * <p>
+	 * This method retrieves the last move from the move history and highlights both the source and destination tiles
+	 * using a semi-transparent color. If no moves have been made, the method returns without performing any action.
+	 *
+	 * @param graphics2D
+	 * 	the graphics context used for drawing
+	 */
 	public void highlightMadeMove(Graphics2D graphics2D) {
-		if(getBoard().getMoveHistory().isEmpty()) {
+		if (getBoard().getMoveHistory().isEmpty()) {
 			return;
 		}
 
@@ -84,6 +95,54 @@ public class BoardPainter {
 		// Draw the highlight on the source tile
 		graphics2D.fillRect(lastMove.getOldColumn() * getBoard().getTileSize(), lastMove.getOldRow() * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
 		graphics2D.fillRect(lastMove.getNewColumn() * getBoard().getTileSize(), lastMove.getNewRow() * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
+	}
+
+	/**
+	 * Blinks the tile of the specified king (white or black) to indicate an illegal move.
+	 * <p>
+	 * This method finds the king's position on the board and creates a new thread to blink the tile
+	 * for a total duration of 1.2 seconds. The tile is highlighted with a semi-transparent color,
+	 * and an illegal move sound is played. The blinking effect is achieved by alternating between
+	 * filling the tile with the highlight color and repainting the board.
+	 *
+	 * @param graphics2D
+	 * 	the graphics context used for drawing
+	 * @param whiteKing
+	 * 	true if the white king's tile should be blinked, false for the black king
+	 */
+	public void blinkKingsTile(Graphics2D graphics2D, boolean whiteKing) {
+		King king = getBoard().getMoveValidator().findKing(whiteKing);
+		int column = king.getColumn();
+		int row = king.getRow();
+
+		// Blink the king's tile for 1 second
+		new Thread(() -> {
+			graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT_ILLEGAL", 105));
+
+			getBoard().getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
+
+			for (int i = 0; i < 3; i++) {
+				sleep(400);
+				graphics2D.fillRect(column * getBoard().getTileSize(), row * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
+				paintPieces(graphics2D);
+				sleep(400);
+				getBoard().repaint();
+			}
+		}).start();
+	}
+
+	/**
+	 * Pauses the current thread for the specified number of milliseconds.
+	 *
+	 * @param millis
+	 * 	the duration in milliseconds for which the thread should sleep
+	 */
+	private void sleep(int millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			Logger.logError(e.getMessage());
+		}
 	}
 
 	/**
