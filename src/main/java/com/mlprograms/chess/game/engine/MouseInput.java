@@ -43,22 +43,22 @@ public class MouseInput extends MouseAdapter {
 	 */
 	@Override
 	public void mousePressed(MouseEvent event) {
-		board.setMouseDragged(false);
-		int column = event.getX() / board.getTileSize();
-		int row = event.getY() / board.getTileSize();
+		getBoard().setMouseDragged(false);
+		int column = event.getX() / getBoard().getTileSize();
+		int row = event.getY() / getBoard().getTileSize();
 
-		Piece clickedPiece = board.getPieceAt(column, row);
-		Piece selectedPiece = board.getSelectedPiece();
+		Piece clickedPiece = getBoard().getPieceAt(column, row);
+		Piece selectedPiece = getBoard().getSelectedPiece();
 
 		if (clickedPiece != null && clickedPiece == selectedPiece) {
 			clearSelection(); // Deselect the piece if it's already selected
-		} else if (clickedPiece != null && clickedPiece.isWhite() == board.isWhiteTurn()) {
+		} else if (clickedPiece != null && clickedPiece.isWhite() == getBoard().isWhiteTurn()) {
 			selectPiece(clickedPiece); // Select the clicked piece if it matches the turn
 		} else if (selectedPiece != null) {
 			attemptMove(selectedPiece, column, row); // Attempt to move the selected piece
 		}
 
-		board.repaint(); // Redraw the board to reflect changes
+		getBoard().repaint(); // Redraw the board to reflect changes
 	}
 
 	/**
@@ -69,11 +69,11 @@ public class MouseInput extends MouseAdapter {
 	 */
 	@Override
 	public void mouseDragged(MouseEvent event) {
-		Piece selectedPiece = board.getSelectedPiece();
+		Piece selectedPiece = getBoard().getSelectedPiece();
 		if (selectedPiece != null) {
-			board.setMouseDragged(true);
+			getBoard().setMouseDragged(true);
 			updatePiecePositionDuringDrag(selectedPiece, event); // Update piece position during drag
-			board.repaint(); // Redraw the board during dragging
+			getBoard().repaint(); // Redraw the board during dragging
 		}
 	}
 
@@ -93,33 +93,33 @@ public class MouseInput extends MouseAdapter {
 	@Override
 	public void mouseReleased(MouseEvent event) {
 		// Check if a drag operation was in progress
-		if (board.isMouseDragged()) {
+		if (getBoard().isMouseDragged()) {
 			// Retrieve the currently selected piece
-			Piece selectedPiece = board.getSelectedPiece();
+			Piece selectedPiece = getBoard().getSelectedPiece();
 
 			// Calculate the target tile coordinates based on the mouse release position
-			int column = event.getX() / board.getTileSize();
-			int row = event.getY() / board.getTileSize();
+			int column = event.getX() / getBoard().getTileSize();
+			int row = event.getY() / getBoard().getTileSize();
 
 			// Calculate the drag distance from the piece's original position
 			int draggedX = event.getX();
 			int draggedY = event.getY();
-			int originalX = originalColumn * board.getTileSize() + board.getTileSize() / 2;
-			int originalY = originalRow * board.getTileSize() + board.getTileSize() / 2;
+			int originalX = getOriginalColumn() * getBoard().getTileSize() + getBoard().getTileSize() / 2;
+			int originalY = getOriginalRow() * getBoard().getTileSize() + getBoard().getTileSize() / 2;
 			double distance = Math.sqrt(Math.pow(draggedX - originalX, 2) + Math.pow(draggedY - originalY, 2));
 
 			// If the drag distance is within 25 pixels, reset the piece's position
 			if (distance <= 25) {
 				resetPiecePosition(selectedPiece);
-				board.showPossibleMoves(selectedPiece); // Keep showing possible moves
+				getBoard().showPossibleMoves(selectedPiece); // Keep showing possible moves
 			} else {
 				// Otherwise, attempt to move the piece to the new tile
 				attemptMove(selectedPiece, column, row);
 			}
 
 			// End the drag operation and repaint the board
-			board.setMouseDragged(false);
-			board.repaint();
+			getBoard().setMouseDragged(false);
+			getBoard().repaint();
 		}
 	}
 
@@ -127,8 +127,8 @@ public class MouseInput extends MouseAdapter {
 	 * Clears the current piece selection and resets possible moves.
 	 */
 	private void clearSelection() {
-		board.setSelectedPiece(null);
-		board.getPossibleMoves().clear();
+		getBoard().setSelectedPiece(null);
+		getBoard().getPossibleMoves().clear();
 	}
 
 	/**
@@ -138,10 +138,10 @@ public class MouseInput extends MouseAdapter {
 	 * 	the piece to select
 	 */
 	private void selectPiece(Piece piece) {
-		board.setSelectedPiece(piece);
-		originalColumn = piece.getColumn();
-		originalRow = piece.getRow();
-		board.showPossibleMoves(piece); // Highlight possible moves for the selected piece
+		getBoard().setSelectedPiece(piece);
+		setOriginalColumn(piece.getColumn());
+		setOriginalRow(piece.getRow());
+		getBoard().showPossibleMoves(piece); // Highlight possible moves for the selected piece
 	}
 
 	/**
@@ -155,9 +155,9 @@ public class MouseInput extends MouseAdapter {
 	 * 	the target row
 	 */
 	private void attemptMove(Piece selectedPiece, int column, int row) {
-		Move move = new Move(board, selectedPiece, column, row);
-		if (board.isValidMove(move)) {
-			board.makeMove(move); // Execute the move if valid
+		Move move = new Move(getBoard(), selectedPiece, column, row);
+		if (getBoard().isValidMove(move)) {
+			getBoard().makeMove(move); // Execute the move if valid
 		} else {
 			resetPiecePosition(selectedPiece); // Reset the piece to its original position
 		}
@@ -173,8 +173,8 @@ public class MouseInput extends MouseAdapter {
 	 * 	the mouse drag event
 	 */
 	private void updatePiecePositionDuringDrag(Piece piece, MouseEvent event) {
-		int offsetX = board.getTileSize() / 2;
-		int offsetY = board.getTileSize() / 2;
+		int offsetX = getBoard().getTileSize() / 2;
+		int offsetY = getBoard().getTileSize() / 2;
 		piece.setXPos(event.getX() - offsetX); // Adjust X position based on drag
 		piece.setYPos(event.getY() - offsetY); // Adjust Y position based on drag
 	}
