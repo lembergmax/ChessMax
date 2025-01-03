@@ -93,34 +93,36 @@ public class MouseInput extends MouseAdapter {
 	@Override
 	public void mouseReleased(MouseEvent event) {
 		// Check if a drag operation was in progress
-		if (getBoard().isMouseDragged()) {
-			// Retrieve the currently selected piece
-			Piece selectedPiece = getBoard().getSelectedPiece();
-
-			// Calculate the target tile coordinates based on the mouse release position
-			int column = event.getX() / getBoard().getTileSize();
-			int row = event.getY() / getBoard().getTileSize();
-
-			// Calculate the drag distance from the piece's original position
-			int draggedX = event.getX();
-			int draggedY = event.getY();
-			int originalX = getOriginalColumn() * getBoard().getTileSize() + getBoard().getTileSize() / 2;
-			int originalY = getOriginalRow() * getBoard().getTileSize() + getBoard().getTileSize() / 2;
-			double distance = Math.sqrt(Math.pow(draggedX - originalX, 2) + Math.pow(draggedY - originalY, 2));
-
-			// If the drag distance is within 25 pixels, reset the piece's position
-			if (distance <= 25) {
-				resetPiecePosition(selectedPiece);
-				getBoard().showPossibleMoves(selectedPiece); // Keep showing possible moves
-			} else {
-				// Otherwise, attempt to move the piece to the new tile
-				attemptMove(selectedPiece, column, row);
-			}
-
-			// End the drag operation and repaint the board
-			getBoard().setMouseDragged(false);
-			getBoard().repaint();
+		if (!getBoard().isMouseDragged()) {
+			return;
 		}
+
+		// Retrieve the currently selected piece
+		Piece selectedPiece = getBoard().getSelectedPiece();
+
+		// Calculate the target tile coordinates based on the mouse release position
+		int column = event.getX() / getBoard().getTileSize();
+		int row = event.getY() / getBoard().getTileSize();
+
+		// Calculate the drag distance from the piece's original position
+		int draggedX = event.getX();
+		int draggedY = event.getY();
+		int originalX = getOriginalColumn() * getBoard().getTileSize() + getBoard().getTileSize() / 2;
+		int originalY = getOriginalRow() * getBoard().getTileSize() + getBoard().getTileSize() / 2;
+		double distance = Math.sqrt(Math.pow(draggedX - originalX, 2) + Math.pow(draggedY - originalY, 2));
+
+		// If the drag distance is within 25 pixels, reset the piece's position
+		if (distance <= 25) {
+			resetPiecePosition(selectedPiece);
+			getBoard().showPossibleMoves(selectedPiece); // Keep showing possible moves
+		} else {
+			// Otherwise, attempt to move the piece to the new tile
+			attemptMove(selectedPiece, column, row);
+		}
+
+		// End the drag operation and repaint the board
+		getBoard().setMouseDragged(false);
+		getBoard().repaint();
 	}
 
 	/**
