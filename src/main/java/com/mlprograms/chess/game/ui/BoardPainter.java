@@ -115,7 +115,7 @@ public class BoardPainter {
 		int column = king.getColumn();
 		int row = king.getRow();
 
-		// Blink the king's tile for 1 second
+		// Let the king's tile blink a few times
 		new Thread(() -> {
 			graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT_ILLEGAL", 105));
 
