@@ -8,6 +8,8 @@ package com.mlprograms.chess.game.ui;
 
 import com.mlprograms.chess.game.engine.*;
 import com.mlprograms.chess.game.pieces.*;
+import com.mlprograms.chess.game.utils.SoundPlayer;
+import com.mlprograms.chess.game.utils.Sounds;
 import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,9 +33,9 @@ import static com.mlprograms.chess.utils.ConfigFetcher.*;
 @Setter
 public class Board extends JPanel {
 
-	private final MoveValidator moveValidator;
-
 	private final String FEN_STARTING_POSITION = fetchStringConfig("ChessGame", "STARTING_POSITION");
+	private SoundPlayer soundPlayer;
+	private MoveValidator moveValidator;
 	private String title;
 	private String startingPosition;
 
@@ -74,6 +76,7 @@ public class Board extends JPanel {
 	 */
 	public Board() {
 		this.moveValidator = new MoveValidator(this);
+		this.soundPlayer = new SoundPlayer();
 		this.boardPainter = new BoardPainter(this);
 		this.boardContainer = new JPanel(new GridBagLayout());
 
@@ -339,12 +342,51 @@ public class Board extends JPanel {
 		setTargetColumn(-1);
 		setTargetRow(-1);
 
+		// TODO:
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding != GameEnding.IN_PROGRESS) {
 			Logger.logSuccess(gameEnding);
 		}
 
+		playGameSound(move);
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
+	}
+
+	/**
+	 * Plays a sound effect based on the type of move being made.
+	 * Note that the following sounds are only for basic sound effects like game end, king in check, piece capture, and
+	 * piece movement.
+	 * Other sounds like castling, game start, and illegal moves are handled elsewhere.
+	 *
+	 * @param move
+	 * 	The move that is being made, including the captured piece (if any).
+	 */
+	private void playGameSound(Move move) {
+		// If the game has ended
+		if (getMoveValidator().isCheckmate() || getMoveValidator().isStalemate()) {
+			getSoundPlayer().play(Sounds.GAME_END);
+			return;
+		}
+
+		// If King is in Check
+		if (getMoveValidator().isKingInCheck()) {
+			getSoundPlayer().play(Sounds.CHECK);
+			return;
+		}
+
+		// King has castled
+		if (isHasCastled()) {
+			getSoundPlayer().play(Sounds.CASTLE);
+			return;
+		}
+
+		// If a Piece was captured
+		if (move.getCapturedPiece() != null) {
+			getSoundPlayer().play(Sounds.CAPTURE);
+			return;
+		}
+
+		getSoundPlayer().play(Sounds.MOVE);
 	}
 
 	/**
@@ -501,7 +543,7 @@ public class Board extends JPanel {
 	 */
 	public void capturePiece(Move move) {
 		// Remove the captured piece from the list of pieces
-		pieceList.remove(move.getCapturedPiece());
+		getPieceList().remove(move.getCapturedPiece());
 
 		// If the captured piece is not null and the scoreboard is available, add it to the scoreboard
 		if (move.getCapturedPiece() != null) {
@@ -509,10 +551,11 @@ public class Board extends JPanel {
 			// scoreboard.addCapturedPiece(move.capturedPiece);
 		}
 
+		// Do not use: This is not needed as the captured piece is already set in the move
 		// If there is a piece at the destination square, update the captured piece in the move
-		if (getPieceAt(move.getNewColumn(), move.getNewRow()) != null) {
-			move.setCapturedPiece(getPieceAt(move.getNewColumn(), move.getNewRow())); // Update the captured piece
-		}
+		// if (getPieceAt(move.getNewColumn(), move.getNewRow()) != null) {
+		// move.setCapturedPiece(getPieceAt(move.getNewColumn(), move.getNewRow())); // Update the captured piece
+		// }
 	}
 
 
@@ -595,16 +638,7 @@ public class Board extends JPanel {
 	 * @return the piece at the specified position, or null if no piece is found
 	 */
 	public Piece getPieceAt(int column, int row) {
-		// Iterate through the list of all pieces on the board
-		for (Piece piece : pieceList) {
-			// Check if the piece is at the specified column and row
-			if (piece.getColumn() == column && piece.getRow() == row) {
-				return piece; // Return the piece if found
-			}
-		}
-
-		// Return null if no piece exists at the given position
-		return null;
+		return getPieceList().stream().filter(piece -> piece.getColumn() == column && piece.getRow() == row).findFirst().orElse(null);
 	}
 
 	/**

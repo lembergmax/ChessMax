@@ -117,7 +117,7 @@ public class MouseInput extends MouseAdapter {
 			getBoard().showPossibleMoves(selectedPiece); // Keep showing possible moves
 		} else {
 			// Otherwise, attempt to move the piece to the new tile
-			attemptMove(selectedPiece, column, row);
+			attemptMove(selectedPiece, column, row); // Attempt to move the selected piece
 		}
 
 		// End the drag operation and repaint the board
@@ -157,7 +157,13 @@ public class MouseInput extends MouseAdapter {
 	 * 	the target row
 	 */
 	private void attemptMove(Piece selectedPiece, int column, int row) {
-		Move move = new Move(getBoard(), selectedPiece, column, row);
+		Piece pieceToCapture = getBoard().getPieceList().stream()
+				.filter(p -> p.getColumn() == column && p.getRow() == row && !selectedPiece.equals(p))
+				.findFirst()
+				.orElse(null);
+
+		Move move = new Move(getBoard(), selectedPiece, column, row, pieceToCapture);
+
 		if (getBoard().isValidMove(move)) {
 			getBoard().makeMove(move); // Execute the move if valid
 		} else {
