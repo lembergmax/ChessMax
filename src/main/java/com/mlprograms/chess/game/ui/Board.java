@@ -102,12 +102,11 @@ public class Board extends JPanel {
 		removeAll();
 
 		// Delegate drawing tasks to the BoardPainter
-		boardPainter.drawChessBoard((Graphics2D) graphics);
-		boardPainter.drawCoordinates((Graphics2D) graphics);
-
-		boardPainter.highlightPossibleMoves((Graphics2D) graphics);
-
-		boardPainter.paintPieces((Graphics2D) graphics);
+		getBoardPainter().drawChessBoard((Graphics2D) graphics);
+		getBoardPainter().highlightMadeMove((Graphics2D) graphics);
+		getBoardPainter().highlightPossibleMoves((Graphics2D) graphics);
+		getBoardPainter().drawCoordinates((Graphics2D) graphics);
+		getBoardPainter().paintPieces((Graphics2D) graphics);
 	}
 
 	/**

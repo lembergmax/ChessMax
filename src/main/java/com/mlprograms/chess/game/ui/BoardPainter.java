@@ -6,21 +6,25 @@
 
 package com.mlprograms.chess.game.ui;
 
+import com.mlprograms.chess.game.engine.HistoryMove;
 import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.pieces.Pawn;
 import com.mlprograms.chess.game.pieces.Piece;
+import lombok.Getter;
 
 import java.awt.*;
+import java.util.List;
 
 import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorConfig;
 import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorWithAlphaConfig;
 
+@Getter
 public class BoardPainter {
 
-	private final Board BOARD;
+	private final Board board;
 
 	public BoardPainter(Board board) {
-		this.BOARD = board;
+		this.board = board;
 	}
 
 	/**
@@ -32,7 +36,7 @@ public class BoardPainter {
 	 */
 	public void paintPieces(Graphics2D graphics2D) {
 		// Iterate through all pieces on the board
-		for (Piece piece : BOARD.getPieceList()) {
+		for (Piece piece : getBoard().getPieceList()) {
 			// Delegate the painting of each piece to its paint method
 			piece.paint(graphics2D);
 		}
@@ -45,11 +49,12 @@ public class BoardPainter {
 	 * 	the graphics context used for drawing
 	 */
 	public void highlightPossibleMoves(Graphics2D graphics2D) {
-		if (BOARD.getPossibleMoves() == null || BOARD.getSelectedPiece() == null) {
+		List<Move> possibleMoves = getBoard().getPossibleMoves();
+		if (possibleMoves == null || getBoard().getSelectedPiece() == null) {
 			return; // No moves or no selected piece, nothing to highlight
 		}
 
-		for (Move move : BOARD.getPossibleMoves()) {
+		for (Move move : possibleMoves) {
 			int column = move.getNewColumn();
 			int row = move.getNewRow();
 
@@ -61,8 +66,24 @@ public class BoardPainter {
 			}
 
 			// Draw the highlight on the corresponding tile
-			graphics2D.fillRect(column * BOARD.getTileSize(), row * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
+			graphics2D.fillRect(column * getBoard().getTileSize(), row * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
 		}
+	}
+	
+	public void highlightMadeMove(Graphics2D graphics2D) {
+		if(getBoard().getMoveHistory().isEmpty()) {
+			return;
+		}
+
+		// Get the last move made on the board
+		Move lastMove = getBoard().getMoveHistory().getLast().getMadeMove();
+
+		// Set the highlight color based on the move type
+		graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
+
+		// Draw the highlight on the source tile
+		graphics2D.fillRect(lastMove.getOldColumn() * getBoard().getTileSize(), lastMove.getOldRow() * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
+		graphics2D.fillRect(lastMove.getNewColumn() * getBoard().getTileSize(), lastMove.getNewRow() * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
 	}
 
 	/**
@@ -76,11 +97,11 @@ public class BoardPainter {
 	 * @return true if the move is a capture, false otherwise
 	 */
 	private boolean isCaptureMove(int column, int row) {
-		Piece targetPiece = BOARD.getPieceAt(column, row);
+		Piece targetPiece = getBoard().getPieceAt(column, row);
 
 		// Check for direct captures or special en passant moves
 		return targetPiece != null ||
-			       (BOARD.getSelectedPiece() instanceof Pawn && BOARD.getTileNumber(column, row) == BOARD.getEnPassantTile());
+			       (getBoard().getSelectedPiece() instanceof Pawn && getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile());
 	}
 
 	/**
@@ -96,20 +117,20 @@ public class BoardPainter {
 		graphics2D.setFont(new Font("SansSerif", Font.BOLD, 12));
 
 		// Draw column labels (a-h) below the board
-		for (int col = 0; col < BOARD.getColumns(); col++) {
+		for (int col = 0; col < getBoard().getColumns(); col++) {
 			String colLabel = String.valueOf((char) ('a' + col)); // Convert column index to character
-			int xPos = col * BOARD.getTileSize() + BOARD.getTileSize()
-				           - graphics2D.getFontMetrics().stringWidth(colLabel) / 2 - BOARD.getPadding() / 4;
-			int yPos = BOARD.getRows() * BOARD.getTileSize()
-				           - (BOARD.getPadding() / 4) / 2; // Slightly below the board
+			int xPos = col * getBoard().getTileSize() + getBoard().getTileSize()
+				           - graphics2D.getFontMetrics().stringWidth(colLabel) / 2 - getBoard().getPadding() / 4;
+			int yPos = getBoard().getRows() * getBoard().getTileSize()
+				           - (getBoard().getPadding() / 4) / 2; // Slightly below the board
 			graphics2D.drawString(colLabel, xPos, yPos);
 		}
 
 		// Draw row labels (1-8) to the left of the board
-		for (int row = 0; row < BOARD.getRows(); row++) {
-			String rowLabel = String.valueOf(BOARD.getRows() - row); // Convert row index to number
-			int xPos = BOARD.getPadding() / 7; // Slightly left of the board
-			int yPos = row * BOARD.getTileSize() + BOARD.getPadding() / 3
+		for (int row = 0; row < getBoard().getRows(); row++) {
+			String rowLabel = String.valueOf(getBoard().getRows() - row); // Convert row index to number
+			int xPos = getBoard().getPadding() / 7; // Slightly left of the board
+			int yPos = row * getBoard().getTileSize() + getBoard().getPadding() / 3
 				           + graphics2D.getFontMetrics().getHeight() / 2 - 3;
 			graphics2D.drawString(rowLabel, xPos, yPos);
 		}
@@ -124,9 +145,9 @@ public class BoardPainter {
 	 */
 	protected void drawChessBoard(Graphics2D graphics2D) {
 		// Loop through each row of the board
-		for (int rows = 0; rows < BOARD.getRows(); rows++) {
+		for (int rows = 0; rows < getBoard().getRows(); rows++) {
 			// Loop through each column of the board
-			for (int columns = 0; columns < BOARD.getColumns(); columns++) {
+			for (int columns = 0; columns < getBoard().getColumns(); columns++) {
 				// Alternate between light and dark colors based on tile position
 				if ((rows + columns) % 2 == 0) {
 					graphics2D.setColor(fetchColorConfig("TILE_LIGHT")); // Light tile color
@@ -134,8 +155,8 @@ public class BoardPainter {
 					graphics2D.setColor(fetchColorConfig("TILE_DARK")); // Dark tile color
 				}
 				// Draw the rectangle representing the tile
-				graphics2D.fillRect(columns * BOARD.getTileSize(), rows * BOARD.getTileSize(),
-					BOARD.getTileSize(), BOARD.getTileSize());
+				graphics2D.fillRect(columns * getBoard().getTileSize(), rows * getBoard().getTileSize(),
+					getBoard().getTileSize(), getBoard().getTileSize());
 			}
 		}
 	}
