@@ -29,7 +29,7 @@ public class Move {
 	private Piece capturedPiece;
 
 	public Move(Board board, Piece selectedPiece, int newColumn, int newRow) {
-		Piece capturedPiece = board.getPieceList().stream().filter(piece -> piece.getColumn() == newColumn && piece.getRow() == newColumn && piece.isWhite() != selectedPiece.isWhite()).findFirst().orElse(null);
+		Piece capturedPiece = board.getPieceList().stream().filter(piece -> piece.getColumn() == newColumn && piece.getRow() == newRow && piece.isWhite() != selectedPiece.isWhite()).findFirst().orElse(null);
 		this(board, selectedPiece, newColumn, newRow, capturedPiece);
 	}
 
