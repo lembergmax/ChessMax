@@ -557,12 +557,6 @@ public class Board extends JPanel {
 			// TODO: implement scoreboard functionality to track captured pieces
 			// scoreboard.addCapturedPiece(move.capturedPiece);
 		}
-
-		// Do not use: This is not needed as the captured piece is already set in the move
-		// If there is a piece at the destination square, update the captured piece in the move
-		// if (getPieceAt(move.getNewColumn(), move.getNewRow()) != null) {
-		// move.setCapturedPiece(getPieceAt(move.getNewColumn(), move.getNewRow())); // Update the captured piece
-		// }
 	}
 
 
