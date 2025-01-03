@@ -11,6 +11,7 @@ import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
 import com.mlprograms.chess.utils.Logger;
+import com.mlprograms.chess.utils.ui.InformationMessage;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -342,14 +343,20 @@ public class Board extends JPanel {
 		setTargetColumn(-1);
 		setTargetRow(-1);
 
-		// TODO:
-		GameEnding gameEnding = checkForGameEnding();
-		if (gameEnding != GameEnding.IN_PROGRESS) {
-			Logger.logSuccess(gameEnding);
-		}
-
 		playGameSound(move);
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
+
+		// TODO:
+		GameEnding gameEnding = checkForGameEnding();
+		if (gameEnding == GameEnding.IN_PROGRESS) {
+			return;
+		}
+
+		getSoundPlayer().play(Sounds.GAME_END);
+
+		// TODO: make better ui for game ending
+		boolean isDraw = gameEnding != GameEnding.CHECKMATE;
+		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!" + "\nGrund: " + gameEnding));
 	}
 
 	/**
@@ -711,6 +718,16 @@ public class Board extends JPanel {
 		return true;
 	}
 
+	/**
+	 * Checks the current game state to determine if the game has ended.
+	 * <p>
+	 * This method evaluates various conditions to check if the game has reached an ending state,
+	 * such as checkmate, stalemate, insufficient material, fifty-move rule, threefold repetition,
+	 * time forfeit, resignation, or agreed draw. If none of these conditions are met, the game
+	 * is considered to be still in progress.
+	 *
+	 * @return the current game ending state as a GameEnding enum value
+	 */
 	public GameEnding checkForGameEnding() {
 
 		if (getMoveValidator().isCheckmate()) {
