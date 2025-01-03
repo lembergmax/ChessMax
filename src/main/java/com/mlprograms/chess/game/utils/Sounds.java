@@ -20,6 +20,7 @@ public class Sounds {
 	public static final String GAME_START = "GAME_START";
 	public static final String CASTLE = "CASTLE";
 	public static final String ILLEGAL_MOVE = "ILLEGAL_MOVE";
+
 	private static final ConfigReader CONFIG_READER = new ConfigReader();
 	private static final Map<String, String> SOUND_PATHS = new HashMap<>();
 
