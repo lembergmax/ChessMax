@@ -8,6 +8,8 @@ package com.mlprograms.chess.game.pieces;
 
 import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.utils.ConfigFetcher;
+import com.mlprograms.chess.utils.ConfigReader;
 import com.mlprograms.chess.utils.Logger;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -81,7 +83,7 @@ public abstract class Piece {
 
 		try {
 			// Load the sprite sheet for the chess pieces
-			setSheet(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/Chess_Pieces_Sprite.png"))));
+			setSheet(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(ConfigFetcher.fetchStringConfig("Images", "PIECES_SPRITE")))));
 			// Calculate the scale factor based on the sprite sheet dimensions
 			setSheetScale(getSheet().getWidth() / 6);
 		} catch (IOException e) {
