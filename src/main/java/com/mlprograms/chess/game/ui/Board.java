@@ -336,7 +336,7 @@ public class Board extends JPanel {
 		setWhiteTurn(!isWhiteTurn());
 
 		// Play appropriate sound effects based on the move
-		playGameSound(move);
+		// TODO: playGameSound(move);
 
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
