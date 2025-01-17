@@ -11,6 +11,7 @@ import com.mlprograms.chess.game.pieces.King;
 import com.mlprograms.chess.game.pieces.Knight;
 import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 
 import java.util.ArrayList;

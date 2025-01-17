@@ -49,13 +49,13 @@ public class MouseInput extends MouseAdapter {
 		int column = event.getX() / getBoard().getTileSize();
 		int row = event.getY() / getBoard().getTileSize();
 
-		Piece clickedPiece = getBoard().getPieceAt(column, row);
+		Piece clickedPieceAtTile = getBoard().getPieceAt(column, row);
 		Piece selectedPiece = getBoard().getSelectedPiece();
 
-		if (clickedPiece != null && clickedPiece == selectedPiece) {
+		if (clickedPieceAtTile != null && clickedPieceAtTile == selectedPiece) {
 			clearSelection(); // Deselect the piece if it's already selected
-		} else if (clickedPiece != null && clickedPiece.isWhite() == getBoard().isWhiteTurn()) {
-			selectPiece(clickedPiece); // Select the clicked piece if it matches the turn
+		} else if (clickedPieceAtTile != null && clickedPieceAtTile.isWhite() == getBoard().isWhiteTurn()) {
+			selectPiece(clickedPieceAtTile); // Select the clicked piece if it matches the turn
 		} else if (selectedPiece != null) {
 			attemptMove(selectedPiece, column, row); // Attempt to move the selected piece
 		}
@@ -167,7 +167,7 @@ public class MouseInput extends MouseAdapter {
 	 */
 	private void attemptMove(Piece selectedPiece, int column, int row) {
 		Piece pieceToCapture = getBoard().getPieceList().stream()
-			                       .filter(p -> p.getColumn() == column && p.getRow() == row && !selectedPiece.equals(p))
+			                       .filter(p -> p.getColumn() == column && p.getRow() == row && !p.equals(selectedPiece))
 			                       .findFirst()
 			                       .orElse(null);
 

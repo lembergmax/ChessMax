@@ -10,7 +10,6 @@ import com.mlprograms.chess.game.engine.*;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
-import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.InformationMessage;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,11 +35,11 @@ public class Board extends JPanel {
 
 	private final String FEN_STARTING_POSITION = fetchStringConfig("ChessGame", "STARTING_POSITION");
 	private SoundPlayer soundPlayer;
+	private BoardPainter boardPainter;
 	private MoveValidator moveValidator;
 	private String title;
 	private String startingPosition;
 
-	private BoardPainter boardPainter;
 	private JPanel boardContainer;
 
 	private List<HistoryMove> moveHistory = new ArrayList<>();
@@ -152,12 +151,12 @@ public class Board extends JPanel {
 	 */
 	public void loadPositionFromFen(String fenString) {
 		// Clear the current list of pieces to prepare for loading a new position
-		pieceList.clear();
+		getPieceList().clear();
 
 		// Split the FEN string into its components
 		StringTokenizer tokenizer = new StringTokenizer(fenString, " ");
 		String position = tokenizer.nextToken(); // Piece placement section
-		isWhiteTurn = tokenizer.nextToken().equals("w"); // Whose turn it is
+		setWhiteTurn(tokenizer.nextToken().equals("w")); // Whose turn it is
 		String castlingRights = tokenizer.nextToken(); // Castling availability
 		String enPassant = tokenizer.nextToken(); // En passant target square
 
@@ -179,7 +178,7 @@ public class Board extends JPanel {
 			} else {
 				// Add a piece to the list
 				boolean isWhite = Character.isUpperCase(character); // Determine if the piece is white
-				pieceList.add(createPiece(character, column++, row, isWhite)); // Create and add the piece
+				getPieceList().add(createPiece(character, column++, row, isWhite)); // Create and add the piece
 			}
 		}
 
@@ -236,7 +235,7 @@ public class Board extends JPanel {
 		}
 
 		// Turn
-		fen.append(isWhiteTurn ? " w " : " b ");
+		fen.append(isWhiteTurn() ? " w " : " b ");
 
 		// Castling rights
 		StringBuilder castlingRights = new StringBuilder();
@@ -271,17 +270,17 @@ public class Board extends JPanel {
 	 */
 	private FenNotation getFenNotation(StringBuilder fen, StringBuilder castlingRights) {
 		// En passant target square
-		String enPassantTarget = enPassantTile == -1 ? "-" :
-			                         String.valueOf((char) ('a' + (enPassantTile % 8))) + (8 - (enPassantTile / 8));
+		String enPassantTarget = getEnPassantTile() == -1 ? "-" :
+			                         String.valueOf((char) ('a' + (getEnPassantTile() % 8))) + (8 - (getEnPassantTile() / 8));
 
 		// Create FenNotation object
 		FenNotation fenNotation = new FenNotation();
 		fenNotation.setFenString(fen.toString());
 		fenNotation.setCastlingRights(castlingRights.toString());
 		fenNotation.setEnPassantTile(enPassantTarget);
-		fenNotation.setHalfMoveClock(halfMoveClock);
-		fenNotation.setFullMoveNumber(fullMoveNumber);
-		fenNotation.setWhiteToMove(isWhiteTurn);
+		fenNotation.setHalfMoveClock(getHalfMoveClock());
+		fenNotation.setFullMoveNumber(getFullMoveNumber());
+		fenNotation.setWhiteToMove(isWhiteTurn());
 
 		return fenNotation;
 	}
@@ -336,6 +335,9 @@ public class Board extends JPanel {
 		// Toggle the turn to the other player
 		setWhiteTurn(!isWhiteTurn());
 
+		// Play appropriate sound effects based on the move
+		playGameSound(move);
+
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
 
@@ -343,7 +345,6 @@ public class Board extends JPanel {
 		setTargetColumn(-1);
 		setTargetRow(-1);
 
-		playGameSound(move);
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
 
 		// TODO:
@@ -369,13 +370,22 @@ public class Board extends JPanel {
 	 * 	The move that is being made, including the captured piece (if any).
 	 */
 	private void playGameSound(Move move) {
+		repaint();
+
 		// If the game has ended
 		if (getMoveValidator().isCheckmate() || getMoveValidator().isStalemate()) {
 			getSoundPlayer().play(Sounds.GAME_END);
 			return;
 		}
 
+		// TODO: fix:
+		//  - Alle Sounds, die durch "klicken" entstehen, werden nicht korrekt abgespielt
+		//  - Es wird wahrscheinlich das Board nicht korrekt aktualisiert (siehe logDebug statements)
+
 		// If King is in Check
+		// Logger.logDebug("White King in Check: " + getMoveValidator().isKingInCheck(true));
+		// Logger.logDebug("Black King in Check: " + getMoveValidator().isKingInCheck(false));
+
 		if (getMoveValidator().isKingInCheck()) {
 			getSoundPlayer().play(Sounds.CHECK);
 			return;
@@ -408,17 +418,17 @@ public class Board extends JPanel {
 	 */
 	private void incrementMoveCounts(Move move, Piece piece) {
 		// Increment the full move number if it's not white's turn (indicating black's move)
-		if (!isWhiteTurn) {
-			fullMoveNumber++; // Increment the full move number after black's move
-			tempFullMoveNumber = fullMoveNumber; // Store the current full move number temporarily
+		if (!isWhiteTurn()) {
+			setFullMoveNumber(getTempFullMoveNumber() + 1); // Increment the full move number after black's move
+			setTempFullMoveNumber(getFullMoveNumber()); // Store the current full move number temporarily
 		}
 
 		// Reset the half-move clock if a pawn is moved or a piece is captured
 		if (piece instanceof Pawn || move.getCapturedPiece() != null) {
-			halfMoveClock = 0; // Reset the half-move clock
+			setHalfMoveClock(0); // Reset the half-move clock
 		} else {
 			// Increment the half-move clock if neither a pawn is moved nor a piece is captured
-			halfMoveClock++;
+			setHalfMoveClock(getHalfMoveClock() + 1);
 		}
 	}
 
@@ -434,16 +444,16 @@ public class Board extends JPanel {
 		int colorIndex = move.getPiece().isWhite() ? 1 : -1;
 
 		// Check for en passant: If the pawn lands on the en passant target square, capture the piece
-		if (getTileNumber(move.getNewColumn(), move.getNewRow()) == enPassantTile) {
+		if (getTileNumber(move.getNewColumn(), move.getNewRow()) == getEnPassantTile()) {
 			move.setCapturedPiece(getPieceAt(move.getNewColumn(), move.getNewRow() + colorIndex));
 		}
 
 		// If the pawn moves two squares forward, set the en passant target square
 		if (Math.abs(move.getPiece().getRow() - move.getNewRow()) == 2) {
-			enPassantTile = getTileNumber(move.getNewColumn(), move.getNewRow() + colorIndex);
+			setEnPassantTile(getTileNumber(move.getNewColumn(), move.getNewRow() + colorIndex));
 		} else {
 			// If the pawn moves only one square, clear the en passant target square
-			enPassantTile = -1;
+			setEnPassantTile(-1);
 		}
 
 		// Check for pawn promotion: If the pawn reaches the promotion rank, trigger promotion logic
@@ -476,8 +486,8 @@ public class Board extends JPanel {
 			}
 
 			// If the mouse is not being dragged, animate the rook's move as well
-			if (!mouseDragged) {
-				hasCastled = true;
+			if (!isMouseDragged()) {
+				setHasCastled(true);
 				animateMove(rook, targetColumn, move.getPiece().getRow());
 			} else {
 				// Set the rook's position immediately if the mouse is dragged
@@ -559,7 +569,6 @@ public class Board extends JPanel {
 		}
 	}
 
-
 	/**
 	 * Creates a chess piece based on the given character, position, and color.
 	 * The character is matched to its corresponding piece type (e.g., 'r' for Rook).
@@ -622,10 +631,11 @@ public class Board extends JPanel {
 	 */
 	private void updateEnPassant(String enPassant) {
 		// If en passant is "-", there is no valid en passant tile
-		enPassantTile = enPassant.equals("-")
-			                ? -1 // No en passant
-			                : (7 - (enPassant.charAt(1) - '1')) * 8 + (enPassant.charAt(0) - 'a');
-		// Calculate tile index: (row index * 8 + column index)
+		setEnPassantTile(
+			enPassant.equals("-")
+				? -1 // No en passant
+				: (7 - (enPassant.charAt(1) - '1')) * 8 + (enPassant.charAt(0) - 'a')
+		);
 	}
 
 	/**
@@ -666,10 +676,10 @@ public class Board extends JPanel {
 	 */
 	public void showPossibleMoves(Piece piece) {
 		// Clear any previously displayed possible moves
-		possibleMoves.clear();
+		getPossibleMoves().clear();
 
 		// Add the calculated moves to the board's possible moves list
-		possibleMoves.addAll(piece.getLegalMoves(this));
+		getPossibleMoves().addAll(piece.getLegalMoves(this));
 
 		// Repaint the board to visually display the possible moves
 		repaint();
