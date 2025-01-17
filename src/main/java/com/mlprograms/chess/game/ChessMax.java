@@ -6,6 +6,7 @@
 
 package com.mlprograms.chess.game;
 
+import com.mlprograms.chess.game.engine.ai.BotSpriteSheetCreator;
 import com.mlprograms.chess.game.ui.Board;
 
 import javax.swing.*;
@@ -19,6 +20,11 @@ public class ChessMax {
 
 	public ChessMax() {
 		initializeJFrame();
+		setUp();
+	}
+
+	private void setUp() {
+		BotSpriteSheetCreator.createSpriteSheet();
 	}
 
 	/**
