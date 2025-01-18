@@ -84,7 +84,7 @@ public class Board extends JPanel {
 		this.addMouseListener(mouseInput);
 		this.addMouseMotionListener(mouseInput);
 
-		boardContainer.setBackground(fetchColorConfig("BACKGROUND"));
+		boardContainer.setBackground(fetchColorConfig("Colors","BACKGROUND"));
 		boardContainer.add(this);
 
 		initializeBoardConfigurations();

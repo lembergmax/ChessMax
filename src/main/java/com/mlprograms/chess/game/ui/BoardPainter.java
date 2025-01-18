@@ -62,9 +62,9 @@ public class BoardPainter {
 
 			// Determine highlight color based on the move type
 			if (isCaptureMove(column, row)) {
-				graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT_CAPTURE", 135)); // Capture move color
+				graphics2D.setColor(fetchColorWithAlphaConfig("Colors","TILE_HIGHLIGHT_CAPTURE", 135)); // Capture move color
 			} else {
-				graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT", 135));
+				graphics2D.setColor(fetchColorWithAlphaConfig("Colors","TILE_HIGHLIGHT", 135));
 			}
 
 			// Draw the highlight on the corresponding tile
@@ -90,7 +90,7 @@ public class BoardPainter {
 		Move lastMove = getBoard().getMoveHistory().getLast().getMadeMove();
 
 		// Set the highlight color based on the move type
-		graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
+		graphics2D.setColor(fetchColorWithAlphaConfig("Colors","TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
 
 		// Draw the highlight on the source tile
 		graphics2D.fillRect(lastMove.getOldColumn() * getBoard().getTileSize(), lastMove.getOldRow() * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
@@ -117,7 +117,7 @@ public class BoardPainter {
 
 		// Let the king's tile blink a few times
 		new Thread(() -> {
-			graphics2D.setColor(fetchColorWithAlphaConfig("TILE_HIGHLIGHT_ILLEGAL", 105));
+			graphics2D.setColor(fetchColorWithAlphaConfig("Colors","TILE_HIGHLIGHT_ILLEGAL", 105));
 
 			getBoard().getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
 
@@ -209,9 +209,9 @@ public class BoardPainter {
 			for (int columns = 0; columns < getBoard().getColumns(); columns++) {
 				// Alternate between light and dark colors based on tile position
 				if ((rows + columns) % 2 == 0) {
-					graphics2D.setColor(fetchColorConfig("TILE_LIGHT")); // Light tile color
+					graphics2D.setColor(fetchColorConfig("Colors","TILE_LIGHT")); // Light tile color
 				} else {
-					graphics2D.setColor(fetchColorConfig("TILE_DARK")); // Dark tile color
+					graphics2D.setColor(fetchColorConfig("Colors","TILE_DARK")); // Dark tile color
 				}
 				// Draw the rectangle representing the tile
 				graphics2D.fillRect(columns * getBoard().getTileSize(), rows * getBoard().getTileSize(),

@@ -39,7 +39,7 @@ public class ChessMax {
 			fetchIntegerConfig("ChessGame", "HEIGHT")
 		));
 		frame.setLocationRelativeTo(null);
-		frame.getContentPane().setBackground(fetchColorConfig("BACKGROUND"));
+		frame.getContentPane().setBackground(fetchColorConfig("Colors","BACKGROUND"));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
