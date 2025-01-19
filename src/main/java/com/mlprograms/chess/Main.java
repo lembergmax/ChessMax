@@ -7,9 +7,6 @@
 package com.mlprograms.chess;
 
 import com.mlprograms.chess.account.ui.Startmenu;
-import com.mlprograms.chess.game.ChessMax;
-import com.mlprograms.chess.game.engine.ai.v1.Martin;
-import com.mlprograms.chess.utils.Logger;
 
 /**
  * The main entry point for the ChessMax application.
@@ -24,11 +21,7 @@ public class Main {
 	 * 	command-line arguments (not used)
 	 */
 	public static void main(String[] args) {
-		// initializeUI();
-
-		new ChessMax().play();
-
-		Logger.logDebug(new Martin());
+		initializeUI();
 	}
 
 	/**

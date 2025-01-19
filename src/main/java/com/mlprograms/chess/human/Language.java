@@ -4,7 +4,7 @@
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.player;
+package com.mlprograms.chess.human;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,14 +13,14 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class Elo {
+public class Language {
 
-	private int inGameElo;
-	private int officialElo;
+	private String languageName;
+	private String languageShortName;
 
-	public Elo(int inGame, int officialElo) {
-		this.inGameElo = inGame;
-		this.officialElo = officialElo;
+	public Language(String name, String shortName) {
+		this.languageName = name;
+		this.languageShortName = shortName;
 	}
 
 }

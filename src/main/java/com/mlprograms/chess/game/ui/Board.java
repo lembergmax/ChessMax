@@ -6,10 +6,13 @@
 
 package com.mlprograms.chess.game.ui;
 
+import com.mlprograms.chess.game.Player;
 import com.mlprograms.chess.game.engine.*;
+import com.mlprograms.chess.game.engine.ai.Ai;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
+import com.mlprograms.chess.human.Human;
 import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.InformationMessage;
 import lombok.Getter;
@@ -71,13 +74,17 @@ public class Board extends JPanel {
 	private boolean isWhiteTurn = true;
 	private boolean mouseDragged = false;
 	private boolean hasCastled = false;
-	private boolean isPawnPromotion = false;
+
+	private Player playerWhite;
+	private Player playerBlack;
 
 	/**
 	 * Constructs the Board and initializes its components and configurations.
 	 * Sets up the JFrame and prepares the chessboard layout.
 	 */
-	public Board() {
+	public Board(Player playerWhite, Player playerBlack) {
+		this.playerWhite = playerWhite;
+		this.playerBlack = playerBlack;
 		this.moveValidator = new MoveValidator(this);
 		this.soundPlayer = new SoundPlayer();
 		this.boardPainter = new BoardPainter(this);

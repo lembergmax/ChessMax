@@ -1,5 +1,6 @@
-package com.mlprograms.chess.player;
+package com.mlprograms.chess.human;
 
+import com.mlprograms.chess.game.Player;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,9 +8,9 @@ import lombok.ToString;
 
 @Setter
 @Getter
-@EqualsAndHashCode
-@ToString
-public class Player {
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class Human extends Player {
 
 	private Id id;
 	private Name name;
@@ -22,7 +23,8 @@ public class Player {
 	private String timeZone;
 	private boolean isWhite;
 
-	public Player(Id id, Name name, Language language, Elo elo, Birthday birthday, Contact contact, String password, PasswordRecovery passwordRecovery, String timezone) {
+	public Human(Id id, Name name, Language language, Elo elo, Birthday birthday, Contact contact, String password, PasswordRecovery passwordRecovery, String timezone) {
+		super();
 		this.id = id;
 		this.name = name;
 		this.language = language;

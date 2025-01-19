@@ -7,7 +7,9 @@
 package com.mlprograms.chess.game;
 
 import com.mlprograms.chess.game.engine.ai.BotSpriteSheetCreator;
+import com.mlprograms.chess.game.engine.ai.v1.Martin;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.human.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,8 +45,17 @@ public class ChessMax {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
-		// Board ist jetzt ein Mitglied von Frame, nicht eine Unterklasse
-		Board board = new Board(frame);
+		Id id = new Id("db123", "user123");
+		Name name = new Name("username", "Vorname", "Nachname");
+		Language language = new Language("Deutsch", "DE");
+		Elo elo = new Elo(1500, 1600);
+		Birthday birthday = new Birthday(1, 1, 2000);
+		Contact contact = new Contact("email@example.com", "second@example.com", "1234567890");
+		PasswordRecovery passwordRecovery = new PasswordRecovery("Lieblingsfarbe?", "Blau");
+
+		Human testHuman = new Human(id, name, language, elo, birthday, contact, "password123", passwordRecovery, "Europe/Berlin");
+
+		Board board = new Board(testHuman, new Martin());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
