@@ -77,7 +77,7 @@ public class Board extends JPanel {
 	 * Constructs the Board and initializes its components and configurations.
 	 * Sets up the JFrame and prepares the chessboard layout.
 	 */
-	public Board(Frame frame) {
+	public Board() {
 		this.moveValidator = new MoveValidator(this);
 		this.soundPlayer = new SoundPlayer();
 		this.boardPainter = new BoardPainter(this);
