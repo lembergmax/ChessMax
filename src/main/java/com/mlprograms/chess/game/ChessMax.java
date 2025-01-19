@@ -19,8 +19,8 @@ public class ChessMax {
 	private JFrame frame;
 
 	public ChessMax() {
-		initializeJFrame();
 		setUp();
+		initializeJFrame();
 	}
 
 	private void setUp() {
@@ -39,12 +39,12 @@ public class ChessMax {
 			fetchIntegerConfig("ChessGame", "HEIGHT")
 		));
 		frame.setLocationRelativeTo(null);
-		frame.getContentPane().setBackground(fetchColorConfig("Colors","BACKGROUND"));
+		frame.getContentPane().setBackground(fetchColorConfig("Colors", "BACKGROUND"));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
 		// Board ist jetzt ein Mitglied von Frame, nicht eine Unterklasse
-		Board board = new Board();
+		Board board = new Board(frame);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
