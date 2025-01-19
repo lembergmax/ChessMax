@@ -64,8 +64,8 @@ public class ConfigFetcher {
 	 * @throws NumberFormatException
 	 * 	if the fetched value is not a valid hexadecimal color code.
 	 */
-	public static Color fetchColorConfig(String key) {
-		return decodeColor(fetchStringConfig("Colors", key));
+	public static Color fetchColorConfig(String section, String key) {
+		return decodeColor(fetchStringConfig(section, key));
 	}
 
 	/**
@@ -81,12 +81,12 @@ public class ConfigFetcher {
 	 * @throws IllegalArgumentException
 	 * 	if the alpha value is out of the valid range (0-255).
 	 */
-	public static Color fetchColorWithAlphaConfig(String key, int alpha) {
+	public static Color fetchColorWithAlphaConfig(String section, String key, int alpha) {
 		if (alpha < 0 || alpha > 255) {
 			throw new IllegalArgumentException("Alpha value must be between 0 and 255: " + alpha);
 		}
 
-		Color baseColor = decodeColor(fetchStringConfig("Colors", key));
+		Color baseColor = decodeColor(fetchStringConfig(section, key));
 		return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha);
 	}
 

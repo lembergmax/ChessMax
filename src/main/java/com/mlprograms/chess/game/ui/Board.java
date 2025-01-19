@@ -10,6 +10,7 @@ import com.mlprograms.chess.game.engine.*;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
+import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.InformationMessage;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,6 +42,7 @@ public class Board extends JPanel {
 	private String startingPosition;
 
 	private JPanel boardContainer;
+	private JPanel promotionPanel;
 
 	private List<HistoryMove> moveHistory = new ArrayList<>();
 	private List<Move> possibleMoves = new ArrayList<>();
@@ -69,28 +71,30 @@ public class Board extends JPanel {
 	private boolean isWhiteTurn = true;
 	private boolean mouseDragged = false;
 	private boolean hasCastled = false;
+	private boolean isPawnPromotion = false;
 
 	/**
 	 * Constructs the Board and initializes its components and configurations.
 	 * Sets up the JFrame and prepares the chessboard layout.
 	 */
-	public Board() {
+	public Board(Frame frame) {
 		this.moveValidator = new MoveValidator(this);
 		this.soundPlayer = new SoundPlayer();
 		this.boardPainter = new BoardPainter(this);
 		this.boardContainer = new JPanel(new GridBagLayout());
 
 		MouseInput mouseInput = new MouseInput(this);
-		this.addMouseListener(mouseInput);
-		this.addMouseMotionListener(mouseInput);
+		addMouseListener(mouseInput);
+		addMouseMotionListener(mouseInput);
 
-		boardContainer.setBackground(fetchColorConfig("BACKGROUND"));
-		boardContainer.add(this);
+		getBoardContainer().setBackground(fetchColorConfig("Colors", "BACKGROUND"));
+		getBoardContainer().add(this);
 
 		initializeBoardConfigurations();
-		setPreferredSize(new Dimension(columns * tileSize, rows * tileSize));
+		setPreferredSize(new Dimension(getColumns() * getTileSize(), getRows() * getTileSize()));
 
 		loadPositionFromFen(FEN_STARTING_POSITION);
+		createPromotionPanel();
 	}
 
 	/**
@@ -360,6 +364,15 @@ public class Board extends JPanel {
 		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!" + "\nGrund: " + gameEnding));
 	}
 
+	private void createPromotionPanel() {
+
+	}
+
+	private void showPromotionPanel() {
+
+	}
+
+
 	/**
 	 * Plays a sound effect based on the type of move being made.
 	 * Note that the following sounds are only for basic sound effects like game end, king in check, piece capture, and
@@ -457,8 +470,46 @@ public class Board extends JPanel {
 		}
 
 		// Check for pawn promotion: If the pawn reaches the promotion rank, trigger promotion logic
-		// TODO: checkPawnPromotion(move);
+		checkPawnPromotion(move);
 	}
+
+	private void checkPawnPromotion(Move move) {
+		// Check if the pawn has reached the promotion rank
+		boolean isPieceWhite = move.getPiece().isWhite();
+		int promotionRank = isPieceWhite ? 0 : 7;
+		if (move.getNewRow() == promotionRank) {
+			// Show the promotion dialog to allow the player to choose a piece to promote to
+			SwingUtilities.invokeLater(() -> {
+				// Get the parent window
+				Window window = SwingUtilities.getWindowAncestor(this);
+
+				// Create the Promotion Dialog
+				PromotionPanel dialog = new PromotionPanel(window instanceof JFrame ? (JFrame) window : null, this, move);
+
+				// Wait for the dialog to be closed and retrieve the selected piece
+				Piece chosenPiece = dialog.showDialog();
+
+				// Proceed with the pawn promotion
+				promotePawn(move, chosenPiece);
+			});
+		}
+	}
+
+	private void promotePawn(Move move, Piece chosenPiece) {
+		// Create the promotion piece based on the type of chosen piece
+		if (chosenPiece == null) {
+			// Handle the case where no piece was selected
+			Logger.logError("No piece selected for promotion");
+			return;
+		}
+
+		// Remove the pawn from the board and replace it with the new piece
+		getPieceList().remove(move.getPiece());
+		getPieceList().add(chosenPiece);
+
+		repaint();  // Refresh the board after promotion
+	}
+
 
 	/**
 	 * Handles the movement of the king, including castling.
