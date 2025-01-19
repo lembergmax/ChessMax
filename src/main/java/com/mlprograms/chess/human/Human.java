@@ -35,4 +35,19 @@ public class Human extends Player {
 		this.passwordRecovery = passwordRecovery;
 		this.timeZone = timezone;
 	}
+
+	public Human() {
+		this(
+			new Id("db123", "user123"),
+			new Name("username", "Vorname", "Nachname"),
+			new Language("Deutsch", "DE"),
+			new Elo(1500, 1600),
+			new Birthday(1, 1, 2000),
+			new Contact("email@example.com", "second@example.com", "1234567890"),
+			"123456",
+			new PasswordRecovery("Lieblingsfarbe?", "Blau"),
+			"Deutschland/Berlin"
+		);
+	}
+
 }

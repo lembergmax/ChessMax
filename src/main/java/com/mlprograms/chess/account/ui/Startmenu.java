@@ -10,6 +10,9 @@
  */
 package com.mlprograms.chess.account.ui;
 
+import com.mlprograms.chess.game.ChessMax;
+import com.mlprograms.chess.game.engine.ai.v1.Martin;
+import com.mlprograms.chess.human.*;
 import com.mlprograms.chess.utils.WindowPositionManager;
 
 import java.awt.event.ComponentAdapter;
@@ -129,7 +132,9 @@ public class Startmenu extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonLoginAndRegistrationActionPerformed
 
     private void jButtonPlayAsGuestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPlayAsGuestActionPerformed
-        // TODO add your handling code here: start game against bot
+        // Play only against Martin if playing as guest
+        new ChessMax(new Human(), new Martin()).play();
+        this.dispose();
     }//GEN-LAST:event_jButtonPlayAsGuestActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
