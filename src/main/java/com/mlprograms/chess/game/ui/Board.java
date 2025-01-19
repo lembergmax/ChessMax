@@ -94,7 +94,6 @@ public class Board extends JPanel {
 		setPreferredSize(new Dimension(getColumns() * getTileSize(), getRows() * getTileSize()));
 
 		loadPositionFromFen(FEN_STARTING_POSITION);
-		createPromotionPanel();
 	}
 
 	/**
@@ -363,15 +362,6 @@ public class Board extends JPanel {
 		boolean isDraw = gameEnding != GameEnding.CHECKMATE;
 		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!" + "\nGrund: " + gameEnding));
 	}
-
-	private void createPromotionPanel() {
-
-	}
-
-	private void showPromotionPanel() {
-
-	}
-
 
 	/**
 	 * Plays a sound effect based on the type of move being made.
