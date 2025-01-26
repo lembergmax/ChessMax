@@ -8,11 +8,9 @@ package com.mlprograms.chess.game.ui;
 
 import com.mlprograms.chess.game.Player;
 import com.mlprograms.chess.game.engine.*;
-import com.mlprograms.chess.game.engine.ai.Ai;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
-import com.mlprograms.chess.human.Human;
 import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.InformationMessage;
 import lombok.Getter;
@@ -37,7 +35,6 @@ import static com.mlprograms.chess.utils.ConfigFetcher.*;
 @Setter
 public class Board extends JPanel {
 
-	private final String FEN_STARTING_POSITION = fetchStringConfig("ChessGame", "STARTING_POSITION");
 	private SoundPlayer soundPlayer;
 	private BoardPainter boardPainter;
 	private MoveValidator moveValidator;
@@ -74,6 +71,7 @@ public class Board extends JPanel {
 	private boolean isWhiteTurn = true;
 	private boolean mouseDragged = false;
 	private boolean hasCastled = false;
+	private boolean isWhiteAtBottom;
 
 	private Player playerWhite;
 	private Player playerBlack;
@@ -82,13 +80,14 @@ public class Board extends JPanel {
 	 * Constructs the Board and initializes its components and configurations.
 	 * Sets up the JFrame and prepares the chessboard layout.
 	 */
-	public Board(Player playerWhite, Player playerBlack) {
+	public Board(Player playerWhite, Player playerBlack, boolean isWhiteAtBottom) {
 		this.playerWhite = playerWhite;
 		this.playerBlack = playerBlack;
 		this.moveValidator = new MoveValidator(this);
 		this.soundPlayer = new SoundPlayer();
 		this.boardPainter = new BoardPainter(this);
 		this.boardContainer = new JPanel(new GridBagLayout());
+		this.isWhiteAtBottom = isWhiteAtBottom;
 
 		MouseInput mouseInput = new MouseInput(this);
 		addMouseListener(mouseInput);
@@ -99,8 +98,6 @@ public class Board extends JPanel {
 
 		initializeBoardConfigurations();
 		setPreferredSize(new Dimension(getColumns() * getTileSize(), getRows() * getTileSize()));
-
-		loadPositionFromFen(FEN_STARTING_POSITION);
 	}
 
 	/**
@@ -130,7 +127,7 @@ public class Board extends JPanel {
 		final String CHESS_SECTION = "ChessGame";
 
 		this.title = fetchStringConfig(CHESS_SECTION, "TITLE");
-		this.startingPosition = fetchStringConfig(CHESS_SECTION, "STARTING_POSITION");
+		this.startingPosition = fetchStringConfig(CHESS_SECTION, "STARTING_POSITION_" + (isWhiteAtBottom() ? "WHITE" : "BLACK"));
 		this.width = fetchIntegerConfig(CHESS_SECTION, "WIDTH");
 		this.height = fetchIntegerConfig(CHESS_SECTION, "HEIGHT");
 		this.padding = fetchIntegerConfig(CHESS_SECTION, "PADDING");
@@ -149,6 +146,8 @@ public class Board extends JPanel {
 		this.newColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
 		this.newRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
 		this.enPassantTile = fetchIntegerConfig(CHESS_SECTION, "EN_PASSANT_TILE");
+
+		loadPositionFromFen(getStartingPosition());
 	}
 
 	/**
@@ -357,7 +356,6 @@ public class Board extends JPanel {
 
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
 
-		// TODO:
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {
 			return;
@@ -470,10 +468,16 @@ public class Board extends JPanel {
 		checkPawnPromotion(move);
 	}
 
+	/**
+	 * Checks if the pawn has reached the promotion rank and initiates the promotion process.
+	 *
+	 * @param move the move being made by the pawn
+	 */
 	private void checkPawnPromotion(Move move) {
 		// Check if the pawn has reached the promotion rank
 		boolean isPieceWhite = move.getPiece().isWhite();
-		int promotionRank = isPieceWhite ? 0 : 7;
+		int promotionRank = isWhiteAtBottom() ? isPieceWhite ? 0 : 7 : isPieceWhite ? 7 : 0;
+
 		if (move.getNewRow() == promotionRank) {
 			// Show the promotion dialog to allow the player to choose a piece to promote to
 			SwingUtilities.invokeLater(() -> {
@@ -492,6 +496,12 @@ public class Board extends JPanel {
 		}
 	}
 
+	/**
+	 * Promotes a pawn to the chosen piece.
+	 *
+	 * @param move the move being made by the pawn
+	 * @param chosenPiece the piece chosen for promotion
+	 */
 	private void promotePawn(Move move, Piece chosenPiece) {
 		// Create the promotion piece based on the type of chosen piece
 		if (chosenPiece == null) {
@@ -506,7 +516,6 @@ public class Board extends JPanel {
 
 		repaint();  // Refresh the board after promotion
 	}
-
 
 	/**
 	 * Handles the movement of the king, including castling.
