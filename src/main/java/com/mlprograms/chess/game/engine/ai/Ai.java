@@ -22,7 +22,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
-@ToString
+@ToString(callSuper = true)
 public class Ai extends Player {
 
 	// Name of the AI

@@ -20,10 +20,12 @@ public class ChessMax {
 	// is not final, because the players can change after game
 	private Player playerWhite;
 	private Player playerBlack;
+	private boolean isWhiteAtBottom;
 
-	public ChessMax(Player playerWhite, Player playerBlack) {
+	public ChessMax(Player playerWhite, Player playerBlack, boolean isWhiteAtBottom) {
 		this.playerWhite = playerWhite;
 		this.playerBlack = playerBlack;
+		this.isWhiteAtBottom = isWhiteAtBottom;
 
 		setUp();
 		initializeJFrame();
@@ -49,7 +51,7 @@ public class ChessMax {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
-		Board board = new Board(playerWhite, playerBlack);
+		Board board = new Board(playerWhite, playerBlack, isWhiteAtBottom);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
