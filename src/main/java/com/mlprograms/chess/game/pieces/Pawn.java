@@ -7,6 +7,7 @@
 package com.mlprograms.chess.game.pieces;
 
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.utils.Logger;
 
 import java.awt.image.BufferedImage;
 
@@ -30,40 +31,44 @@ public class Pawn extends Piece {
 	}
 
 	@Override
-	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
-		if(!isValidPieceMove(column, row, checkForKingSafety)) {
+	public boolean isValidMovement(int targetColumn, int targetRow, boolean checkForKingSafety) {
+		if (!isValidPieceMove(targetColumn, targetRow, checkForKingSafety)) {
 			return false;
 		}
 
-		int colorIndex = isWhite() ? 1 : -1;
+		// TODO: Wenn ein Bauer auf 2 Pusht und der gegen über auch, dann wird der Bauer geschlagen, der vorher den 2er Push gemacht hat
+
+		int direction = isWhite() == getBoard().isWhiteAtBottom() ? 1 : -1;
+		boolean isWhiteAtBottom = getBoard().isWhiteAtBottom();
 
 		// push on 1
-		if (getColumn() == column && row == getRow() - colorIndex && getBoard().getPieceAt(column, row) == null) {
+		if (getColumn() == targetColumn && targetRow == getRow() - direction && getBoard().getPieceAt(targetColumn, targetRow) == null) {
 			return true;
 		}
 
 		// push on 2
-		if (getRow() == (isWhite() ? 6 : 1) && getColumn() == column && row == getRow() - colorIndex * 2 && getBoard().getPieceAt(column, row) == null && getBoard().getPieceAt(column, row + colorIndex) == null) {
+		if (getRow() == (isWhiteAtBottom ? (isWhite() ? 6 : 1) : (isWhite() ? 1 : 6)) && getColumn() == targetColumn && targetRow == getRow() - direction * 2 &&
+			    getBoard().getPieceAt(targetColumn, targetRow) == null && getBoard().getPieceAt(targetColumn, targetRow + direction) == null) {
 			return true;
 		}
 
 		// capture to left
-		if (column == getColumn() - 1 && row == getRow() - colorIndex && getBoard().getPieceAt(column, row) != null) {
+		if (targetColumn == getColumn() - 1 && targetRow == getRow() - direction && getBoard().getPieceAt(targetColumn, targetRow) != null) {
 			return true;
 		}
 
 		// capture to right
-		if (column == getColumn() + 1 && row == getRow() - colorIndex && getBoard().getPieceAt(column, row) != null) {
+		if (targetColumn == getColumn() + 1 && targetRow == getRow() - direction && getBoard().getPieceAt(targetColumn, targetRow) != null) {
 			return true;
 		}
 
 		// en passant left
-		if (getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == getColumn() - 1 && row == getRow() - colorIndex) {
+		if (getBoard().getTileNumber(targetColumn, targetRow) == getBoard().getEnPassantTile() && targetColumn == getColumn() - 1 && targetRow == getRow() - direction) {
 			return true;
 		}
 
 		// en passant right
-		return getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile() && column == getColumn() + 1 && row == getRow() - colorIndex;
+		return getBoard().getTileNumber(targetColumn, targetRow) == getBoard().getEnPassantTile() && targetColumn == getColumn() + 1 && targetRow == getRow() - direction;
 	}
 
 	@Override
