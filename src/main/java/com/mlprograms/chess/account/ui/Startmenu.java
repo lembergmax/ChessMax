@@ -14,6 +14,7 @@ import com.mlprograms.chess.game.ChessMax;
 import com.mlprograms.chess.game.engine.ai.v1.Martin;
 import com.mlprograms.chess.human.*;
 import com.mlprograms.chess.utils.WindowPositionManager;
+import com.mlprograms.chess.utils.ui.OptionMessage;
 
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -132,10 +133,27 @@ public class Startmenu extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonLoginAndRegistrationActionPerformed
 
     private void jButtonPlayAsGuestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPlayAsGuestActionPerformed
-        // Play only against Martin if playing as guest
-        new ChessMax(new Human(), new Martin()).play();
-        this.dispose();
+		 this.dispose();
+		 new OptionMessage(
+          "Farbe wählen",
+          "Wähle die Farbe, die du spielen möchtest.",
+          new String[] { "Weiß", "Schwarz", "Abbrechen" },
+          new Runnable[] { this::onWhiteButtonClick, this::onBlackButtonClick, this::onCancel }
+       );
     }//GEN-LAST:event_jButtonPlayAsGuestActionPerformed
+
+    private void onWhiteButtonClick() {
+        new ChessMax(new Human(), new Martin(), true).play();
+    }
+
+    private void onBlackButtonClick() {
+        new ChessMax(new Martin(), new Human(), false).play();
+    }
+
+    private void onCancel() {
+        this.dispose();
+        new Startmenu().setVisible(true);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonLoginAndRegistration;
