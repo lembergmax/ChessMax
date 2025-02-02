@@ -27,12 +27,8 @@ public class ChessMax {
 		this.playerBlack = playerBlack;
 		this.isWhiteAtBottom = isWhiteAtBottom;
 
-		setUp();
-		initializeJFrame();
-	}
-
-	private void setUp() {
 		BotSpriteSheetCreator.createSpriteSheet();
+		initializeJFrame();
 	}
 
 	/**
