@@ -34,7 +34,7 @@ public class King extends Piece {
 		}
 
 		// Check if castling is possible (king moves 2 squares)
-		return Math.abs(targetColumn - getColumn()) == 2 && getRow() == targetRow && canCastle(targetColumn, targetRow);
+		return Math.abs(targetColumn - getColumn()) == 2 && getRow() == targetRow && canCastle(targetColumn, targetRow) && !getBoard().getMoveValidator().isKingInCheck();
 	}
 
 	public boolean canCastle(int column, int row) {
