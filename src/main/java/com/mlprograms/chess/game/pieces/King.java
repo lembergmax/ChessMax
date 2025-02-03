@@ -37,6 +37,16 @@ public class King extends Piece {
 		return Math.abs(targetColumn - getColumn()) == 2 && getRow() == targetRow && canCastle(targetColumn, targetRow) && !getBoard().getMoveValidator().isKingInCheck();
 	}
 
+	/**
+	 * Determines if the king can perform a castling move to the specified column and row.
+	 *
+	 * @param column
+	 * 	the target column for the king's move
+	 * @param row
+	 * 	the row of the king and rook
+	 *
+	 * @return true if castling is possible, false otherwise
+	 */
 	public boolean canCastle(int column, int row) {
 		// Check if the king is moving on the same row and is making its first move
 		if (getRow() != row || !isFirstMove()) {
