@@ -449,7 +449,7 @@ public class Board extends JPanel {
 	 */
 	private void movePawn(Move move) {
 		// Determine the color index based on the pawn's color (1 for white, -1 for black)
-		int colorIndex = move.getPiece().isWhite() ? 1 : -1;
+		int colorIndex = (isWhiteAtBottom ? (move.getPiece().isWhite() ? 1 : -1) : (move.getPiece().isWhite() ? -1 : 1));
 
 		// Check for en passant: If the pawn lands on the en passant target square, capture the piece
 		if (getTileNumber(move.getNewColumn(), move.getNewRow()) == getEnPassantTile()) {

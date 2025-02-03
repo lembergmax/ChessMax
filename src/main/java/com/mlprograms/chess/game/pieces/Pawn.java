@@ -36,8 +36,6 @@ public class Pawn extends Piece {
 			return false;
 		}
 
-		// TODO: Wenn ein Bauer auf 2 Pusht und der gegen über auch, dann wird der Bauer geschlagen, der vorher den 2er Push gemacht hat
-
 		int direction = isWhite() == getBoard().isWhiteAtBottom() ? 1 : -1;
 		boolean isWhiteAtBottom = getBoard().isWhiteAtBottom();
 
@@ -46,9 +44,11 @@ public class Pawn extends Piece {
 			return true;
 		}
 
+		Logger.logDebug(getBoard().getEnPassantTile());
+
 		// push on 2
 		if (getRow() == (isWhiteAtBottom ? (isWhite() ? 6 : 1) : (isWhite() ? 1 : 6)) && getColumn() == targetColumn && targetRow == getRow() - direction * 2 &&
-			    getBoard().getPieceAt(targetColumn, targetRow) == null && getBoard().getPieceAt(targetColumn, targetRow + direction) == null) {
+				getBoard().getPieceAt(targetColumn, targetRow) == null && getBoard().getPieceAt(targetColumn, targetRow + direction) == null) {
 			return true;
 		}
 
