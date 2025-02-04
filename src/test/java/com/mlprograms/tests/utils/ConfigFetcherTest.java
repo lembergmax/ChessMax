@@ -29,13 +29,13 @@ class ConfigFetcherTest {
 
 	@Test
 	void testFetchColorConfig() {
-		Color color = ConfigFetcher.fetchColorConfig("TILE_LIGHT");
+		Color color = ConfigFetcher.fetchColorConfig("Colors", "TILE_LIGHT");
 		assertEquals(new Color(0xFFE19C), color, "Die Farbe sollte #FFE19C sein.");
 	}
 
 	@Test
 	void testFetchColorWithAlphaConfig() {
-		Color color = ConfigFetcher.fetchColorWithAlphaConfig("TILE_HIGHLIGHT", 135);
+		Color color = ConfigFetcher.fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT", 135);
 		assertEquals(new Color(106, 191, 105, 135), color, "Die Farbe sollte #6ABF69 mit Alpha 135 sein.");
 	}
 }

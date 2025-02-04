@@ -8,6 +8,7 @@ package com.mlprograms.tests.pieces;
 
 import com.mlprograms.chess.game.pieces.Pawn;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.human.Human;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,7 @@ class PawnTest {
 
 	@BeforeEach
 	void setUp() {
-		board = new Board();
+		board = new Board(new Human(), new Human(), true);
 		whitePawn = new Pawn(board, 4, 6, true); // Weiße Bauern starten in der 6. Reihe
 		blackPawn = new Pawn(board, 4, 1, false); // Schwarze Bauern starten in der 1. Reihe
 		board.getPieceList().add(whitePawn);

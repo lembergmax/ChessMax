@@ -6,8 +6,10 @@
 
 package com.mlprograms.tests.pieces;
 
+import com.mlprograms.chess.game.engine.ai.v1.Martin;
 import com.mlprograms.chess.game.pieces.Bishop;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.human.Human;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +23,7 @@ class BishopTest {
 
 	@BeforeEach
 	void setUp() {
-		board = new Board();
+		board = new Board(new Human(), new Human(), true);
 		board.getPieceList().clear();
 		whiteBishop = new Bishop(board, 2, 0, true);
 		blackBishop = new Bishop(board, 2, 7, false);

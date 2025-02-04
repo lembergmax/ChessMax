@@ -8,6 +8,7 @@ package com.mlprograms.tests.pieces;
 
 import com.mlprograms.chess.game.pieces.Rook;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.human.Human;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,7 @@ class RookTest {
 
 	@BeforeEach
 	void setUp() {
-		board = new Board();
+		board = new Board(new Human(), new Human(), true);
 		board.getPieceList().clear();
 		whiteRook = new Rook(board, 0, 0, true);
 		blackRook = new Rook(board, 0, 7, false);

@@ -11,7 +11,7 @@ import com.mlprograms.chess.utils.ConfigFetcher;
 
 public class Magnus extends Ai {
 
-	private static final int BOT_NUMBER = 3;
+	private static final int BOT_NUMBER = 30;
 
 	public Magnus() {
 		super(

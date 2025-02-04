@@ -8,6 +8,7 @@ package com.mlprograms.tests.pieces;
 
 import com.mlprograms.chess.game.pieces.Queen;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.human.Human;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,7 @@ class QueenTest {
 
 	@BeforeEach
 	void setUp() {
-		board = new Board();
+		board = new Board(new Human(), new Human(), true);
 		board.getPieceList().clear();
 		whiteQueen = new Queen(board, 3, 0, true);
 		blackQueen = new Queen(board, 3, 7, false);
