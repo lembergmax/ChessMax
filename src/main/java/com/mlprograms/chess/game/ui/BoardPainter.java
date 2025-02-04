@@ -166,32 +166,52 @@ public class BoardPainter {
 	/**
 	 * Draws coordinates around the chessboard for player reference.
 	 * <p>
-	 * This method draws column labels ('a' to 'h') below the board and row labels ('1' to '8')
-	 * to the left of the board. It ensures the labels are positioned correctly based on the
-	 * board's dimensions and tile size.
+	 * This method draws column labels ('a' to 'h' or 'h' to 'a') below the board
+	 * and row labels ('1' to '8' or '8' to '1') to the left of the board,
+	 * depending on the orientation.
 	 */
 	protected void drawCoordinates(Graphics2D graphics2D) {
 		// Set the font and color for the coordinates
 		graphics2D.setColor(Color.BLACK);
 		graphics2D.setFont(new Font("SansSerif", Font.BOLD, 12));
 
-		// Draw column labels (a-h) below the board
-		for (int col = 0; col < getBoard().getColumns(); col++) {
-			String colLabel = String.valueOf((char) ('a' + col)); // Convert column index to character
-			int xPos = col * getBoard().getTileSize() + getBoard().getTileSize()
-				           - graphics2D.getFontMetrics().stringWidth(colLabel) / 2 - getBoard().getPadding() / 4;
-			int yPos = getBoard().getRows() * getBoard().getTileSize()
-				           - (getBoard().getPadding() / 4) / 2; // Slightly below the board
-			graphics2D.drawString(colLabel, xPos, yPos);
-		}
+		boolean isWhiteAtBottom = getBoard().isWhiteAtBottom();
+		drawColumnLabels(graphics2D, isWhiteAtBottom);
+		drawRowLabels(graphics2D, isWhiteAtBottom);
+	}
 
-		// Draw row labels (1-8) to the left of the board
-		for (int row = 0; row < getBoard().getRows(); row++) {
-			String rowLabel = String.valueOf(getBoard().getRows() - row); // Convert row index to number
-			int xPos = getBoard().getPadding() / 7; // Slightly left of the board
-			int yPos = row * getBoard().getTileSize() + getBoard().getPadding() / 3
-				           + graphics2D.getFontMetrics().getHeight() / 2 - 3;
-			graphics2D.drawString(rowLabel, xPos, yPos);
+	/**
+	 * Draws the column labels ('a' to 'h' or 'h' to 'a') below the board.
+	 */
+	private void drawColumnLabels(Graphics2D graphics2D, boolean isWhiteAtBottom) {
+		int tileSize = getBoard().getTileSize();
+		int padding = getBoard().getPadding();
+		int boardRows = getBoard().getRows();
+		int boardColumns = getBoard().getColumns();
+
+		for (int col = 0; col < boardColumns; col++) {
+			char colLabel = (char) ((isWhiteAtBottom ? 'a' : 'h') + (isWhiteAtBottom ? col : -col));
+			int xPos = col * tileSize + tileSize - graphics2D.getFontMetrics().stringWidth(String.valueOf(colLabel)) / 2 - padding / 4;
+			int yPos = boardRows * tileSize - (padding / 4) / 2;
+
+			graphics2D.drawString(String.valueOf(colLabel), xPos, yPos);
+		}
+	}
+
+	/**
+	 * Draws the row labels ('1' to '8' or '8' to '1') to the left of the board.
+	 */
+	private void drawRowLabels(Graphics2D graphics2D, boolean isWhiteAtBottom) {
+		int tileSize = getBoard().getTileSize();
+		int padding = getBoard().getPadding();
+		int boardRows = getBoard().getRows();
+
+		for (int row = 0; row < boardRows; row++) {
+			int rowLabel = isWhiteAtBottom ? (boardRows - row) : (row + 1);
+			int xPos = padding / 7;
+			int yPos = row * tileSize + padding / 3 + graphics2D.getFontMetrics().getHeight() / 2 - 3;
+
+			graphics2D.drawString(String.valueOf(rowLabel), xPos, yPos);
 		}
 	}
 
