@@ -8,7 +8,6 @@ package com.mlprograms.chess.game;
 
 import com.mlprograms.chess.game.engine.ai.BotSpriteSheetCreator;
 import com.mlprograms.chess.game.ui.Board;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -18,13 +17,18 @@ public class ChessMax {
 
 	private JFrame frame;
 
-	public ChessMax() {
-		setUp();
-		initializeJFrame();
-	}
+	// is not final, because the players can change after game
+	private Player playerWhite;
+	private Player playerBlack;
+	private boolean isWhiteAtBottom;
 
-	private void setUp() {
+	public ChessMax(Player playerWhite, Player playerBlack, boolean isWhiteAtBottom) {
+		this.playerWhite = playerWhite;
+		this.playerBlack = playerBlack;
+		this.isWhiteAtBottom = isWhiteAtBottom;
+
 		BotSpriteSheetCreator.createSpriteSheet();
+		initializeJFrame();
 	}
 
 	/**
@@ -43,8 +47,7 @@ public class ChessMax {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
-		// Board ist jetzt ein Mitglied von Frame, nicht eine Unterklasse
-		Board board = new Board(frame);
+		Board board = new Board(playerWhite, playerBlack, isWhiteAtBottom);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;

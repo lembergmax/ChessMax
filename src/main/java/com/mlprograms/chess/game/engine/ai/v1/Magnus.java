@@ -9,11 +9,11 @@ package com.mlprograms.chess.game.engine.ai.v1;
 import com.mlprograms.chess.game.engine.ai.Ai;
 import com.mlprograms.chess.utils.ConfigFetcher;
 
-public class Martin extends Ai {
+public class Magnus extends Ai {
 
-	private static final int BOT_NUMBER = 1;
+	private static final int BOT_NUMBER = 30;
 
-	public Martin() {
+	public Magnus() {
 		super(
 			ConfigFetcher.fetchStringConfig("Bots", "BOT_" + BOT_NUMBER + "_NAME"),
 			ConfigFetcher.fetchIntegerConfig("Bots", "BOT_" + BOT_NUMBER + "_SPRITE"),

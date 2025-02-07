@@ -4,7 +4,7 @@
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.player;
+package com.mlprograms.chess.human;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,14 +13,14 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class PasswordRecovery {
+public class Elo {
 
-	private String question;
-	private String answer;
+	private int inGameElo;
+	private int officialElo;
 
-	public PasswordRecovery(String question, String answer) {
-		this.question = question;
-		this.answer = answer;
+	public Elo(int inGame, int officialElo) {
+		this.inGameElo = inGame;
+		this.officialElo = officialElo;
 	}
 
 }

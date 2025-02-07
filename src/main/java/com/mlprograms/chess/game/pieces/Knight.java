@@ -30,12 +30,12 @@ public class Knight extends Piece {
 	}
 
 	@Override
-	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
-		if(!isValidPieceMove(column, row, checkForKingSafety)) {
+	public boolean isValidMovement(int targetColumn, int targetRow, boolean checkForKingSafety) {
+		if(!isValidPieceMove(targetColumn, targetRow, checkForKingSafety)) {
 			return false;
 		}
 
-		return Math.abs(column - getColumn()) * Math.abs(row - getRow()) == 2;
+		return Math.abs(targetColumn - getColumn()) * Math.abs(targetRow - getRow()) == 2;
 	}
 
 	@Override

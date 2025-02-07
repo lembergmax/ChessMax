@@ -4,7 +4,7 @@
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.player;
+package com.mlprograms.chess.human;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

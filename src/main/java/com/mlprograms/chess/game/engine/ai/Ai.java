@@ -6,6 +6,7 @@
 
 package com.mlprograms.chess.game.engine.ai;
 
+import com.mlprograms.chess.game.Player;
 import com.mlprograms.chess.utils.ConfigFetcher;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,9 +21,9 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
-public class Ai {
+@EqualsAndHashCode(callSuper = false)
+@ToString(callSuper = true)
+public class Ai extends Player {
 
 	// Name of the AI
 	private String name;
@@ -46,6 +47,7 @@ public class Ai {
 	private Image sprite;
 
 	public Ai(String name, int sprite, int elo, int depth) {
+		super();
 		setName(name);
 		setElo(elo);
 		setDepth(depth);

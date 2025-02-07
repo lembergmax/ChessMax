@@ -253,15 +253,6 @@ public class MoveValidator {
 	}
 
 	/**
-	 * Finds the current player's king on the getBoard().
-	 *
-	 * @return the current player's king, or null if the king is not found.
-	 */
-	public King findKing() {
-		return findKing(getBoard().isWhiteTurn());
-	}
-
-	/**
 	 * Finds the king of the specified color on the getBoard().
 	 *
 	 * @param whiteKing

@@ -24,12 +24,12 @@ public class Queen extends Piece {
 	}
 
 	@Override
-	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
-		if (!isValidPieceMove(column, row, checkForKingSafety)) {
+	public boolean isValidMovement(int targetColumn, int targetRow, boolean checkForKingSafety) {
+		if (!isValidPieceMove(targetColumn, targetRow, checkForKingSafety)) {
 			return false;
 		}
 
-		return getColumn() == column || getRow() == row || Math.abs(getColumn() - column) == Math.abs(getRow() - row);
+		return getColumn() == targetColumn || getRow() == targetRow || Math.abs(getColumn() - targetColumn) == Math.abs(getRow() - targetRow);
 	}
 
 	@Override

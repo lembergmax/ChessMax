@@ -24,12 +24,12 @@ public class Rook extends Piece {
 	}
 
 	@Override
-	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
-		if(!isValidPieceMove(column, row, checkForKingSafety)) {
+	public boolean isValidMovement(int targetColumn, int targetRow, boolean checkForKingSafety) {
+		if(!isValidPieceMove(targetColumn, targetRow, checkForKingSafety)) {
 			return false;
 		}
 
-		return getColumn() == column || getRow() == row;
+		return getColumn() == targetColumn || getRow() == targetRow;
 	}
 
 	@Override

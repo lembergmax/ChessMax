@@ -112,16 +112,16 @@ public abstract class Piece {
 	/**
 	 * Determines whether the piece can move to a specific position.
 	 *
-	 * @param column
-	 * 	the target column
-	 * @param row
-	 * 	the target row
+	 * @param targetColumn
+	 * 	the target targetColumn
+	 * @param targetRow
+	 * 	the target targetRow
 	 * @param checkForKingSafety
 	 * 	whether to check if the move puts the king in check
 	 *
 	 * @return true if the movement is valid, false otherwise
 	 */
-	public abstract boolean isValidMovement(int column, int row, boolean checkForKingSafety);
+	public abstract boolean isValidMovement(int targetColumn, int targetRow, boolean checkForKingSafety);
 
 	/**
 	 * Checks if the movement to the target position collides with another piece. Only needed for Bishop, Rook, and

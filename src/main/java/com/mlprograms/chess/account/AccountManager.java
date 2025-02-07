@@ -7,7 +7,7 @@
 package com.mlprograms.chess.account;
 
 import com.mlprograms.chess.account.ui.Login;
-import com.mlprograms.chess.player.*;
+import com.mlprograms.chess.human.*;
 import com.mlprograms.chess.database.UserDatabaseManager;
 import com.mlprograms.chess.utils.ConfigReader;
 import com.mlprograms.chess.utils.EncryptionUtils;
@@ -72,7 +72,7 @@ public class AccountManager {
 			return;
 		}
 
-		Player player = createPlayerObject(username, email, firstname, lastname, password);
+		Human player = createPlayerObject(username, email, firstname, lastname, password);
 
 		if (player == null) {
 			return;
@@ -189,7 +189,7 @@ public class AccountManager {
 	 *
 	 * @return a new Player object
 	 */
-	private static Player createPlayerObject(String username, String email, String firstname, String lastname, String password) {
+	private static Human createPlayerObject(String username, String email, String firstname, String lastname, String password) {
 		String encryptedUsername;
 		String encryptedEmail;
 		String encryptedFirstname;
@@ -209,7 +209,7 @@ public class AccountManager {
 			return null;
 		}
 
-		return new Player(
+		return new Human(
 			new Id("", ""),
 			new Name(encryptedUsername, encryptedFirstname, encryptedLastname),
 			new Language("", ""),

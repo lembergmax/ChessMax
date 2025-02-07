@@ -4,7 +4,7 @@
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.player;
+package com.mlprograms.chess.human;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,14 +13,14 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class Id {
+public class PasswordRecovery {
 
-	private String databaseId;
-	private String userId;
+	private String question;
+	private String answer;
 
-	public Id(String databaseId, String userId) {
-		this.databaseId = databaseId;
-		this.userId = userId;
+	public PasswordRecovery(String question, String answer) {
+		this.question = question;
+		this.answer = answer;
 	}
 
 }

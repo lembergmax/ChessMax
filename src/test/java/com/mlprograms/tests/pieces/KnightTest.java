@@ -8,6 +8,7 @@ package com.mlprograms.tests.pieces;
 
 import com.mlprograms.chess.game.pieces.Knight;
 import com.mlprograms.chess.game.ui.Board;
+import com.mlprograms.chess.human.Human;
 import com.mlprograms.chess.utils.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ class KnightTest {
 
 	@BeforeEach
 	void setUp() {
-		board = new Board();
+		board = new Board(new Human(), new Human(), true);
 		whiteKnight = new Knight(board, 1, 7, true);
 		blackKnight = new Knight(board, 1, 0, false);
 		board.getPieceList().add(whiteKnight);

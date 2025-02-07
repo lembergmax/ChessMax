@@ -30,12 +30,12 @@ public class Bishop extends Piece {
 	}
 
 	@Override
-	public boolean isValidMovement(int column, int row, boolean checkForKingSafety) {
-		if(!isValidPieceMove(column, row, checkForKingSafety)) {
+	public boolean isValidMovement(int targetColumn, int targetRow, boolean checkForKingSafety) {
+		if(!isValidPieceMove(targetColumn, targetRow, checkForKingSafety)) {
 			return false;
 		}
 
-		return Math.abs(getColumn() - column) == Math.abs(getRow() - row);
+		return Math.abs(getColumn() - targetColumn) == Math.abs(getRow() - targetRow);
 	}
 
 	@Override

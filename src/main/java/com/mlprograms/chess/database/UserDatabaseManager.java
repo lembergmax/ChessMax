@@ -6,7 +6,7 @@
 
 package com.mlprograms.chess.database;
 
-import com.mlprograms.chess.player.Player;
+import com.mlprograms.chess.human.Human;
 import com.mlprograms.chess.utils.ConfigReader;
 import com.mlprograms.chess.utils.Logger;
 
@@ -74,7 +74,7 @@ public class UserDatabaseManager {
 	 *
 	 * @return true if the player was added successfully, false otherwise.
 	 */
-	public boolean addUser(Player player) {
+	public boolean addUser(Human player) {
 		String insertSQL = """
 			INSERT INTO users(
 				playerName, firstName, lastName, language, languageCode,
