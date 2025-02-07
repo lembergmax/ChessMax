@@ -471,7 +471,8 @@ public class Board extends JPanel {
 	/**
 	 * Checks if the pawn has reached the promotion rank and initiates the promotion process.
 	 *
-	 * @param move the move being made by the pawn
+	 * @param move
+	 * 	the move being made by the pawn
 	 */
 	private void checkPawnPromotion(Move move) {
 		// Check if the pawn has reached the promotion rank
@@ -499,8 +500,10 @@ public class Board extends JPanel {
 	/**
 	 * Promotes a pawn to the chosen piece.
 	 *
-	 * @param move the move being made by the pawn
-	 * @param chosenPiece the piece chosen for promotion
+	 * @param move
+	 * 	the move being made by the pawn
+	 * @param chosenPiece
+	 * 	the piece chosen for promotion
 	 */
 	private void promotePawn(Move move, Piece chosenPiece) {
 		// Create the promotion piece based on the type of chosen piece
