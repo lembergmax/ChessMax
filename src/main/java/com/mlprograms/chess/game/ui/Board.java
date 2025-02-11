@@ -793,36 +793,37 @@ public class Board extends JPanel {
 	 * @return the current game ending state as a GameEnding enum value
 	 */
 	public GameEnding checkForGameEnding() {
+		MoveValidator moveValidator = getMoveValidator();
 
-		if (getMoveValidator().isCheckmate()) {
+		if (moveValidator.isCheckmate()) {
 			return GameEnding.CHECKMATE;
 		}
 
-		if (getMoveValidator().isStalemate()) {
+		if (moveValidator.isStalemate()) {
 			return GameEnding.STALEMATE;
 		}
 
-		if (getMoveValidator().isInsufficientMaterial()) {
+		if (moveValidator.isInsufficientMaterial()) {
 			return GameEnding.INSUFFICIENT_MATERIAL;
 		}
 
-		if (getMoveValidator().isFiftyMoveRule()) {
+		if (moveValidator.isFiftyMoveRule()) {
 			return GameEnding.FIFTY_MOVE_RULE;
 		}
 
-		if (getMoveValidator().isThreefoldRepetition()) {
+		if (moveValidator.isThreefoldRepetition()) {
 			return GameEnding.THREEFOLD_REPETITION;
 		}
 
-		if (getMoveValidator().isTimeForfeit()) {
+		if (moveValidator.isTimeForfeit()) {
 			return GameEnding.TIME_FORFEIT;
 		}
 
-		if (getMoveValidator().isResignation()) {
+		if (moveValidator.isResignation()) {
 			return GameEnding.RESIGNATION;
 		}
 
-		if (getMoveValidator().isAgreedDraw()) {
+		if (moveValidator.isAgreedDraw()) {
 			return GameEnding.AGREED_DRAW;
 		}
 
