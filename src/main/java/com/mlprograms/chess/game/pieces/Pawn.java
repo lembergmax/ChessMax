@@ -45,7 +45,7 @@ public class Pawn extends Piece {
 		}
 
 		// push on 2
-		if (getRow() == (isWhiteAtBottom ? (isWhite() ? 6 : 1) : (isWhite() ? 1 : 6)) && getColumn() == targetColumn && targetRow == getRow() - direction * 2 &&
+		if (isFirstMove() && getRow() == (isWhiteAtBottom ? (isWhite() ? 6 : 1) : (isWhite() ? 1 : 6)) && getColumn() == targetColumn && targetRow == getRow() - direction * 2 &&
 				getBoard().getPieceAt(targetColumn, targetRow) == null && getBoard().getPieceAt(targetColumn, targetRow + direction) == null) {
 			return true;
 		}
