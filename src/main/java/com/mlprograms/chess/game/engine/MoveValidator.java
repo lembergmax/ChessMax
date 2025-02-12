@@ -198,6 +198,7 @@ public class MoveValidator {
 		int movingPieceOriginalColumn = movingPiece.getColumn();
 		int movingPieceOriginalRow = movingPiece.getRow();
 
+		// Simulating the capture of the target piece
 		if (targetPiece != null) {
 			getBoard().getPieceList().remove(targetPiece);
 		}
@@ -210,11 +211,11 @@ public class MoveValidator {
 		// Check if the king is in check after the move
 		boolean isKingInCheckAfterMove = isKingInCheck();
 
+		// Restore the board to its original state
 		if (targetPiece != null) {
 			getBoard().getPieceList().add(targetPiece);
 		}
 
-		getBoard().setPieceAt(movingPieceOriginalColumn, movingPieceOriginalRow, movingPiece);
 		getBoard().setPieceAt(move.getNewColumn(), move.getNewRow(), targetPiece);
 		movingPiece.setPosition(movingPieceOriginalColumn, movingPieceOriginalRow);
 
