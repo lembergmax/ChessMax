@@ -1,4 +1,4 @@
-name: 🚀 Build & Test ChessMax-2.0
+name: Build & Test ChessMax-2.0
 
 on:
   push:
