@@ -6,16 +6,12 @@
 
 package com.mlprograms.tests.pieces;
 
-import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.ui.Board;
 import com.mlprograms.chess.human.Human;
-import com.mlprograms.chess.utils.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
