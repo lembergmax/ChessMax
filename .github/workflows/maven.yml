@@ -1,0 +1,45 @@
+name: 🚀 Build & Test ChessMax-2.0
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Setze JDK 23
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+          cache: 'maven'
+
+      - name: Abhängigkeiten auflösen
+        run: mvn clean install -Dmaven.compiler.forceJavacCompilerUse=true
+
+      - name: Projekt kompilieren (mit Lombok)
+        run: mvn clean compile
+
+      - name: Tests ausführen
+        run: mvn test --fail-at-end
+
+      - name: JAR-Datei erstellen
+        run: mvn package -DskipTests
+
+      - name: JAR als Artifact speichern
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChessMax-2.0
+          path: target/*.jar
