@@ -125,8 +125,6 @@ class BishopTest {
 		Bishop blackBishopToCapture = new Bishop(board, 4, 2, false);
 		board.getPieceList().add(blackBishopToCapture);
 		// White bishop from (2,0) should be able to move to (4,2) to capture the opponent.
-		Logger.logDebug(whiteBishop.getColumn());
-		Logger.logDebug(whiteBishop.getRow());
 		assertTrue(whiteBishop.isValidMovement(4, 2));
 	}
 
