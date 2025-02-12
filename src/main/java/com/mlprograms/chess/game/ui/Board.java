@@ -505,7 +505,7 @@ public class Board extends JPanel {
 	 * @param chosenPiece
 	 * 	the piece chosen for promotion
 	 */
-	private void promotePawn(Move move, Piece chosenPiece) {
+	public void promotePawn(Move move, Piece chosenPiece) {
 		// Create the promotion piece based on the type of chosen piece
 		if (chosenPiece == null) {
 			// Handle the case where no piece was selected
