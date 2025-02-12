@@ -365,7 +365,7 @@ public class Board extends JPanel {
 
 		// TODO: make better ui for game ending
 		boolean isDraw = gameEnding != GameEnding.CHECKMATE;
-		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!" + "\nGrund: " + gameEnding));
+		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!") + "\nGrund: " + gameEnding);
 	}
 
 	/**
