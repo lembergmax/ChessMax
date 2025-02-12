@@ -9,7 +9,6 @@ package com.mlprograms.chess.game.engine;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
