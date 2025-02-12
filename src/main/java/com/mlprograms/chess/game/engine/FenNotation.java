@@ -13,7 +13,6 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
 @EqualsAndHashCode
 public class FenNotation {
 
@@ -24,4 +23,8 @@ public class FenNotation {
 	private int fullMoveNumber;
 	private boolean whiteToMove;
 
+	@Override
+	public String toString() {
+		return fenString + castlingRights + " " + enPassantTile + " " + halfMoveClock + " " + fullMoveNumber;
+	}
 }
