@@ -295,38 +295,38 @@ public class BoardPainter {
 	 * 	y-coordinate of the arrow's end
 	 */
 	private void drawArrow(Graphics2D g2d, int startX, int startY, int endX, int endY) {
-		// Save the old stroke and color so we can restore them later if needed
 		Stroke oldStroke = g2d.getStroke();
 		Color oldColor = g2d.getColor();
 
-		// 1) Make the arrow shaft thicker
-		//    (Increase the value from 8.0f to something larger, e.g. 12.0f)
 		float arrowThickness = 20.0f;
 		g2d.setStroke(new BasicStroke(
 			arrowThickness,
 			BasicStroke.CAP_SQUARE,
 			BasicStroke.JOIN_MITER
 		));
+		g2d.setColor(new Color(255, 165, 0, 255)); // Orange
 
-		// 2) Increase transparency by reducing alpha
-		g2d.setColor(new Color(255, 165, 0, 255));
-
-		// Draw the main arrow line
-		g2d.drawLine(startX, startY, endX, endY);
-
-		// 3) Make the arrowhead bigger by increasing arrowHeadLength in getPolygon(...)
-		//    For example, from 25 to 35
-		//    (See "arrowHeadLength = 35" in getPolygon below)
+		// Winkel des Pfeils berechnen
 		double angle = Math.atan2(endY - startY, endX - startX);
-		Polygon arrowHead = getPolygon(endX, endY, angle);
 
-		// Fill the arrowhead triangle
+		// --- 1) Pfeilschaft verkürzen ---
+		// Länge der Pfeilspitze (muss zur Berechnung bekannt sein)
+		double arrowHeadLength = 35.0;
+		// Neue "Linienendpunkte" berechnen, sodass die Spitze frei bleibt
+		int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
+		int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
+
+		// --- 2) Zuerst den verkürzten Schaft zeichnen ---
+		g2d.drawLine(startX, startY, lineEndX, lineEndY);
+
+		// --- 3) Dann Pfeilspitze am tatsächlichen Endpunkt ---
+		Polygon arrowHead = getPolygon(endX, endY, angle);
 		g2d.fillPolygon(arrowHead);
 
-		// Restore old stroke and color
 		g2d.setStroke(oldStroke);
 		g2d.setColor(oldColor);
 	}
+
 
 	/**
 	 * Draws all arrows stored on the board in a Chess.com-like style.
@@ -337,6 +337,10 @@ public class BoardPainter {
 	public void drawArrows(Graphics2D g2d) {
 		// For each arrow in your board's list
 		for (Arrow arrow : board.getArrows()) {
+			if (!isValidArrow(arrow)) {
+				continue;
+			}
+
 			drawSingleArrow(g2d, arrow);
 		}
 
@@ -346,6 +350,10 @@ public class BoardPainter {
 			// But if you want it to look the same, just call the same method:
 			drawSingleArrow(g2d, board.getTempArrow());
 		}
+	}
+
+	private boolean isValidArrow(Arrow arrow) {
+		return arrow.getEndColumn() >= 0 && arrow.getEndColumn() <= 7 && arrow.getEndRow() >= 0 && arrow.getEndRow() <= 7;
 	}
 
 	private void drawSingleArrow(Graphics2D g2d, Arrow arrow) {
@@ -373,7 +381,6 @@ public class BoardPainter {
 		Stroke oldStroke = g2d.getStroke();
 		Color oldColor = g2d.getColor();
 
-		// Gleiche Pfeil-Einstellungen wie in drawArrow()
 		float arrowThickness = 20.0f;
 		g2d.setStroke(new BasicStroke(
 			arrowThickness,
@@ -382,29 +389,37 @@ public class BoardPainter {
 		));
 		g2d.setColor(new Color(255, 165, 0, 255));
 
-		// Bestimme den Zwischenpunkt (Bend)
+		// Zwischenpunkt ermitteln
 		int midX, midY;
 		if (horizontalFirst) {
-			// Horizontaler Abschnitt zuerst: gehe bis zur Spalte des Ziels, aber bleibe in gleicher Zeile
 			midX = endX;
 			midY = startY;
 		} else {
-			// Vertikaler Abschnitt zuerst: gehe bis zur Zeile des Ziels, aber bleibe in gleicher Spalte
 			midX = startX;
 			midY = endY;
 		}
 
-		// Zeichne den ersten Segment
+		// 1) Ersten (vertikalen oder horizontalen) Abschnitt zeichnen
 		g2d.drawLine(startX, startY, midX, midY);
-		// Zeichne den zweiten Segment
-		g2d.drawLine(midX, midY, endX, endY);
 
-		// Pfeilkopf nur am Ende des zweiten Segments
+		// --- Ab hier: Letzter Abschnitt + Pfeilspitze ---
+		double arrowHeadLength = 35.0;
+
+		// 2) Winkel für das letzte Segment
 		double angle = Math.atan2(endY - midY, endX - midX);
+
+		// 3) Linie verkürzen, damit die Pfeilspitze nicht überdeckt wird
+		int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
+		int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
+
+		// 4) Zweiten Abschnitt (verkürzt) zeichnen
+		g2d.drawLine(midX, midY, lineEndX, lineEndY);
+
+		// 5) Pfeilspitze am eigentlichen Endpunkt
 		Polygon arrowHead = getPolygon(endX, endY, angle);
 		g2d.fillPolygon(arrowHead);
 
-		// Setze alte Einstellungen zurück
+		// Alte Einstellungen wiederherstellen
 		g2d.setStroke(oldStroke);
 		g2d.setColor(oldColor);
 	}
