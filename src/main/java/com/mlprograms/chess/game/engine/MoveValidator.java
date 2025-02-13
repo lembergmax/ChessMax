@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-// TODO: write many tests for this class
 public class MoveValidator {
 
 	private final Board board;
