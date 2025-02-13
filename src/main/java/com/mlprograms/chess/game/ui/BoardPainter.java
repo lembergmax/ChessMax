@@ -383,32 +383,36 @@ public class BoardPainter {
 	}
 
 	/**
-	 * Draws an arrow with a style similar to Chess.com.
-	 * <p>
-	 * The arrow is drawn with a thick line and a filled, triangular arrowhead.
-	 * </p>
+	 * Draws a standard arrow with a Chess.com–like style.
+	 * The arrow's shaft starts from an adjusted point on the starting tile's border (rather than the center)
+	 * and extends toward the endpoint with a triangular arrowhead.
 	 *
 	 * @param g2d
-	 * 	the Graphics2D context used for drawing.
-	 * @param startX
-	 * 	the x-coordinate of the arrow's start.
-	 * @param startY
-	 * 	the y-coordinate of the arrow's start.
+	 * 	the Graphics2D context used for drawing
+	 * @param startTileCenterX
+	 * 	the x-coordinate of the starting tile's center
+	 * @param startTileCenterY
+	 * 	the y-coordinate of the starting tile's center
 	 * @param endX
-	 * 	the x-coordinate of the arrow's end.
+	 * 	the x-coordinate of the arrow's endpoint
 	 * @param endY
-	 * 	the y-coordinate of the arrow's end.
+	 * 	the y-coordinate of the arrow's endpoint
 	 */
-	private void drawArrow(Graphics2D g2d, int startX, int startY, int endX, int endY) {
+	private void drawArrow(Graphics2D g2d, int startTileCenterX, int startTileCenterY, int endX, int endY) {
 		withArrowGraphics(g2d, () -> {
-			double angle = Math.atan2(endY - startY, endX - startX);
-			double arrowHeadLength = HEAD_LENGTH; // Reserve length for the arrowhead.
-			int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
-			int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
+			// Calculate the angle from the start tile center toward the endpoint.
+			double angle = Math.atan2(endY - startTileCenterY, endX - startTileCenterX);
+			// Adjust the starting point so the arrow begins near the tile edge.
+			Point adjustedStart = getAdjustedStartPoint(startTileCenterX, startTileCenterY, angle, BOARD.getTileSize());
 
-			// Draw the arrow shaft.
-			g2d.drawLine(startX, startY, lineEndX, lineEndY);
-			// Draw the arrowhead.
+			double arrowHeadLength = HEAD_LENGTH;
+			// Determine the endpoint of the arrow shaft (leaving space for the arrowhead).
+			int shaftEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
+			int shaftEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
+
+			// Draw the arrow shaft from the adjusted start point to the shaft end.
+			g2d.drawLine(adjustedStart.x, adjustedStart.y, shaftEndX, shaftEndY);
+			// Draw the arrowhead at the endpoint.
 			Polygon arrowHead = getPolygon(endX, endY, angle);
 			g2d.fillPolygon(arrowHead);
 		});
@@ -416,44 +420,80 @@ public class BoardPainter {
 
 	/**
 	 * Draws an L-shaped arrow for knight moves.
-	 * <p>
-	 * The arrow is split into two segments (horizontal/vertical and diagonal) with an arrowhead at the end.
-	 * </p>
+	 * The arrow is composed of two segments:
+	 * <ul>
+	 *   <li>The first segment goes from an adjusted point on the starting tile's edge to an intermediate point.</li>
+	 *   <li>The second segment goes from the intermediate point to the endpoint with an arrowhead.</li>
+	 * </ul>
 	 *
 	 * @param g2d
-	 * 	the Graphics2D context used for drawing.
-	 * @param startX
-	 * 	the starting x-coordinate.
-	 * @param startY
-	 * 	the starting y-coordinate.
+	 * 	the Graphics2D context used for drawing
+	 * @param startTileCenterX
+	 * 	the x-coordinate of the starting tile's center
+	 * @param startTileCenterY
+	 * 	the y-coordinate of the starting tile's center
 	 * @param endX
-	 * 	the ending x-coordinate.
+	 * 	the x-coordinate of the arrow's endpoint
 	 * @param endY
-	 * 	the ending y-coordinate.
+	 * 	the y-coordinate of the arrow's endpoint
 	 * @param horizontalFirst
-	 * 	true if the horizontal segment should be drawn first; false if vertical first.
+	 * 	true if the horizontal segment is drawn first; false if vertical first
 	 */
-	private void drawKnightArrow(Graphics2D g2d, int startX, int startY, int endX, int endY, boolean horizontalFirst) {
+	private void drawKnightArrow(Graphics2D g2d, int startTileCenterX, int startTileCenterY, int endX, int endY, boolean horizontalFirst) {
 		withArrowGraphics(g2d, () -> {
-			// Determine intermediate point based on the drawing order.
-			int midX = horizontalFirst ? endX : startX;
-			int midY = horizontalFirst ? startY : endY;
+			// Determine the intermediate point based on the drawing order.
+			int midX = horizontalFirst ? endX : startTileCenterX;
+			int midY = horizontalFirst ? startTileCenterY : endY;
 
-			// Draw the first segment from the start to the intermediate point.
-			g2d.drawLine(startX, startY, midX, midY);
+			// Adjust the starting point for the first segment.
+			double firstSegmentAngle = Math.atan2(midY - startTileCenterY, midX - startTileCenterX);
+			Point adjustedStart = getAdjustedStartPoint(startTileCenterX, startTileCenterY, firstSegmentAngle, BOARD.getTileSize());
+			// Draw the first segment from the adjusted start point to the intermediate point.
+			g2d.drawLine(adjustedStart.x, adjustedStart.y, midX, midY);
 
+			// Calculate the angle for the second segment.
+			double secondSegmentAngle = Math.atan2(endY - midY, endX - midX);
 			double arrowHeadLength = HEAD_LENGTH;
-			double angle = Math.atan2(endY - midY, endX - midX);
-			int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
-			int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
+			// Determine the endpoint of the second segment (leaving space for the arrowhead).
+			int secondSegmentEndX = (int) (endX - arrowHeadLength * Math.cos(secondSegmentAngle));
+			int secondSegmentEndY = (int) (endY - arrowHeadLength * Math.sin(secondSegmentAngle));
 
-			// Draw the second segment.
-			g2d.drawLine(midX, midY, lineEndX, lineEndY);
-			// Draw the arrowhead.
-			Polygon arrowHead = getPolygon(endX, endY, angle);
+			// Draw the second segment from the intermediate point to near the endpoint.
+			g2d.drawLine(midX, midY, secondSegmentEndX, secondSegmentEndY);
+			// Draw the arrowhead at the endpoint.
+			Polygon arrowHead = getPolygon(endX, endY, secondSegmentAngle);
 			g2d.fillPolygon(arrowHead);
 		});
 	}
 
+	/**
+	 * Computes the adjusted starting point for an arrow drawn from a tile.
+	 * The starting point is shifted from the tile center toward its edge in the given direction,
+	 * ensuring that the arrow does not originate exactly from the center.
+	 *
+	 * @param tileCenterX
+	 * 	the x-coordinate of the tile's center
+	 * @param tileCenterY
+	 * 	the y-coordinate of the tile's center
+	 * @param angle
+	 * 	the direction (in radians) from the tile center toward the target
+	 * @param tileSize
+	 * 	the size of the tile (assumed square)
+	 *
+	 * @return a Point representing the adjusted starting position for the arrow
+	 */
+	private Point getAdjustedStartPoint(int tileCenterX, int tileCenterY, double angle, int tileSize) {
+		final int ARROW_START_MARGIN = ConfigFetcher.fetchIntegerConfig("Arrow", "START_MARGIN"); // Margin (in pixels) from the tile edge
+		// Calculate the distance to the tile edge along the given direction.
+		double distanceToEdgeX = (tileSize / 2.0) / Math.abs(Math.cos(angle));
+		double distanceToEdgeY = (tileSize / 2.0) / Math.abs(Math.sin(angle));
+		double distanceToEdge = Math.min(distanceToEdgeX, distanceToEdgeY);
+		// Subtract the margin to avoid starting exactly at the edge.
+		double adjustedDistance = Math.max(distanceToEdge - ARROW_START_MARGIN, 0);
+
+		int adjustedX = (int) Math.round(tileCenterX + adjustedDistance * Math.cos(angle));
+		int adjustedY = (int) Math.round(tileCenterY + adjustedDistance * Math.sin(angle));
+		return new Point(adjustedX, adjustedY);
+	}
 
 }
