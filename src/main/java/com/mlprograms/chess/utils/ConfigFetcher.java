@@ -54,6 +54,30 @@ public class ConfigFetcher {
 	}
 
 	/**
+	 * Fetches a float configuration value based on the given section and key.
+	 *
+	 * @param section
+	 * 	the configuration section to look into (e.g., "General", "Settings").
+	 * @param key
+	 * 	the key whose value is to be fetched from the specified section.
+	 *
+	 * @return the configuration value as a float.
+	 *
+	 * @throws NumberFormatException
+	 * 	if the fetched value is not a valid float.
+	 */
+	public static float fetchFloatConfig(String section, String key) {
+		String value = fetchStringConfig(section, key);
+		try {
+			return Float.parseFloat(value);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException(
+				String.format("Invalid float value for section '%s', key '%s': %s", section, key, value), e
+			);
+		}
+	}
+
+	/**
 	 * Fetches a color configuration value from the "Colors" section based on the provided key.
 	 *
 	 * @param key
