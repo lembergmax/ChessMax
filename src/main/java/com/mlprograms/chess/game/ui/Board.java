@@ -76,6 +76,10 @@ public class Board extends JPanel {
 	private Player playerWhite;
 	private Player playerBlack;
 
+	private List<Arrow> arrows = new ArrayList<>();
+	private List<Point> redHighlights = new ArrayList<>();
+	private Arrow tempArrow;
+
 	/**
 	 * Constructs the Board and initializes its components and configurations.
 	 * Sets up the JFrame and prepares the chessboard layout.
@@ -117,6 +121,8 @@ public class Board extends JPanel {
 		getBoardPainter().highlightPossibleMoves((Graphics2D) graphics);
 		getBoardPainter().drawCoordinates((Graphics2D) graphics);
 		getBoardPainter().paintPieces((Graphics2D) graphics);
+		getBoardPainter().drawArrows((Graphics2D) graphics);
+		getBoardPainter().paintRedHighlights((Graphics2D) graphics);
 	}
 
 	/**
@@ -354,6 +360,7 @@ public class Board extends JPanel {
 		setTargetColumn(-1);
 		setTargetRow(-1);
 
+		// Add the move to the move history
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
 
 		GameEnding gameEnding = checkForGameEnding();

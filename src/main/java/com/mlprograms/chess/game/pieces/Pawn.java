@@ -7,7 +7,6 @@
 package com.mlprograms.chess.game.pieces;
 
 import com.mlprograms.chess.game.ui.Board;
-import com.mlprograms.chess.utils.Logger;
 
 import java.awt.image.BufferedImage;
 
