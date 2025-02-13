@@ -7,11 +7,13 @@
 package com.mlprograms.chess.game.engine;
 
 import com.mlprograms.chess.game.pieces.Piece;
+import com.mlprograms.chess.game.ui.Arrow;
 import com.mlprograms.chess.game.ui.Board;
 import com.mlprograms.chess.game.utils.Sounds;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -45,22 +47,31 @@ public class MouseInput extends MouseAdapter {
 	 */
 	@Override
 	public void mousePressed(MouseEvent event) {
-		getBoard().setMouseDragged(false);
-		int column = event.getX() / getBoard().getTileSize();
-		int row = event.getY() / getBoard().getTileSize();
+		if (SwingUtilities.isRightMouseButton(event)) {
+			int column = event.getX() / board.getTileSize();
+			int row = event.getY() / board.getTileSize();
+			// Erstelle einen temporären Pfeil, der als Startpunkt und vorläufiger Endpunkt gilt
+			board.setTempArrow(new Arrow(column, row, column, row));
+			return; // Für Rechtsklick keine weitere Verarbeitung (wie z. B. Figurenwahl)
+		}
 
-		Piece clickedPieceAtTile = getBoard().getPieceAt(column, row);
-		Piece selectedPiece = getBoard().getSelectedPiece();
+		// Linksklick: Bestehende Logik
+		board.setMouseDragged(false);
+		int column = event.getX() / board.getTileSize();
+		int row = event.getY() / board.getTileSize();
+
+		Piece clickedPieceAtTile = board.getPieceAt(column, row);
+		Piece selectedPiece = board.getSelectedPiece();
 
 		if (clickedPieceAtTile != null && clickedPieceAtTile == selectedPiece) {
 			clearSelection(); // Deselect the piece if it's already selected
-		} else if (clickedPieceAtTile != null && clickedPieceAtTile.isWhite() == getBoard().isWhiteTurn()) {
+		} else if (clickedPieceAtTile != null && clickedPieceAtTile.isWhite() == board.isWhiteTurn()) {
 			selectPiece(clickedPieceAtTile); // Select the clicked piece if it matches the turn
 		} else if (selectedPiece != null) {
 			attemptMove(selectedPiece, column, row); // Attempt to move the selected piece
 		}
 
-		getBoard().repaint(); // Redraw the board to reflect changes
+		board.repaint(); // Redraw the board to reflect changes
 	}
 
 	/**
@@ -71,67 +82,105 @@ public class MouseInput extends MouseAdapter {
 	 */
 	@Override
 	public void mouseDragged(MouseEvent event) {
-		Piece selectedPiece = getBoard().getSelectedPiece();
+		if (SwingUtilities.isRightMouseButton(event)) {
+			// Right-click: update temporary arrow end coordinates.
+			Arrow tempArrow = board.getTempArrow();
+			if (tempArrow != null) {
+				int column = event.getX() / board.getTileSize();
+				int row = event.getY() / board.getTileSize();
+				tempArrow.setEndColumn(column);
+				tempArrow.setEndRow(row);
+				board.repaint();
+			}
+			return;
+		}
+
+		// Left-click: update piece position during drag.
+		Piece selectedPiece = board.getSelectedPiece();
 		if (selectedPiece != null) {
-			getBoard().setMouseDragged(true);
-			updatePiecePositionDuringDrag(selectedPiece, event); // Update piece position during drag
-			getBoard().repaint(); // Redraw the board during dragging
+			board.setMouseDragged(true);
+			updatePiecePositionDuringDrag(selectedPiece, event); // Update piece position based on drag
+			board.repaint(); // Redraw the board during dragging
 		}
 	}
 
 	/**
-	 * Handles the mouse release event during a piece drag operation on the chessboard.
-	 * This method determines whether the drag should result in an attempted move
-	 * or reset the piece to its original position based on the drag distance.
+	 * Handles the mouse release event during a piece drag or arrow drawing operation.
 	 * <p>
-	 * - If the drag distance is less than or equal to 25 pixels, the piece remains
-	 * selected, and its possible moves are displayed.
-	 * - If the drag distance is greater than 25 pixels, the method attempts to move
-	 * the piece to the calculated destination tile.
+	 * For right-click:
+	 * - If the temporary arrow's start and end differ, search for an existing arrow with the same
+	 * coordinates. If found, remove it; otherwise, add the new arrow.
+	 * <p>
+	 * For left-click:
+	 * - If the drag distance is less than or equal to 25 pixels, reset the piece to its original position
+	 * and show possible moves.
+	 * - Otherwise, attempt to move the piece to the target tile.
 	 *
 	 * @param event
 	 * 	the MouseEvent triggered upon releasing the mouse button.
 	 */
 	@Override
 	public void mouseReleased(MouseEvent event) {
-		// Check if a drag operation was in progress
-		if (!getBoard().isMouseDragged()) {
+		if (SwingUtilities.isRightMouseButton(event)) {
+			Arrow tempArrow = board.getTempArrow();
+			if (tempArrow != null) {
+				// Check if start and end coordinates are different (if not, no action is taken)
+				if (tempArrow.getStartColumn() != tempArrow.getEndColumn() ||
+					    tempArrow.getStartRow() != tempArrow.getEndRow()) {
+					// Search for an existing arrow with the same start and end coordinates.
+					Arrow duplicateArrow = null;
+					for (Arrow arrow : board.getArrows()) {
+						if (arrow.getStartColumn() == tempArrow.getStartColumn() &&
+							    arrow.getStartRow() == tempArrow.getStartRow() &&
+							    arrow.getEndColumn() == tempArrow.getEndColumn() &&
+							    arrow.getEndRow() == tempArrow.getEndRow()) {
+							duplicateArrow = arrow;
+							break;
+						}
+					}
+					// If an identical arrow exists, remove it; otherwise, add the new arrow.
+					if (duplicateArrow != null) {
+						board.getArrows().remove(duplicateArrow);
+					} else {
+						board.getArrows().add(tempArrow);
+					}
+				}
+				board.setTempArrow(null);
+				board.repaint();
+			}
 			return;
 		}
 
-		// Retrieve the currently selected piece
-		Piece selectedPiece = getBoard().getSelectedPiece();
-
-		// If the King is in Check and the Player selects a Piece without any legal moves play a warning sound
-		// and highlight the tile where the King is located
-		if (getBoard().getMoveValidator().isKingInCheck() && selectedPiece.getLegalMoves(getBoard()).isEmpty()) {
-			getBoard().getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
-			getBoard().getBoardPainter().blinkKingsTile((Graphics2D) getBoard().getGraphics(), getBoard().isWhiteTurn());
+		// Left-click: handle piece movement
+		if (!board.isMouseDragged()) {
+			return;
 		}
 
-		// Calculate the target tile coordinates based on the mouse release position
-		int column = event.getX() / getBoard().getTileSize();
-		int row = event.getY() / getBoard().getTileSize();
+		Piece selectedPiece = board.getSelectedPiece();
 
-		// Calculate the drag distance from the piece's original position
+		if (board.getMoveValidator().isKingInCheck() && selectedPiece.getLegalMoves(board).isEmpty()) {
+			board.getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
+			board.getBoardPainter().blinkKingsTile((Graphics2D) board.getGraphics(), board.isWhiteTurn());
+		}
+
+		int column = event.getX() / board.getTileSize();
+		int row = event.getY() / board.getTileSize();
+
 		int draggedX = event.getX();
 		int draggedY = event.getY();
-		int originalX = getOriginalColumn() * getBoard().getTileSize() + getBoard().getTileSize() / 2;
-		int originalY = getOriginalRow() * getBoard().getTileSize() + getBoard().getTileSize() / 2;
+		int originalX = getOriginalColumn() * board.getTileSize() + board.getTileSize() / 2;
+		int originalY = getOriginalRow() * board.getTileSize() + board.getTileSize() / 2;
 		double distance = Math.sqrt(Math.pow(draggedX - originalX, 2) + Math.pow(draggedY - originalY, 2));
 
-		// If the drag distance is within 25 pixels, reset the piece's position
 		if (distance <= 25) {
 			resetPiecePosition(selectedPiece);
-			getBoard().showPossibleMoves(selectedPiece); // Keep showing possible moves
+			board.showPossibleMoves(selectedPiece);
 		} else {
-			// Otherwise, attempt to move the piece to the new tile
-			attemptMove(selectedPiece, column, row); // Attempt to move the selected piece
+			attemptMove(selectedPiece, column, row);
 		}
 
-		// End the drag operation and repaint the board
-		getBoard().setMouseDragged(false);
-		getBoard().repaint();
+		board.setMouseDragged(false);
+		board.repaint();
 	}
 
 	/**

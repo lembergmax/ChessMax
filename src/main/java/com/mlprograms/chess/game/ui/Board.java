@@ -76,6 +76,9 @@ public class Board extends JPanel {
 	private Player playerWhite;
 	private Player playerBlack;
 
+	private List<Arrow> arrows = new ArrayList<>();
+	private Arrow tempArrow;
+
 	/**
 	 * Constructs the Board and initializes its components and configurations.
 	 * Sets up the JFrame and prepares the chessboard layout.
@@ -117,6 +120,7 @@ public class Board extends JPanel {
 		getBoardPainter().highlightPossibleMoves((Graphics2D) graphics);
 		getBoardPainter().drawCoordinates((Graphics2D) graphics);
 		getBoardPainter().paintPieces((Graphics2D) graphics);
+		getBoardPainter().drawArrows((Graphics2D) graphics);
 	}
 
 	/**

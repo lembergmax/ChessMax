@@ -30,6 +30,44 @@ public class BoardPainter {
 	}
 
 	/**
+	 * Creates a polygon representing an arrowhead for a given end point and angle.
+	 * <p>
+	 * This method calculates the coordinates of a triangular arrowhead based on the specified
+	 * end point (endX, endY) and the angle of the arrow. The arrowhead is created with a fixed
+	 * spread angle and length, forming a triangle with the tip at the end point and the other
+	 * two points calculated using trigonometric functions.
+	 * </p>
+	 *
+	 * @param endX
+	 * 	the x-coordinate of the arrow's end point
+	 * @param endY
+	 * 	the y-coordinate of the arrow's end point
+	 * @param angle
+	 * 	the angle of the arrow in radians
+	 *
+	 * @return a Polygon object representing the arrowhead
+	 */
+	private static Polygon getPolygon(int endX, int endY, double angle) {
+		double arrowHeadAngle = Math.toRadians(35);  // Spread angle
+		double arrowHeadLength = 35;                 // Increased from 25 to 35
+
+		Polygon arrowHead = new Polygon();
+		arrowHead.addPoint(endX, endY);
+
+		// Left point of the arrowhead
+		int x1 = (int) (endX - arrowHeadLength * Math.cos(angle - arrowHeadAngle));
+		int y1 = (int) (endY - arrowHeadLength * Math.sin(angle - arrowHeadAngle));
+		arrowHead.addPoint(x1, y1);
+
+		// Right point of the arrowhead
+		int x2 = (int) (endX - arrowHeadLength * Math.cos(angle + arrowHeadAngle));
+		int y2 = (int) (endY - arrowHeadLength * Math.sin(angle + arrowHeadAngle));
+		arrowHead.addPoint(x2, y2);
+
+		return arrowHead;
+	}
+
+	/**
 	 * Paints all the pieces currently on the board.
 	 * Iterates through the list of pieces managed by the board and calls their respective paint methods.
 	 *
@@ -62,9 +100,9 @@ public class BoardPainter {
 
 			// Determine highlight color based on the move type
 			if (isCaptureMove(column, row)) {
-				graphics2D.setColor(fetchColorWithAlphaConfig("Colors","TILE_HIGHLIGHT_CAPTURE", 135)); // Capture move color
+				graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_CAPTURE", 135)); // Capture move color
 			} else {
-				graphics2D.setColor(fetchColorWithAlphaConfig("Colors","TILE_HIGHLIGHT", 135));
+				graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT", 135));
 			}
 
 			// Draw the highlight on the corresponding tile
@@ -90,7 +128,7 @@ public class BoardPainter {
 		Move lastMove = getBoard().getMoveHistory().getLast().getMadeMove();
 
 		// Set the highlight color based on the move type
-		graphics2D.setColor(fetchColorWithAlphaConfig("Colors","TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
+		graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
 
 		// Draw the highlight on the source tile
 		graphics2D.fillRect(lastMove.getOldColumn() * getBoard().getTileSize(), lastMove.getOldRow() * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
@@ -117,7 +155,7 @@ public class BoardPainter {
 
 		// Let the king's tile blink a few times
 		new Thread(() -> {
-			graphics2D.setColor(fetchColorWithAlphaConfig("Colors","TILE_HIGHLIGHT_ILLEGAL", 105));
+			graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_ILLEGAL", 105));
 
 			getBoard().getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
 
@@ -229,9 +267,9 @@ public class BoardPainter {
 			for (int columns = 0; columns < getBoard().getColumns(); columns++) {
 				// Alternate between light and dark colors based on tile position
 				if ((rows + columns) % 2 == 0) {
-					graphics2D.setColor(fetchColorConfig("Colors","TILE_LIGHT")); // Light tile color
+					graphics2D.setColor(fetchColorConfig("Colors", "TILE_LIGHT")); // Light tile color
 				} else {
-					graphics2D.setColor(fetchColorConfig("Colors","TILE_DARK")); // Dark tile color
+					graphics2D.setColor(fetchColorConfig("Colors", "TILE_DARK")); // Dark tile color
 				}
 				// Draw the rectangle representing the tile
 				graphics2D.fillRect(columns * getBoard().getTileSize(), rows * getBoard().getTileSize(),
@@ -239,4 +277,137 @@ public class BoardPainter {
 			}
 		}
 	}
+
+	/**
+	 * Draws an arrow with a style similar to Chess.com:
+	 * - Thicker, more transparent line
+	 * - Larger, filled triangular arrowhead
+	 *
+	 * @param g2d
+	 * 	the Graphics2D context used for drawing
+	 * @param startX
+	 * 	x-coordinate of the arrow's start
+	 * @param startY
+	 * 	y-coordinate of the arrow's start
+	 * @param endX
+	 * 	x-coordinate of the arrow's end
+	 * @param endY
+	 * 	y-coordinate of the arrow's end
+	 */
+	private void drawArrow(Graphics2D g2d, int startX, int startY, int endX, int endY) {
+		// Save the old stroke and color so we can restore them later if needed
+		Stroke oldStroke = g2d.getStroke();
+		Color oldColor = g2d.getColor();
+
+		// 1) Make the arrow shaft thicker
+		//    (Increase the value from 8.0f to something larger, e.g. 12.0f)
+		float arrowThickness = 20.0f;
+		g2d.setStroke(new BasicStroke(
+			arrowThickness,
+			BasicStroke.CAP_SQUARE,
+			BasicStroke.JOIN_MITER
+		));
+
+		// 2) Increase transparency by reducing alpha
+		g2d.setColor(new Color(255, 165, 0, 255));
+
+		// Draw the main arrow line
+		g2d.drawLine(startX, startY, endX, endY);
+
+		// 3) Make the arrowhead bigger by increasing arrowHeadLength in getPolygon(...)
+		//    For example, from 25 to 35
+		//    (See "arrowHeadLength = 35" in getPolygon below)
+		double angle = Math.atan2(endY - startY, endX - startX);
+		Polygon arrowHead = getPolygon(endX, endY, angle);
+
+		// Fill the arrowhead triangle
+		g2d.fillPolygon(arrowHead);
+
+		// Restore old stroke and color
+		g2d.setStroke(oldStroke);
+		g2d.setColor(oldColor);
+	}
+
+	/**
+	 * Draws all arrows stored on the board in a Chess.com-like style.
+	 *
+	 * @param g2d
+	 * 	the Graphics2D context used for drawing
+	 */
+	public void drawArrows(Graphics2D g2d) {
+		// For each arrow in your board's list
+		for (Arrow arrow : board.getArrows()) {
+			drawSingleArrow(g2d, arrow);
+		}
+
+		// Draw the temporary arrow (if it exists) using a dashed stroke or similar
+		if (board.getTempArrow() != null) {
+			// For the temporary arrow, you might want a dashed stroke or a different color.
+			// But if you want it to look the same, just call the same method:
+			drawSingleArrow(g2d, board.getTempArrow());
+		}
+	}
+
+	private void drawSingleArrow(Graphics2D g2d, Arrow arrow) {
+		int tileSize = board.getTileSize();
+		int startX = arrow.getStartColumn() * tileSize + tileSize / 2;
+		int startY = arrow.getStartRow() * tileSize + tileSize / 2;
+		int endX = arrow.getEndColumn() * tileSize + tileSize / 2;
+		int endY = arrow.getEndRow() * tileSize + tileSize / 2;
+
+		// Prüfe, ob es sich um einen Springerzug handelt
+		int dx = Math.abs(arrow.getEndColumn() - arrow.getStartColumn());
+		int dy = Math.abs(arrow.getEndRow() - arrow.getStartRow());
+		if ((dx == 2 && dy == 1) || (dx == 1 && dy == 2)) {
+			// Bei Springerzug L-Shape Pfeil zeichnen
+			// Wir wählen hier: wenn der horizontale Unterschied größer ist, zeichne zuerst horizontal
+			boolean horizontalFirst = (dx > dy);
+			drawKnightArrow(g2d, startX, startY, endX, endY, horizontalFirst);
+		} else {
+			// Andernfalls normaler Pfeil
+			drawArrow(g2d, startX, startY, endX, endY);
+		}
+	}
+
+	private void drawKnightArrow(Graphics2D g2d, int startX, int startY, int endX, int endY, boolean horizontalFirst) {
+		Stroke oldStroke = g2d.getStroke();
+		Color oldColor = g2d.getColor();
+
+		// Gleiche Pfeil-Einstellungen wie in drawArrow()
+		float arrowThickness = 20.0f;
+		g2d.setStroke(new BasicStroke(
+			arrowThickness,
+			BasicStroke.CAP_SQUARE,
+			BasicStroke.JOIN_MITER
+		));
+		g2d.setColor(new Color(255, 165, 0, 255));
+
+		// Bestimme den Zwischenpunkt (Bend)
+		int midX, midY;
+		if (horizontalFirst) {
+			// Horizontaler Abschnitt zuerst: gehe bis zur Spalte des Ziels, aber bleibe in gleicher Zeile
+			midX = endX;
+			midY = startY;
+		} else {
+			// Vertikaler Abschnitt zuerst: gehe bis zur Zeile des Ziels, aber bleibe in gleicher Spalte
+			midX = startX;
+			midY = endY;
+		}
+
+		// Zeichne den ersten Segment
+		g2d.drawLine(startX, startY, midX, midY);
+		// Zeichne den zweiten Segment
+		g2d.drawLine(midX, midY, endX, endY);
+
+		// Pfeilkopf nur am Ende des zweiten Segments
+		double angle = Math.atan2(endY - midY, endX - midX);
+		Polygon arrowHead = getPolygon(endX, endY, angle);
+		g2d.fillPolygon(arrowHead);
+
+		// Setze alte Einstellungen zurück
+		g2d.setStroke(oldStroke);
+		g2d.setColor(oldColor);
+	}
+
+
 }
