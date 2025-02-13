@@ -81,7 +81,7 @@ public class BoardPainter {
 	 */
 	public void paintPieces(Graphics2D graphics2D) {
 		// Iterate through all pieces on the board
-		for (Piece piece : BOARD.getPieceList()) {
+		for (Piece piece : getBOARD().getPieceList()) {
 			// Delegate the painting of each piece to its paint method
 			piece.paint(graphics2D);
 		}
@@ -94,8 +94,8 @@ public class BoardPainter {
 	 * 	the graphics context used for drawing
 	 */
 	public void highlightPossibleMoves(Graphics2D graphics2D) {
-		List<Move> possibleMoves = BOARD.getPossibleMoves();
-		if (possibleMoves == null || BOARD.getSelectedPiece() == null) {
+		List<Move> possibleMoves = getBOARD().getPossibleMoves();
+		if (possibleMoves == null || getBOARD().getSelectedPiece() == null) {
 			return; // No moves or no selected piece, nothing to highlight
 		}
 
@@ -111,7 +111,7 @@ public class BoardPainter {
 			}
 
 			// Draw the highlight on the corresponding tile
-			graphics2D.fillRect(column * BOARD.getTileSize(), row * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
+			graphics2D.fillRect(column * getBOARD().getTileSize(), row * getBOARD().getTileSize(), getBOARD().getTileSize(), getBOARD().getTileSize());
 		}
 	}
 
@@ -125,19 +125,19 @@ public class BoardPainter {
 	 * 	the graphics context used for drawing
 	 */
 	public void highlightMadeMove(Graphics2D graphics2D) {
-		if (BOARD.getMoveHistory().isEmpty()) {
+		if (getBOARD().getMoveHistory().isEmpty()) {
 			return;
 		}
 
 		// Get the last move made on the board
-		Move lastMove = BOARD.getMoveHistory().getLast().getMadeMove();
+		Move lastMove = getBOARD().getMoveHistory().getLast().getMadeMove();
 
 		// Set the highlight color based on the move type
 		graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
 
 		// Draw the highlight on the source tile
-		graphics2D.fillRect(lastMove.getOldColumn() * BOARD.getTileSize(), lastMove.getOldRow() * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
-		graphics2D.fillRect(lastMove.getNewColumn() * BOARD.getTileSize(), lastMove.getNewRow() * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
+		graphics2D.fillRect(lastMove.getOldColumn() * getBOARD().getTileSize(), lastMove.getOldRow() * getBOARD().getTileSize(), getBOARD().getTileSize(), getBOARD().getTileSize());
+		graphics2D.fillRect(lastMove.getNewColumn() * getBOARD().getTileSize(), lastMove.getNewRow() * getBOARD().getTileSize(), getBOARD().getTileSize(), getBOARD().getTileSize());
 	}
 
 	/**
@@ -154,7 +154,7 @@ public class BoardPainter {
 	 * 	true if the white king's tile should be blinked, false for the black king
 	 */
 	public void blinkKingsTile(Graphics2D graphics2D, boolean whiteKing) {
-		King king = BOARD.getMoveValidator().findKing(whiteKing);
+		King king = getBOARD().getMoveValidator().findKing(whiteKing);
 		int column = king.getColumn();
 		int row = king.getRow();
 
@@ -162,14 +162,14 @@ public class BoardPainter {
 		new Thread(() -> {
 			graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_ILLEGAL", 105));
 
-			BOARD.getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
+			getBOARD().getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
 
 			for (int i = 0; i < 3; i++) {
 				sleep(400);
-				graphics2D.fillRect(column * BOARD.getTileSize(), row * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
+				graphics2D.fillRect(column * getBOARD().getTileSize(), row * getBOARD().getTileSize(), getBOARD().getTileSize(), getBOARD().getTileSize());
 				paintPieces(graphics2D);
 				sleep(400);
-				BOARD.repaint();
+				getBOARD().repaint();
 			}
 		}).start();
 	}
@@ -199,11 +199,11 @@ public class BoardPainter {
 	 * @return true if the move is a capture, false otherwise
 	 */
 	private boolean isCaptureMove(int column, int row) {
-		Piece targetPiece = BOARD.getPieceAt(column, row);
+		Piece targetPiece = getBOARD().getPieceAt(column, row);
 
 		// Check for direct captures or special en passant moves
 		return targetPiece != null ||
-			       (BOARD.getSelectedPiece() instanceof Pawn && BOARD.getTileNumber(column, row) == BOARD.getEnPassantTile());
+			       (getBOARD().getSelectedPiece() instanceof Pawn && getBOARD().getTileNumber(column, row) == getBOARD().getEnPassantTile());
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class BoardPainter {
 		graphics2D.setColor(Color.BLACK);
 		graphics2D.setFont(new Font("SansSerif", Font.BOLD, 12));
 
-		boolean isWhiteAtBottom = BOARD.isWhiteAtBottom();
+		boolean isWhiteAtBottom = getBOARD().isWhiteAtBottom();
 		drawColumnLabels(graphics2D, isWhiteAtBottom);
 		drawRowLabels(graphics2D, isWhiteAtBottom);
 	}
@@ -227,10 +227,10 @@ public class BoardPainter {
 	 * Draws the column labels ('a' to 'h' or 'h' to 'a') below the board.
 	 */
 	private void drawColumnLabels(Graphics2D graphics2D, boolean isWhiteAtBottom) {
-		int tileSize = BOARD.getTileSize();
-		int padding = BOARD.getPadding();
-		int boardRows = BOARD.getRows();
-		int boardColumns = BOARD.getColumns();
+		int tileSize = getBOARD().getTileSize();
+		int padding = getBOARD().getPadding();
+		int boardRows = getBOARD().getRows();
+		int boardColumns = getBOARD().getColumns();
 
 		for (int col = 0; col < boardColumns; col++) {
 			char colLabel = (char) ((isWhiteAtBottom ? 'a' : 'h') + (isWhiteAtBottom ? col : -col));
@@ -245,9 +245,9 @@ public class BoardPainter {
 	 * Draws the row labels ('1' to '8' or '8' to '1') to the left of the board.
 	 */
 	private void drawRowLabels(Graphics2D graphics2D, boolean isWhiteAtBottom) {
-		int tileSize = BOARD.getTileSize();
-		int padding = BOARD.getPadding();
-		int boardRows = BOARD.getRows();
+		int tileSize = getBOARD().getTileSize();
+		int padding = getBOARD().getPadding();
+		int boardRows = getBOARD().getRows();
 
 		for (int row = 0; row < boardRows; row++) {
 			int rowLabel = isWhiteAtBottom ? (boardRows - row) : (row + 1);
@@ -267,9 +267,9 @@ public class BoardPainter {
 	 */
 	protected void drawChessBoard(Graphics2D graphics2D) {
 		// Loop through each row of the board
-		for (int rows = 0; rows < BOARD.getRows(); rows++) {
+		for (int rows = 0; rows < getBOARD().getRows(); rows++) {
 			// Loop through each column of the board
-			for (int columns = 0; columns < BOARD.getColumns(); columns++) {
+			for (int columns = 0; columns < getBOARD().getColumns(); columns++) {
 				// Alternate between light and dark colors based on tile position
 				if ((rows + columns) % 2 == 0) {
 					graphics2D.setColor(fetchColorConfig("Colors", "TILE_LIGHT")); // Light tile color
@@ -277,8 +277,8 @@ public class BoardPainter {
 					graphics2D.setColor(fetchColorConfig("Colors", "TILE_DARK")); // Dark tile color
 				}
 				// Draw the rectangle representing the tile
-				graphics2D.fillRect(columns * BOARD.getTileSize(), rows * BOARD.getTileSize(),
-					BOARD.getTileSize(), BOARD.getTileSize());
+				graphics2D.fillRect(columns * getBOARD().getTileSize(), rows * getBOARD().getTileSize(),
+					getBOARD().getTileSize(), getBOARD().getTileSize());
 			}
 		}
 	}
@@ -374,10 +374,10 @@ public class BoardPainter {
 		));
 		g2d.setColor(ARROW_COLOR);
 
-		// Führe die übergebene Zeichnungsaktion aus.
+		// Execute the provided drawing action.
 		action.run();
 
-		// Stelle die ursprünglichen Einstellungen wieder her.
+		// Restore the original settings.
 		g2d.setStroke(previousStroke);
 		g2d.setColor(previousColor);
 	}
