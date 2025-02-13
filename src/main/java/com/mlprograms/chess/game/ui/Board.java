@@ -77,6 +77,7 @@ public class Board extends JPanel {
 	private Player playerBlack;
 
 	private List<Arrow> arrows = new ArrayList<>();
+	private List<Point> redHighlights = new ArrayList<>();
 	private Arrow tempArrow;
 
 	/**
@@ -121,6 +122,7 @@ public class Board extends JPanel {
 		getBoardPainter().drawCoordinates((Graphics2D) graphics);
 		getBoardPainter().paintPieces((Graphics2D) graphics);
 		getBoardPainter().drawArrows((Graphics2D) graphics);
+		getBoardPainter().paintRedHighlights((Graphics2D) graphics);
 	}
 
 	/**

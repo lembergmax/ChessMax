@@ -55,8 +55,7 @@ public class MouseInput extends MouseAdapter {
 	 * - Determines if a piece should be selected, deselected, or moved based on the clicked tile.
 	 * </p>
 	 *
-	 * @param event
-	 * 	the mouse press event.
+	 * @param event the mouse press event.
 	 */
 	@Override
 	public void mousePressed(MouseEvent event) {
@@ -73,6 +72,7 @@ public class MouseInput extends MouseAdapter {
 		// For left-click actions:
 		// Clear any pre-existing arrows on the board.
 		board.getArrows().clear();
+		board.getRedHighlights().clear();
 
 		// Reset the flag indicating if a piece is being dragged.
 		board.setMouseDragged(false);
@@ -114,8 +114,7 @@ public class MouseInput extends MouseAdapter {
 	 * - If a piece is selected, updates its visual position to follow the mouse.
 	 * </p>
 	 *
-	 * @param event
-	 * 	the mouse drag event.
+	 * @param event the mouse drag event.
 	 */
 	@Override
 	public void mouseDragged(MouseEvent event) {
@@ -145,35 +144,29 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Called when a mouse button is released.
+	 * Handles the mouse release event during a piece drag or arrow drawing operation.
 	 * <p>
 	 * For right-click:
-	 * - Finalizes the drawing of an arrow. If the temporary arrow's start and end points differ,
-	 * the method checks for duplicates: if found, the arrow is removed; otherwise, it is added.
-	 * </p>
+	 * - If the temporary arrow's start and end differ, search for an existing arrow with the same
+	 * coordinates. If found, remove it; otherwise, add the new arrow.
 	 * <p>
 	 * For left-click:
-	 * - If the piece was not dragged significantly, the piece is reset to its original position and
-	 * possible moves are highlighted.
-	 * - If the piece was dragged a significant distance, an attempt is made to move the piece to the new tile.
-	 * - Additionally, if the move leaves the king in check with no legal moves, an illegal move sound is played
-	 * and the king's tile is blinked.
-	 * </p>
+	 * - If the drag distance is less than or equal to 25 pixels, reset the piece to its original position
+	 * and show possible moves.
+	 * - Otherwise, attempt to move the piece to the target tile.
 	 *
 	 * @param event
-	 * 	the mouse release event.
+	 * 	the MouseEvent triggered upon releasing the mouse button.
 	 */
 	@Override
 	public void mouseReleased(MouseEvent event) {
-		// Handle right-click release events for arrow finalization.
 		if (SwingUtilities.isRightMouseButton(event)) {
 			Arrow tempArrow = board.getTempArrow();
 			if (tempArrow != null) {
-				// Only proceed if the arrow has distinct start and end points.
+				// Check if start and end coordinates are different (if not, no action is taken)
 				if (tempArrow.getStartColumn() != tempArrow.getEndColumn() ||
 					    tempArrow.getStartRow() != tempArrow.getEndRow()) {
-
-					// Look for an existing arrow with the same coordinates.
+					// Search for an existing arrow with the same start and end coordinates.
 					Arrow duplicateArrow = null;
 					for (Arrow arrow : board.getArrows()) {
 						if (arrow.getStartColumn() == tempArrow.getStartColumn() &&
@@ -184,57 +177,47 @@ public class MouseInput extends MouseAdapter {
 							break;
 						}
 					}
-					// Remove the duplicate arrow if found; otherwise, add the new arrow.
+					// If an identical arrow exists, remove it; otherwise, add the new arrow.
 					if (duplicateArrow != null) {
 						board.getArrows().remove(duplicateArrow);
 					} else {
 						board.getArrows().add(tempArrow);
 					}
 				}
-				// Clear the temporary arrow from the board.
 				board.setTempArrow(null);
 				board.repaint();
 			}
 			return;
 		}
 
-		// For left-click releases (related to piece movement).
+		// Left-click: handle piece movement
 		if (!board.isMouseDragged()) {
-			// If the mouse was not dragged, no move needs to be processed.
 			return;
 		}
 
-		// Get the currently selected piece.
 		Piece selectedPiece = board.getSelectedPiece();
 
-		// Check if the move leaves the king in check with no legal moves available.
 		if (board.getMoveValidator().isKingInCheck() && selectedPiece.getLegalMoves(board).isEmpty()) {
-			// Play an illegal move sound and blink the king's tile.
 			board.getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
 			board.getBoardPainter().blinkKingsTile((Graphics2D) board.getGraphics(), board.isWhiteTurn());
 		}
 
-		// Calculate the target tile based on the release coordinates.
 		int column = event.getX() / board.getTileSize();
 		int row = event.getY() / board.getTileSize();
 
-		// Calculate the drag distance from the original position.
 		int draggedX = event.getX();
 		int draggedY = event.getY();
 		int originalX = getOriginalColumn() * board.getTileSize() + board.getTileSize() / 2;
 		int originalY = getOriginalRow() * board.getTileSize() + board.getTileSize() / 2;
 		double distance = Math.sqrt(Math.pow(draggedX - originalX, 2) + Math.pow(draggedY - originalY, 2));
 
-		// If the drag distance is minimal (<= 25 pixels), consider it a click and not a move.
 		if (distance <= 25) {
 			resetPiecePosition(selectedPiece);
 			board.showPossibleMoves(selectedPiece);
 		} else {
-			// Attempt to execute the move based on the drag.
 			attemptMove(selectedPiece, column, row);
 		}
 
-		// Reset the dragging flag and repaint the board.
 		board.setMouseDragged(false);
 		board.repaint();
 	}
