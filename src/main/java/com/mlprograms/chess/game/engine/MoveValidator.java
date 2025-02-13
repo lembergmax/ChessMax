@@ -11,7 +11,6 @@ import com.mlprograms.chess.game.pieces.King;
 import com.mlprograms.chess.game.pieces.Knight;
 import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.ui.Board;
-import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -198,6 +197,7 @@ public class MoveValidator {
 		int movingPieceOriginalColumn = movingPiece.getColumn();
 		int movingPieceOriginalRow = movingPiece.getRow();
 
+		// Simulating the capture of the target piece
 		if (targetPiece != null) {
 			getBoard().getPieceList().remove(targetPiece);
 		}
@@ -210,11 +210,11 @@ public class MoveValidator {
 		// Check if the king is in check after the move
 		boolean isKingInCheckAfterMove = isKingInCheck();
 
+		// Restore the board to its original state
 		if (targetPiece != null) {
 			getBoard().getPieceList().add(targetPiece);
 		}
 
-		getBoard().setPieceAt(movingPieceOriginalColumn, movingPieceOriginalRow, movingPiece);
 		getBoard().setPieceAt(move.getNewColumn(), move.getNewRow(), targetPiece);
 		movingPiece.setPosition(movingPieceOriginalColumn, movingPieceOriginalRow);
 

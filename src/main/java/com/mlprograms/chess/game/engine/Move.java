@@ -24,7 +24,9 @@ public class Move {
 	private int newColumn;
 	private int newRow;
 
+	@ToString.Exclude
 	private Board board;
+
 	private Piece piece;
 	private Piece capturedPiece;
 
