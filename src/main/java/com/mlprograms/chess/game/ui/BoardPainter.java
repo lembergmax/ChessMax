@@ -24,8 +24,11 @@ import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorWithAlphaConfig
 @Getter
 public class BoardPainter {
 
+	private static final float HEAD_LENGTH = ConfigFetcher.fetchFloatConfig("Arrow", "HEAD_LENGTH");
+	private static final double HEAD_ANGLE = ConfigFetcher.fetchFloatConfig("Arrow", "HEAD_ANGLE");
 	private final Board BOARD;
-	private final Color ARROW_COLOR = ConfigFetcher.fetchColorWithAlphaConfig("Colors", "ARROW_COLOR_RGBA", 200);
+	private final int ALPHA = ConfigFetcher.fetchIntegerConfig("Colors", "ARROW_ALPHA");
+	private final Color ARROW_COLOR = ConfigFetcher.fetchColorWithAlphaConfig("Colors", "ARROW_COLOR", ALPHA);
 	private final float THICKNESS = ConfigFetcher.fetchFloatConfig("Arrow", "THICKNESS");
 
 	public BoardPainter(Board board) {
@@ -50,8 +53,8 @@ public class BoardPainter {
 	 * @return a Polygon object representing the arrowhead.
 	 */
 	private static Polygon getPolygon(int endX, int endY, double angle) {
-		double arrowHeadAngle = Math.toRadians(35);  // Spread angle for the arrowhead.
-		double arrowHeadLength = 35;                 // Length of the arrowhead.
+		double arrowHeadAngle = Math.toRadians(HEAD_ANGLE); // Spread angle for the arrowhead.
+		double arrowHeadLength = Double.parseDouble(String.valueOf(HEAD_LENGTH)); // Length of the arrowhead.
 
 		Polygon arrowHead = new Polygon();
 		arrowHead.addPoint(endX, endY); // Tip of the arrowhead.
@@ -281,77 +284,26 @@ public class BoardPainter {
 	}
 
 	/**
-	 * Draws an arrow with a style similar to Chess.com.
-	 * <p>
-	 * The arrow is drawn with a thick line and a filled, triangular arrowhead.
-	 * </p>
-	 *
-	 * @param g2d
-	 * 	the Graphics2D context used for drawing.
-	 * @param startX
-	 * 	the x-coordinate of the arrow's start.
-	 * @param startY
-	 * 	the y-coordinate of the arrow's start.
-	 * @param endX
-	 * 	the x-coordinate of the arrow's end.
-	 * @param endY
-	 * 	the y-coordinate of the arrow's end.
-	 */
-	private void drawArrow(Graphics2D g2d, int startX, int startY, int endX, int endY) {
-		// Save the current stroke and color.
-		Stroke oldStroke = g2d.getStroke();
-		Color oldColor = g2d.getColor();
-
-		// Set the arrow's thickness and style.
-		float arrowThickness = THICKNESS;
-		g2d.setStroke(new BasicStroke(
-			arrowThickness,
-			BasicStroke.CAP_SQUARE,
-			BasicStroke.JOIN_MITER
-		));
-		g2d.setColor(ARROW_COLOR);
-
-		// Calculate the angle of the arrow.
-		double angle = Math.atan2(endY - startY, endX - startX);
-
-		// --- Step 1: Shorten the arrow shaft ---
-		double arrowHeadLength = 35.0; // Length reserved for the arrowhead.
-		int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
-		int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
-
-		// --- Step 2: Draw the arrow shaft ---
-		g2d.drawLine(startX, startY, lineEndX, lineEndY);
-
-		// --- Step 3: Draw the arrowhead ---
-		Polygon arrowHead = getPolygon(endX, endY, angle);
-		g2d.fillPolygon(arrowHead);
-
-		// Restore the original stroke and color.
-		g2d.setStroke(oldStroke);
-		g2d.setColor(oldColor);
-	}
-
-	/**
 	 * Draws all arrows stored on the board in a Chess.com-like style.
 	 * <p>
 	 * This method renders both permanent arrows and a temporary arrow (if one exists).
 	 * </p>
 	 *
-	 * @param g2d
+	 * @param graphics2D
 	 * 	the Graphics2D context used for drawing.
 	 */
-	public void drawArrows(Graphics2D g2d) {
+	public void drawArrows(Graphics2D graphics2D) {
 		// Draw each arrow from the board's list.
 		for (Arrow arrow : BOARD.getArrows()) {
 			if (!isValidArrow(arrow)) {
 				continue;
 			}
-			drawSingleArrow(g2d, arrow);
+			drawSingleArrow(graphics2D, arrow);
 		}
 
 		// Draw the temporary arrow, if it exists.
 		if (BOARD.getTempArrow() != null) {
-			drawSingleArrow(g2d, BOARD.getTempArrow());
+			drawSingleArrow(graphics2D, BOARD.getTempArrow());
 		}
 	}
 
@@ -375,12 +327,12 @@ public class BoardPainter {
 	 * and then determines if the arrow should be drawn as a standard arrow or as an L-shaped (knight) arrow.
 	 * </p>
 	 *
-	 * @param g2d
+	 * @param graphics2D
 	 * 	the Graphics2D context used for drawing.
 	 * @param arrow
 	 * 	the Arrow object containing start and end tile coordinates.
 	 */
-	private void drawSingleArrow(Graphics2D g2d, Arrow arrow) {
+	private void drawSingleArrow(Graphics2D graphics2D, Arrow arrow) {
 		int tileSize = BOARD.getTileSize();
 		int startX = arrow.getStartColumn() * tileSize + tileSize / 2;
 		int startY = arrow.getStartRow() * tileSize + tileSize / 2;
@@ -393,11 +345,73 @@ public class BoardPainter {
 		if ((dx == 2 && dy == 1) || (dx == 1 && dy == 2)) {
 			// Draw an L-shaped arrow for knight moves.
 			boolean horizontalFirst = (dx > dy);
-			drawKnightArrow(g2d, startX, startY, endX, endY, horizontalFirst);
+			drawKnightArrow(graphics2D, startX, startY, endX, endY, horizontalFirst);
 		} else {
 			// Draw a standard arrow.
-			drawArrow(g2d, startX, startY, endX, endY);
+			drawArrow(graphics2D, startX, startY, endX, endY);
 		}
+	}
+
+	/**
+	 * Executes the given drawing action using arrow-specific graphics settings.
+	 * It saves the current stroke and color, sets the arrow style, executes the drawing action,
+	 * and finally restores the original graphics settings.
+	 *
+	 * @param g2d
+	 * 	the Graphics2D context used for drawing.
+	 * @param action
+	 * 	the drawing action to execute.
+	 */
+	private void withArrowGraphics(Graphics2D g2d, Runnable action) {
+		Stroke previousStroke = g2d.getStroke();
+		Color previousColor = g2d.getColor();
+
+		// Set arrow style (verwende ggf. Konstante wie THICKNESS und ARROW_COLOR)
+		g2d.setStroke(new BasicStroke(
+			THICKNESS,
+			BasicStroke.CAP_SQUARE,
+			BasicStroke.JOIN_MITER
+		));
+		g2d.setColor(ARROW_COLOR);
+
+		// Führe die übergebene Zeichnungsaktion aus.
+		action.run();
+
+		// Stelle die ursprünglichen Einstellungen wieder her.
+		g2d.setStroke(previousStroke);
+		g2d.setColor(previousColor);
+	}
+
+	/**
+	 * Draws an arrow with a style similar to Chess.com.
+	 * <p>
+	 * The arrow is drawn with a thick line and a filled, triangular arrowhead.
+	 * </p>
+	 *
+	 * @param g2d
+	 * 	the Graphics2D context used for drawing.
+	 * @param startX
+	 * 	the x-coordinate of the arrow's start.
+	 * @param startY
+	 * 	the y-coordinate of the arrow's start.
+	 * @param endX
+	 * 	the x-coordinate of the arrow's end.
+	 * @param endY
+	 * 	the y-coordinate of the arrow's end.
+	 */
+	private void drawArrow(Graphics2D g2d, int startX, int startY, int endX, int endY) {
+		withArrowGraphics(g2d, () -> {
+			double angle = Math.atan2(endY - startY, endX - startX);
+			double arrowHeadLength = HEAD_LENGTH; // Reserve length for the arrowhead.
+			int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
+			int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
+
+			// Draw the arrow shaft.
+			g2d.drawLine(startX, startY, lineEndX, lineEndY);
+			// Draw the arrowhead.
+			Polygon arrowHead = getPolygon(endX, endY, angle);
+			g2d.fillPolygon(arrowHead);
+		});
 	}
 
 	/**
@@ -420,48 +434,26 @@ public class BoardPainter {
 	 * 	true if the horizontal segment should be drawn first; false if vertical first.
 	 */
 	private void drawKnightArrow(Graphics2D g2d, int startX, int startY, int endX, int endY, boolean horizontalFirst) {
-		// Save current graphics settings.
-		Stroke oldStroke = g2d.getStroke();
-		Color oldColor = g2d.getColor();
+		withArrowGraphics(g2d, () -> {
+			// Determine intermediate point based on the drawing order.
+			int midX = horizontalFirst ? endX : startX;
+			int midY = horizontalFirst ? startY : endY;
 
-		// Set arrow style.
-		float arrowThickness = THICKNESS;
-		g2d.setStroke(new BasicStroke(
-			arrowThickness,
-			BasicStroke.CAP_SQUARE,
-			BasicStroke.JOIN_MITER
-		));
-		g2d.setColor(ARROW_COLOR);
+			// Draw the first segment from the start to the intermediate point.
+			g2d.drawLine(startX, startY, midX, midY);
 
-		// Determine the intermediate point based on the chosen drawing order.
-		int midX, midY;
-		if (horizontalFirst) {
-			midX = endX;
-			midY = startY;
-		} else {
-			midX = startX;
-			midY = endY;
-		}
+			double arrowHeadLength = HEAD_LENGTH;
+			double angle = Math.atan2(endY - midY, endX - midX);
+			int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
+			int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
 
-		// Draw the first segment from start to the intermediate point.
-		g2d.drawLine(startX, startY, midX, midY);
-
-		// Calculate the arrowhead length and adjust the second segment accordingly.
-		double arrowHeadLength = 35.0;
-		double angle = Math.atan2(endY - midY, endX - midX);
-		int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
-		int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
-
-		// Draw the second segment.
-		g2d.drawLine(midX, midY, lineEndX, lineEndY);
-
-		// Draw the arrowhead.
-		Polygon arrowHead = getPolygon(endX, endY, angle);
-		g2d.fillPolygon(arrowHead);
-
-		// Restore previous graphics settings.
-		g2d.setStroke(oldStroke);
-		g2d.setColor(oldColor);
+			// Draw the second segment.
+			g2d.drawLine(midX, midY, lineEndX, lineEndY);
+			// Draw the arrowhead.
+			Polygon arrowHead = getPolygon(endX, endY, angle);
+			g2d.fillPolygon(arrowHead);
+		});
 	}
+
 
 }
