@@ -11,6 +11,7 @@ import com.mlprograms.chess.game.pieces.King;
 import com.mlprograms.chess.game.pieces.Pawn;
 import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.utils.Sounds;
+import com.mlprograms.chess.utils.ConfigFetcher;
 import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 
@@ -23,43 +24,44 @@ import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorWithAlphaConfig
 @Getter
 public class BoardPainter {
 
-	private final Board board;
+	private final Board BOARD;
+	private final Color ARROW_COLOR = ConfigFetcher.fetchColorWithAlphaConfig("Colors", "ARROW_COLOR_RGBA", 200);
+	private final float THICKNESS = ConfigFetcher.fetchFloatConfig("Arrow", "THICKNESS");
 
 	public BoardPainter(Board board) {
-		this.board = board;
+		this.BOARD = board;
 	}
 
 	/**
-	 * Creates a polygon representing an arrowhead for a given end point and angle.
+	 * Generates a triangular polygon that represents an arrowhead.
 	 * <p>
-	 * This method calculates the coordinates of a triangular arrowhead based on the specified
-	 * end point (endX, endY) and the angle of the arrow. The arrowhead is created with a fixed
-	 * spread angle and length, forming a triangle with the tip at the end point and the other
-	 * two points calculated using trigonometric functions.
+	 * The arrowhead is constructed based on the given endpoint (endX, endY) and the angle
+	 * of the arrow. Two additional points are calculated using a fixed spread angle and length,
+	 * forming a triangle with its tip at the endpoint.
 	 * </p>
 	 *
 	 * @param endX
-	 * 	the x-coordinate of the arrow's end point
+	 * 	the x-coordinate of the arrow's endpoint.
 	 * @param endY
-	 * 	the y-coordinate of the arrow's end point
+	 * 	the y-coordinate of the arrow's endpoint.
 	 * @param angle
-	 * 	the angle of the arrow in radians
+	 * 	the angle of the arrow in radians.
 	 *
-	 * @return a Polygon object representing the arrowhead
+	 * @return a Polygon object representing the arrowhead.
 	 */
 	private static Polygon getPolygon(int endX, int endY, double angle) {
-		double arrowHeadAngle = Math.toRadians(35);  // Spread angle
-		double arrowHeadLength = 35;                 // Increased from 25 to 35
+		double arrowHeadAngle = Math.toRadians(35);  // Spread angle for the arrowhead.
+		double arrowHeadLength = 35;                 // Length of the arrowhead.
 
 		Polygon arrowHead = new Polygon();
-		arrowHead.addPoint(endX, endY);
+		arrowHead.addPoint(endX, endY); // Tip of the arrowhead.
 
-		// Left point of the arrowhead
+		// Calculate the left point of the arrowhead.
 		int x1 = (int) (endX - arrowHeadLength * Math.cos(angle - arrowHeadAngle));
 		int y1 = (int) (endY - arrowHeadLength * Math.sin(angle - arrowHeadAngle));
 		arrowHead.addPoint(x1, y1);
 
-		// Right point of the arrowhead
+		// Calculate the right point of the arrowhead.
 		int x2 = (int) (endX - arrowHeadLength * Math.cos(angle + arrowHeadAngle));
 		int y2 = (int) (endY - arrowHeadLength * Math.sin(angle + arrowHeadAngle));
 		arrowHead.addPoint(x2, y2);
@@ -76,7 +78,7 @@ public class BoardPainter {
 	 */
 	public void paintPieces(Graphics2D graphics2D) {
 		// Iterate through all pieces on the board
-		for (Piece piece : getBoard().getPieceList()) {
+		for (Piece piece : getBOARD().getPieceList()) {
 			// Delegate the painting of each piece to its paint method
 			piece.paint(graphics2D);
 		}
@@ -89,8 +91,8 @@ public class BoardPainter {
 	 * 	the graphics context used for drawing
 	 */
 	public void highlightPossibleMoves(Graphics2D graphics2D) {
-		List<Move> possibleMoves = getBoard().getPossibleMoves();
-		if (possibleMoves == null || getBoard().getSelectedPiece() == null) {
+		List<Move> possibleMoves = getBOARD().getPossibleMoves();
+		if (possibleMoves == null || getBOARD().getSelectedPiece() == null) {
 			return; // No moves or no selected piece, nothing to highlight
 		}
 
@@ -106,7 +108,7 @@ public class BoardPainter {
 			}
 
 			// Draw the highlight on the corresponding tile
-			graphics2D.fillRect(column * getBoard().getTileSize(), row * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
+			graphics2D.fillRect(column * getBOARD().getTileSize(), row * getBOARD().getTileSize(), getBOARD().getTileSize(), getBOARD().getTileSize());
 		}
 	}
 
@@ -120,19 +122,19 @@ public class BoardPainter {
 	 * 	the graphics context used for drawing
 	 */
 	public void highlightMadeMove(Graphics2D graphics2D) {
-		if (getBoard().getMoveHistory().isEmpty()) {
+		if (getBOARD().getMoveHistory().isEmpty()) {
 			return;
 		}
 
 		// Get the last move made on the board
-		Move lastMove = getBoard().getMoveHistory().getLast().getMadeMove();
+		Move lastMove = getBOARD().getMoveHistory().getLast().getMadeMove();
 
 		// Set the highlight color based on the move type
 		graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
 
 		// Draw the highlight on the source tile
-		graphics2D.fillRect(lastMove.getOldColumn() * getBoard().getTileSize(), lastMove.getOldRow() * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
-		graphics2D.fillRect(lastMove.getNewColumn() * getBoard().getTileSize(), lastMove.getNewRow() * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
+		graphics2D.fillRect(lastMove.getOldColumn() * getBOARD().getTileSize(), lastMove.getOldRow() * getBOARD().getTileSize(), getBOARD().getTileSize(), getBOARD().getTileSize());
+		graphics2D.fillRect(lastMove.getNewColumn() * getBOARD().getTileSize(), lastMove.getNewRow() * getBOARD().getTileSize(), getBOARD().getTileSize(), getBOARD().getTileSize());
 	}
 
 	/**
@@ -149,7 +151,7 @@ public class BoardPainter {
 	 * 	true if the white king's tile should be blinked, false for the black king
 	 */
 	public void blinkKingsTile(Graphics2D graphics2D, boolean whiteKing) {
-		King king = getBoard().getMoveValidator().findKing(whiteKing);
+		King king = getBOARD().getMoveValidator().findKing(whiteKing);
 		int column = king.getColumn();
 		int row = king.getRow();
 
@@ -157,14 +159,14 @@ public class BoardPainter {
 		new Thread(() -> {
 			graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_ILLEGAL", 105));
 
-			getBoard().getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
+			getBOARD().getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
 
 			for (int i = 0; i < 3; i++) {
 				sleep(400);
-				graphics2D.fillRect(column * getBoard().getTileSize(), row * getBoard().getTileSize(), getBoard().getTileSize(), getBoard().getTileSize());
+				graphics2D.fillRect(column * getBOARD().getTileSize(), row * getBOARD().getTileSize(), getBOARD().getTileSize(), getBOARD().getTileSize());
 				paintPieces(graphics2D);
 				sleep(400);
-				getBoard().repaint();
+				getBOARD().repaint();
 			}
 		}).start();
 	}
@@ -194,11 +196,11 @@ public class BoardPainter {
 	 * @return true if the move is a capture, false otherwise
 	 */
 	private boolean isCaptureMove(int column, int row) {
-		Piece targetPiece = getBoard().getPieceAt(column, row);
+		Piece targetPiece = getBOARD().getPieceAt(column, row);
 
 		// Check for direct captures or special en passant moves
 		return targetPiece != null ||
-			       (getBoard().getSelectedPiece() instanceof Pawn && getBoard().getTileNumber(column, row) == getBoard().getEnPassantTile());
+			       (getBOARD().getSelectedPiece() instanceof Pawn && getBOARD().getTileNumber(column, row) == getBOARD().getEnPassantTile());
 	}
 
 	/**
@@ -213,7 +215,7 @@ public class BoardPainter {
 		graphics2D.setColor(Color.BLACK);
 		graphics2D.setFont(new Font("SansSerif", Font.BOLD, 12));
 
-		boolean isWhiteAtBottom = getBoard().isWhiteAtBottom();
+		boolean isWhiteAtBottom = getBOARD().isWhiteAtBottom();
 		drawColumnLabels(graphics2D, isWhiteAtBottom);
 		drawRowLabels(graphics2D, isWhiteAtBottom);
 	}
@@ -222,10 +224,10 @@ public class BoardPainter {
 	 * Draws the column labels ('a' to 'h' or 'h' to 'a') below the board.
 	 */
 	private void drawColumnLabels(Graphics2D graphics2D, boolean isWhiteAtBottom) {
-		int tileSize = getBoard().getTileSize();
-		int padding = getBoard().getPadding();
-		int boardRows = getBoard().getRows();
-		int boardColumns = getBoard().getColumns();
+		int tileSize = getBOARD().getTileSize();
+		int padding = getBOARD().getPadding();
+		int boardRows = getBOARD().getRows();
+		int boardColumns = getBOARD().getColumns();
 
 		for (int col = 0; col < boardColumns; col++) {
 			char colLabel = (char) ((isWhiteAtBottom ? 'a' : 'h') + (isWhiteAtBottom ? col : -col));
@@ -240,9 +242,9 @@ public class BoardPainter {
 	 * Draws the row labels ('1' to '8' or '8' to '1') to the left of the board.
 	 */
 	private void drawRowLabels(Graphics2D graphics2D, boolean isWhiteAtBottom) {
-		int tileSize = getBoard().getTileSize();
-		int padding = getBoard().getPadding();
-		int boardRows = getBoard().getRows();
+		int tileSize = getBOARD().getTileSize();
+		int padding = getBOARD().getPadding();
+		int boardRows = getBOARD().getRows();
 
 		for (int row = 0; row < boardRows; row++) {
 			int rowLabel = isWhiteAtBottom ? (boardRows - row) : (row + 1);
@@ -262,9 +264,9 @@ public class BoardPainter {
 	 */
 	protected void drawChessBoard(Graphics2D graphics2D) {
 		// Loop through each row of the board
-		for (int rows = 0; rows < getBoard().getRows(); rows++) {
+		for (int rows = 0; rows < getBOARD().getRows(); rows++) {
 			// Loop through each column of the board
-			for (int columns = 0; columns < getBoard().getColumns(); columns++) {
+			for (int columns = 0; columns < getBOARD().getColumns(); columns++) {
 				// Alternate between light and dark colors based on tile position
 				if ((rows + columns) % 2 == 0) {
 					graphics2D.setColor(fetchColorConfig("Colors", "TILE_LIGHT")); // Light tile color
@@ -272,124 +274,166 @@ public class BoardPainter {
 					graphics2D.setColor(fetchColorConfig("Colors", "TILE_DARK")); // Dark tile color
 				}
 				// Draw the rectangle representing the tile
-				graphics2D.fillRect(columns * getBoard().getTileSize(), rows * getBoard().getTileSize(),
-					getBoard().getTileSize(), getBoard().getTileSize());
+				graphics2D.fillRect(columns * getBOARD().getTileSize(), rows * getBOARD().getTileSize(),
+					getBOARD().getTileSize(), getBOARD().getTileSize());
 			}
 		}
 	}
 
 	/**
-	 * Draws an arrow with a style similar to Chess.com:
-	 * - Thicker, more transparent line
-	 * - Larger, filled triangular arrowhead
+	 * Draws an arrow with a style similar to Chess.com.
+	 * <p>
+	 * The arrow is drawn with a thick line and a filled, triangular arrowhead.
+	 * </p>
 	 *
 	 * @param g2d
-	 * 	the Graphics2D context used for drawing
+	 * 	the Graphics2D context used for drawing.
 	 * @param startX
-	 * 	x-coordinate of the arrow's start
+	 * 	the x-coordinate of the arrow's start.
 	 * @param startY
-	 * 	y-coordinate of the arrow's start
+	 * 	the y-coordinate of the arrow's start.
 	 * @param endX
-	 * 	x-coordinate of the arrow's end
+	 * 	the x-coordinate of the arrow's end.
 	 * @param endY
-	 * 	y-coordinate of the arrow's end
+	 * 	the y-coordinate of the arrow's end.
 	 */
 	private void drawArrow(Graphics2D g2d, int startX, int startY, int endX, int endY) {
+		// Save the current stroke and color.
 		Stroke oldStroke = g2d.getStroke();
 		Color oldColor = g2d.getColor();
 
-		float arrowThickness = 20.0f;
+		// Set the arrow's thickness and style.
+		float arrowThickness = THICKNESS;
 		g2d.setStroke(new BasicStroke(
 			arrowThickness,
 			BasicStroke.CAP_SQUARE,
 			BasicStroke.JOIN_MITER
 		));
-		g2d.setColor(new Color(255, 165, 0, 255)); // Orange
+		g2d.setColor(ARROW_COLOR);
 
-		// Winkel des Pfeils berechnen
+		// Calculate the angle of the arrow.
 		double angle = Math.atan2(endY - startY, endX - startX);
 
-		// --- 1) Pfeilschaft verkürzen ---
-		// Länge der Pfeilspitze (muss zur Berechnung bekannt sein)
-		double arrowHeadLength = 35.0;
-		// Neue "Linienendpunkte" berechnen, sodass die Spitze frei bleibt
+		// --- Step 1: Shorten the arrow shaft ---
+		double arrowHeadLength = 35.0; // Length reserved for the arrowhead.
 		int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
 		int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
 
-		// --- 2) Zuerst den verkürzten Schaft zeichnen ---
+		// --- Step 2: Draw the arrow shaft ---
 		g2d.drawLine(startX, startY, lineEndX, lineEndY);
 
-		// --- 3) Dann Pfeilspitze am tatsächlichen Endpunkt ---
+		// --- Step 3: Draw the arrowhead ---
 		Polygon arrowHead = getPolygon(endX, endY, angle);
 		g2d.fillPolygon(arrowHead);
 
+		// Restore the original stroke and color.
 		g2d.setStroke(oldStroke);
 		g2d.setColor(oldColor);
 	}
 
-
 	/**
 	 * Draws all arrows stored on the board in a Chess.com-like style.
+	 * <p>
+	 * This method renders both permanent arrows and a temporary arrow (if one exists).
+	 * </p>
 	 *
 	 * @param g2d
-	 * 	the Graphics2D context used for drawing
+	 * 	the Graphics2D context used for drawing.
 	 */
 	public void drawArrows(Graphics2D g2d) {
-		// For each arrow in your board's list
-		for (Arrow arrow : board.getArrows()) {
+		// Draw each arrow from the board's list.
+		for (Arrow arrow : BOARD.getArrows()) {
 			if (!isValidArrow(arrow)) {
 				continue;
 			}
-
 			drawSingleArrow(g2d, arrow);
 		}
 
-		// Draw the temporary arrow (if it exists) using a dashed stroke or similar
-		if (board.getTempArrow() != null) {
-			// For the temporary arrow, you might want a dashed stroke or a different color.
-			// But if you want it to look the same, just call the same method:
-			drawSingleArrow(g2d, board.getTempArrow());
+		// Draw the temporary arrow, if it exists.
+		if (BOARD.getTempArrow() != null) {
+			drawSingleArrow(g2d, BOARD.getTempArrow());
 		}
 	}
 
+	/**
+	 * Checks if the given arrow's end coordinates are valid (within the board boundaries).
+	 *
+	 * @param arrow
+	 * 	the arrow to check.
+	 *
+	 * @return true if the arrow's end coordinates are within valid range; false otherwise.
+	 */
 	private boolean isValidArrow(Arrow arrow) {
-		return arrow.getEndColumn() >= 0 && arrow.getEndColumn() <= 7 && arrow.getEndRow() >= 0 && arrow.getEndRow() <= 7;
+		return arrow.getEndColumn() >= 0 && arrow.getEndColumn() <= 7 &&
+			       arrow.getEndRow() >= 0 && arrow.getEndRow() <= 7;
 	}
 
+	/**
+	 * Draws a single arrow on the board.
+	 * <p>
+	 * It calculates the pixel positions of the start and end points based on the board's tile size,
+	 * and then determines if the arrow should be drawn as a standard arrow or as an L-shaped (knight) arrow.
+	 * </p>
+	 *
+	 * @param g2d
+	 * 	the Graphics2D context used for drawing.
+	 * @param arrow
+	 * 	the Arrow object containing start and end tile coordinates.
+	 */
 	private void drawSingleArrow(Graphics2D g2d, Arrow arrow) {
-		int tileSize = board.getTileSize();
+		int tileSize = BOARD.getTileSize();
 		int startX = arrow.getStartColumn() * tileSize + tileSize / 2;
 		int startY = arrow.getStartRow() * tileSize + tileSize / 2;
 		int endX = arrow.getEndColumn() * tileSize + tileSize / 2;
 		int endY = arrow.getEndRow() * tileSize + tileSize / 2;
 
-		// Prüfe, ob es sich um einen Springerzug handelt
+		// Determine if the arrow represents a knight's move (L-shape).
 		int dx = Math.abs(arrow.getEndColumn() - arrow.getStartColumn());
 		int dy = Math.abs(arrow.getEndRow() - arrow.getStartRow());
 		if ((dx == 2 && dy == 1) || (dx == 1 && dy == 2)) {
-			// Bei Springerzug L-Shape Pfeil zeichnen
-			// Wir wählen hier: wenn der horizontale Unterschied größer ist, zeichne zuerst horizontal
+			// Draw an L-shaped arrow for knight moves.
 			boolean horizontalFirst = (dx > dy);
 			drawKnightArrow(g2d, startX, startY, endX, endY, horizontalFirst);
 		} else {
-			// Andernfalls normaler Pfeil
+			// Draw a standard arrow.
 			drawArrow(g2d, startX, startY, endX, endY);
 		}
 	}
 
+	/**
+	 * Draws an L-shaped arrow for knight moves.
+	 * <p>
+	 * The arrow is split into two segments (horizontal/vertical and diagonal) with an arrowhead at the end.
+	 * </p>
+	 *
+	 * @param g2d
+	 * 	the Graphics2D context used for drawing.
+	 * @param startX
+	 * 	the starting x-coordinate.
+	 * @param startY
+	 * 	the starting y-coordinate.
+	 * @param endX
+	 * 	the ending x-coordinate.
+	 * @param endY
+	 * 	the ending y-coordinate.
+	 * @param horizontalFirst
+	 * 	true if the horizontal segment should be drawn first; false if vertical first.
+	 */
 	private void drawKnightArrow(Graphics2D g2d, int startX, int startY, int endX, int endY, boolean horizontalFirst) {
+		// Save current graphics settings.
 		Stroke oldStroke = g2d.getStroke();
 		Color oldColor = g2d.getColor();
 
-		float arrowThickness = 20.0f;
+		// Set arrow style.
+		float arrowThickness = THICKNESS;
 		g2d.setStroke(new BasicStroke(
 			arrowThickness,
 			BasicStroke.CAP_SQUARE,
 			BasicStroke.JOIN_MITER
 		));
-		g2d.setColor(new Color(255, 165, 0, 255));
+		g2d.setColor(ARROW_COLOR);
 
-		// Zwischenpunkt ermitteln
+		// Determine the intermediate point based on the chosen drawing order.
 		int midX, midY;
 		if (horizontalFirst) {
 			midX = endX;
@@ -399,30 +443,25 @@ public class BoardPainter {
 			midY = endY;
 		}
 
-		// 1) Ersten (vertikalen oder horizontalen) Abschnitt zeichnen
+		// Draw the first segment from start to the intermediate point.
 		g2d.drawLine(startX, startY, midX, midY);
 
-		// --- Ab hier: Letzter Abschnitt + Pfeilspitze ---
+		// Calculate the arrowhead length and adjust the second segment accordingly.
 		double arrowHeadLength = 35.0;
-
-		// 2) Winkel für das letzte Segment
 		double angle = Math.atan2(endY - midY, endX - midX);
-
-		// 3) Linie verkürzen, damit die Pfeilspitze nicht überdeckt wird
 		int lineEndX = (int) (endX - arrowHeadLength * Math.cos(angle));
 		int lineEndY = (int) (endY - arrowHeadLength * Math.sin(angle));
 
-		// 4) Zweiten Abschnitt (verkürzt) zeichnen
+		// Draw the second segment.
 		g2d.drawLine(midX, midY, lineEndX, lineEndY);
 
-		// 5) Pfeilspitze am eigentlichen Endpunkt
+		// Draw the arrowhead.
 		Polygon arrowHead = getPolygon(endX, endY, angle);
 		g2d.fillPolygon(arrowHead);
 
-		// Alte Einstellungen wiederherstellen
+		// Restore previous graphics settings.
 		g2d.setStroke(oldStroke);
 		g2d.setColor(oldColor);
 	}
-
 
 }
