@@ -358,6 +358,7 @@ public class Board extends JPanel {
 		setTargetColumn(-1);
 		setTargetRow(-1);
 
+		// Add the move to the move history
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
 
 		GameEnding gameEnding = checkForGameEnding();
