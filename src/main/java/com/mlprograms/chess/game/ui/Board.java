@@ -119,10 +119,10 @@ public class Board extends JPanel {
 		getBoardPainter().drawChessBoard((Graphics2D) graphics);
 		getBoardPainter().highlightMadeMove((Graphics2D) graphics);
 		getBoardPainter().highlightPossibleMoves((Graphics2D) graphics);
+		getBoardPainter().paintRedHighlights((Graphics2D) graphics);
 		getBoardPainter().drawCoordinates((Graphics2D) graphics);
 		getBoardPainter().paintPieces((Graphics2D) graphics);
 		getBoardPainter().drawArrows((Graphics2D) graphics);
-		getBoardPainter().paintRedHighlights((Graphics2D) graphics);
 	}
 
 	/**
