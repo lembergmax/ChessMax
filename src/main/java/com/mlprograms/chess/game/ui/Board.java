@@ -121,8 +121,8 @@ public class Board extends JPanel {
 		getBoardPainter().highlightPossibleMoves((Graphics2D) graphics);
 		getBoardPainter().drawCoordinates((Graphics2D) graphics);
 		getBoardPainter().paintPieces((Graphics2D) graphics);
-		getBoardPainter().drawArrows((Graphics2D) graphics);
 		getBoardPainter().paintRedHighlights((Graphics2D) graphics);
+		getBoardPainter().drawArrows((Graphics2D) graphics);
 	}
 
 	/**
