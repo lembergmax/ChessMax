@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Copyright (c) 2025 Max Lemberg. This file is part of ChessMax.
  * Licensed under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
@@ -17,6 +17,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 
 /**
  * MouseInput class handles all mouse interactions on the chessboard.
@@ -29,6 +30,7 @@ public class MouseInput extends MouseAdapter {
 	private final Board board;
 	private int originalColumn;
 	private int originalRow;
+	private Point tempRedHighlight;
 
 	/**
 	 * Initializes the MouseInput with the game board.
@@ -55,7 +57,8 @@ public class MouseInput extends MouseAdapter {
 	 * - Determines if a piece should be selected, deselected, or moved based on the clicked tile.
 	 * </p>
 	 *
-	 * @param event the mouse press event.
+	 * @param event
+	 * 	the mouse press event.
 	 */
 	@Override
 	public void mousePressed(MouseEvent event) {
@@ -65,6 +68,9 @@ public class MouseInput extends MouseAdapter {
 			int row = event.getY() / board.getTileSize();
 			// Create a temporary arrow with starting and ending points equal to the clicked tile.
 			board.setTempArrow(new Arrow(column, row, column, row));
+
+			handleRedHighlight(column, row);
+
 			// Exit early for right-click events.
 			return;
 		}
@@ -104,6 +110,22 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
+	 * Handles the addition or removal of a red highlight on the board.
+	 *
+	 * @param column the column of the tile that was clicked
+	 * @param row the row of the tile that was clicked
+	 */
+	public void handleRedHighlight(int column, int row) {
+		Point clickedPoint = new Point(column, row);
+		List<Point> highlights = board.getRedHighlights();
+		boolean removed = highlights.removeIf(pt -> pt.equals(clickedPoint));
+		if (!removed) {
+			highlights.add(clickedPoint);
+		}
+		tempRedHighlight = removed ? null : clickedPoint;
+	}
+
+	/**
 	 * Called when the mouse is dragged.
 	 * <p>
 	 * For right-click drags:
@@ -114,16 +136,20 @@ public class MouseInput extends MouseAdapter {
 	 * - If a piece is selected, updates its visual position to follow the mouse.
 	 * </p>
 	 *
-	 * @param event the mouse drag event.
+	 * @param event
+	 * 	the mouse drag event.
 	 */
 	@Override
 	public void mouseDragged(MouseEvent event) {
-		// Right-click dragging for arrow drawing.
+		int column = event.getX() / board.getTileSize();
+		int row = event.getY() / board.getTileSize();
+
+		// Right-click dragging for drawing arrows and highlighting tiles.
 		if (SwingUtilities.isRightMouseButton(event)) {
+			board.getRedHighlights().remove(tempRedHighlight);
+
 			Arrow tempArrow = board.getTempArrow();
 			if (tempArrow != null) {
-				int column = event.getX() / board.getTileSize();
-				int row = event.getY() / board.getTileSize();
 				// Update the end coordinates of the temporary arrow.
 				tempArrow.setEndColumn(column);
 				tempArrow.setEndRow(row);
@@ -187,6 +213,7 @@ public class MouseInput extends MouseAdapter {
 				board.setTempArrow(null);
 				board.repaint();
 			}
+
 			return;
 		}
 
