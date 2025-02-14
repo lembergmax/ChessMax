@@ -69,7 +69,8 @@ public class MouseInput extends MouseAdapter {
 			// Create a temporary arrow with starting and ending points equal to the clicked tile.
 			board.setTempArrow(new Arrow(column, row, column, row));
 
-			handleRedHighlight(column, row);
+			// Add temporary red highlight
+			tempRedHighlight = new Point(column, row);
 
 			// Exit early for right-click events.
 			return;
@@ -110,22 +111,6 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Handles the addition or removal of a red highlight on the board.
-	 *
-	 * @param column the column of the tile that was clicked
-	 * @param row the row of the tile that was clicked
-	 */
-	public void handleRedHighlight(int column, int row) {
-		Point clickedPoint = new Point(column, row);
-		List<Point> highlights = board.getRedHighlights();
-		boolean removed = highlights.removeIf(pt -> pt.equals(clickedPoint));
-		if (!removed) {
-			highlights.add(clickedPoint);
-		}
-		tempRedHighlight = removed ? null : clickedPoint;
-	}
-
-	/**
 	 * Called when the mouse is dragged.
 	 * <p>
 	 * For right-click drags:
@@ -144,10 +129,11 @@ public class MouseInput extends MouseAdapter {
 		int column = event.getX() / board.getTileSize();
 		int row = event.getY() / board.getTileSize();
 
+		// Remove temporary red highlight
+		tempRedHighlight = null;
+
 		// Right-click dragging for drawing arrows and highlighting tiles.
 		if (SwingUtilities.isRightMouseButton(event)) {
-			board.getRedHighlights().remove(tempRedHighlight);
-
 			Arrow tempArrow = board.getTempArrow();
 			if (tempArrow != null) {
 				// Update the end coordinates of the temporary arrow.
@@ -187,6 +173,17 @@ public class MouseInput extends MouseAdapter {
 	@Override
 	public void mouseReleased(MouseEvent event) {
 		if (SwingUtilities.isRightMouseButton(event)) {
+
+			if (tempRedHighlight != null) {
+				List<Point> redHighlights = board.getRedHighlights();
+				// If the temporary red highlight is already in the list, remove it; otherwise, add it
+				if (redHighlights.contains(tempRedHighlight)) {
+					redHighlights.remove(tempRedHighlight);
+				} else {
+					redHighlights.add(tempRedHighlight);
+				}
+			}
+
 			Arrow tempArrow = board.getTempArrow();
 			if (tempArrow != null) {
 				// Check if start and end coordinates are different (if not, no action is taken)
