@@ -8,6 +8,7 @@ package com.mlprograms.chess.game.ui;
 
 import com.mlprograms.chess.game.Player;
 import com.mlprograms.chess.game.engine.*;
+import com.mlprograms.chess.game.engine.state.PositionEvaluation;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
@@ -102,6 +103,10 @@ public class Board extends JPanel {
 
 		initializeBoardConfigurations();
 		setPreferredSize(new Dimension(getColumns() * getTileSize(), getRows() * getTileSize()));
+	}
+
+	public Board(Player playerWhite, Player playerBlack) {
+		this(playerWhite, playerBlack, true);
 	}
 
 	/**
@@ -362,6 +367,8 @@ public class Board extends JPanel {
 
 		// Add the move to the move history
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
+
+		Logger.logDebug(new PositionEvaluation(this).evaluateGameState());
 
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {
