@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class GameStateTest {
 
 	private Board board;
-	private PositionEvaluation evaluation;
 
 	/**
 	 * Sets up a new chess board with two human players before each test.
@@ -31,7 +30,7 @@ class GameStateTest {
 	 */
 	private void loadFenAndEvaluate(String fen, GameState expectedState) {
 		board.loadPositionFromFen(fen);
-		evaluation = new PositionEvaluation(board);
+		PositionEvaluation evaluation = new PositionEvaluation(board);
 		assertEquals(expectedState, evaluation.evaluateGameState());
 	}
 

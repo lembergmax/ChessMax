@@ -21,7 +21,6 @@ public class PositionEvaluation {
 
 	/**
 	 * Evaluates the current game state based on material, queen count, and king positions.
-	 *
 	 * New heuristic:
 	 * <ul>
 	 *   <li>If very few pieces (excluding kings) are present (piecesCount &lt; 6), then END_GAME.</li>
