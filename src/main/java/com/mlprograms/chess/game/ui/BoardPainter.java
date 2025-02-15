@@ -26,6 +26,10 @@ public class BoardPainter {
 
 	private static final float HEAD_LENGTH = ConfigFetcher.fetchFloatConfig("Arrow", "HEAD_LENGTH");
 	private static final double HEAD_ANGLE = ConfigFetcher.fetchFloatConfig("Arrow", "HEAD_ANGLE");
+
+	private static final double START_MARGIN = ConfigFetcher.fetchFloatConfig("Arrow", "START_MARGIN");
+	private static final double START_MARGIN_DIAGONAL = ConfigFetcher.fetchFloatConfig("Arrow", "START_MARGIN_DIAGONAL");
+
 	private final int ALPHA = ConfigFetcher.fetchIntegerConfig("Colors", "ARROW_ALPHA");
 	private final Color ARROW_COLOR = ConfigFetcher.fetchColorWithAlphaConfig("Colors", "ARROW_COLOR", ALPHA);
 	private final float THICKNESS = ConfigFetcher.fetchFloatConfig("Arrow", "THICKNESS");
@@ -518,13 +522,12 @@ public class BoardPainter {
 	 * @return a Point representing the adjusted starting position for the arrow
 	 */
 	private Point getAdjustedStartPoint(int tileCenterX, int tileCenterY, double angle, int tileSize) {
-		final int ARROW_START_MARGIN = 5; // Margin (in pixels) from the tile edge
 		// Calculate the distance to the tile edge along the given direction.
 		double distanceToEdgeX = (tileSize / 2.0) / Math.abs(Math.cos(angle));
 		double distanceToEdgeY = (tileSize / 2.0) / Math.abs(Math.sin(angle));
 		double distanceToEdge = Math.min(distanceToEdgeX, distanceToEdgeY);
 		// Subtract the margin to avoid starting exactly at the edge.
-		double adjustedDistance = Math.max(distanceToEdge - ARROW_START_MARGIN, 0);
+		double adjustedDistance = Math.max(distanceToEdge - START_MARGIN, 0);
 
 		int adjustedX = (int) Math.round(tileCenterX + adjustedDistance * Math.cos(angle));
 		int adjustedY = (int) Math.round(tileCenterY + adjustedDistance * Math.sin(angle));
