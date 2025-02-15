@@ -41,7 +41,7 @@ public class PositionEvaluation {
 
 		for (Piece piece : pieces) {
 			int[][] table;
-			// Using pattern matching in switch (requires Java 17+)
+
 			switch (piece) {
 				case Pawn _ -> table = (gameState == GameState.END_GAME) ? PAWNS_END : PAWNS;
 				case Bishop _ -> table = BISHOPS;
