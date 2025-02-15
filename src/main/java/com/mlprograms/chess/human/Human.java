@@ -24,7 +24,7 @@ public class Human extends Player {
 	private boolean isWhite;
 
 	public Human(Id id, Name name, Language language, Elo elo, Birthday birthday, Contact contact, String password, PasswordRecovery passwordRecovery, String timezone) {
-		super();
+		super(null);
 		this.id = id;
 		this.name = name;
 		this.language = language;
