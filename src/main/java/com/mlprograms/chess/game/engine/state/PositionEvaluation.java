@@ -31,7 +31,7 @@ public class PositionEvaluation {
 	 *
 	 * @return the cumulative positional score.
 	 */
-	public int evaluatePosition(boolean evaluateForWhite) {
+	public double evaluatePosition(boolean evaluateForWhite) {
 		int positionValue = 0;
 		GameState gameState = evaluateGameState();
 
@@ -63,7 +63,7 @@ public class PositionEvaluation {
 			positionValue += table[ piece.getRow() ][ piece.getColumn() ];
 		}
 
-		return positionValue;
+		return (double) (positionValue + evaluateMaterial(evaluateForWhite)) / 10;
 	}
 
 	/**
