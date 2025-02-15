@@ -21,6 +21,16 @@ public class PositionEvaluation {
 		this.BOARD = board;
 	}
 
+
+
+	/**
+	 * Evaluates the material value of the pieces on the board for a given color.
+	 *
+	 * @param evaluateForWhite
+	 * 	true to evaluate material for white pieces, false for black pieces.
+	 *
+	 * @return the total material value of the pieces for the specified color.
+	 */
 	public int evaluateMaterial(boolean evaluateForWhite) {
 		return BOARD.getPieceList().stream().filter(piece -> piece.isWhite() == evaluateForWhite)
 			       .mapToInt(Piece::getPieceValue).sum();
