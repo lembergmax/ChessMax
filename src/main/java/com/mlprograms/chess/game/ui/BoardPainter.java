@@ -16,6 +16,8 @@ import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorConfig;
@@ -34,6 +36,8 @@ public class BoardPainter {
 	private final Color ARROW_COLOR = ConfigFetcher.fetchColorWithAlphaConfig("Colors", "ARROW_COLOR", ALPHA);
 	private final float THICKNESS = ConfigFetcher.fetchFloatConfig("Arrow", "THICKNESS");
 	private final Board BOARD;
+
+	private final List<Double> straightArrows = new ArrayList<>(Arrays.asList(Math.PI / -2, 0.0, Math.PI / 2, Math.PI));
 
 	public BoardPainter(Board board) {
 		this.BOARD = board;
@@ -441,6 +445,7 @@ public class BoardPainter {
 		withArrowGraphics(g2d, () -> {
 			// Calculate the angle from the start tile center toward the endpoint.
 			double angle = Math.atan2(endY - startTileCenterY, endX - startTileCenterX);
+
 			// Adjust the starting point so the arrow begins near the tile edge.
 			Point adjustedStart = getAdjustedStartPoint(startTileCenterX, startTileCenterY, angle, BOARD.getTileSize());
 
@@ -522,12 +527,14 @@ public class BoardPainter {
 	 * @return a Point representing the adjusted starting position for the arrow
 	 */
 	private Point getAdjustedStartPoint(int tileCenterX, int tileCenterY, double angle, int tileSize) {
+		boolean isStraightArrow = straightArrows.contains(angle);
+
 		// Calculate the distance to the tile edge along the given direction.
 		double distanceToEdgeX = (tileSize / 2.0) / Math.abs(Math.cos(angle));
 		double distanceToEdgeY = (tileSize / 2.0) / Math.abs(Math.sin(angle));
 		double distanceToEdge = Math.min(distanceToEdgeX, distanceToEdgeY);
 		// Subtract the margin to avoid starting exactly at the edge.
-		double adjustedDistance = Math.max(distanceToEdge - START_MARGIN, 0);
+		double adjustedDistance = Math.max(distanceToEdge - (isStraightArrow ? START_MARGIN : START_MARGIN_DIAGONAL), 0);
 
 		int adjustedX = (int) Math.round(tileCenterX + adjustedDistance * Math.cos(angle));
 		int adjustedY = (int) Math.round(tileCenterY + adjustedDistance * Math.sin(angle));
