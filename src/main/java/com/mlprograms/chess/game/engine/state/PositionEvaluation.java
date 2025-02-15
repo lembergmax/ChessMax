@@ -1,10 +1,12 @@
 package com.mlprograms.chess.game.engine.state;
 
-import com.mlprograms.chess.game.pieces.King;
-import com.mlprograms.chess.game.pieces.Piece;
-import com.mlprograms.chess.game.pieces.Queen;
+import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.ui.Board;
 import lombok.Getter;
+
+import java.util.List;
+
+import static com.mlprograms.chess.game.engine.state.PieceSquareTable.*;
 
 @Getter
 public class PositionEvaluation {
@@ -14,17 +16,58 @@ public class PositionEvaluation {
 	/**
 	 * Constructor for PositionEvaluation.
 	 *
-	 * @param board
-	 * 	the chess board instance.
+	 * @param BOARD
+	 * 	the chess BOARD instance.
 	 */
-	public PositionEvaluation(Board board) {
-		this.BOARD = board;
+	public PositionEvaluation(Board BOARD) {
+		this.BOARD = BOARD;
 	}
 
+	/**
+	 * Evaluates the positional score of all pieces based on piece-square tables.
+	 *
+	 * @param evaluateForWhite
+	 * 	true to evaluate for white pieces, false for black pieces.
+	 *
+	 * @return the cumulative positional score.
+	 */
+	public int evaluatePosition(boolean evaluateForWhite) {
+		int positionValue = 0;
+		GameState gameState = evaluateGameState();
 
+		List<Piece> pieces = BOARD.getPieceList().stream()
+			                     .filter(piece -> piece.isWhite() == evaluateForWhite)
+			                     .toList();
+
+		for (Piece piece : pieces) {
+			int[][] table;
+			// Using pattern matching in switch (requires Java 17+)
+			switch (piece) {
+				case Pawn _ -> table = (gameState == GameState.END_GAME) ? PAWNS_END : PAWNS;
+				case Bishop _ -> table = BISHOPS;
+				case Knight _ -> table = KNIGHTS;
+				case Rook _ -> table = ROOKS;
+				case Queen _ -> table = QUEENS;
+				case King _ -> table = (gameState == GameState.END_GAME) ? KING_END : KING_START;
+				default -> {
+					continue;
+				}
+			}
+
+			// For black pieces, if the BOARD is oriented with white at the bottom,
+			// flip the table horizontally to obtain the correct orientation.
+			if (!evaluateForWhite && BOARD.isWhiteAtBottom()) {
+				table = horizontalFlip(table);
+			}
+			// Assumes piece.getRow() and piece.getColumn() return values between 0 and 7
+			positionValue += table[ piece.getRow() ][ piece.getColumn() ];
+		}
+
+		return positionValue;
+	}
 
 	/**
-	 * Evaluates the material value of the pieces on the board for a given color.
+	 * Evaluates the material value of the pieces on the BOARD for a given color.
 	 *
 	 * @param evaluateForWhite
 	 * 	true to evaluate material for white pieces, false for black pieces.
@@ -112,7 +155,7 @@ public class PositionEvaluation {
 
 	/**
 	 * Checks if the king (based on color) is positioned centrally.
-	 * A king is considered central if its Euclidean distance from the board's center (4.5, 4.5)
+	 * A king is considered central if its Euclidean distance from the BOARD's center (4.5, 4.5)
 	 * is less than or equal to 2.
 	 *
 	 * @param whiteKing
