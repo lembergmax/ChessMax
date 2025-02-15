@@ -1,6 +1,7 @@
 package com.mlprograms.chess.game.engine.state;
 
 import com.mlprograms.chess.game.pieces.King;
+import com.mlprograms.chess.game.pieces.Piece;
 import com.mlprograms.chess.game.pieces.Queen;
 import com.mlprograms.chess.game.ui.Board;
 import lombok.Getter;
@@ -13,10 +14,16 @@ public class PositionEvaluation {
 	/**
 	 * Constructor for PositionEvaluation.
 	 *
-	 * @param board the chess board instance.
+	 * @param board
+	 * 	the chess board instance.
 	 */
 	public PositionEvaluation(Board board) {
 		this.BOARD = board;
+	}
+
+	public int evaluateMaterial(boolean evaluateForWhite) {
+		return BOARD.getPieceList().stream().filter(piece -> piece.isWhite() == evaluateForWhite)
+			       .mapToInt(Piece::getPieceValue).sum();
 	}
 
 	/**
@@ -98,7 +105,9 @@ public class PositionEvaluation {
 	 * A king is considered central if its Euclidean distance from the board's center (4.5, 4.5)
 	 * is less than or equal to 2.
 	 *
-	 * @param whiteKing true for the white king; false for the black king.
+	 * @param whiteKing
+	 * 	true for the white king; false for the black king.
+	 *
 	 * @return true if the king is central, otherwise false.
 	 */
 	private boolean isKingCentral(boolean whiteKing) {
@@ -112,8 +121,8 @@ public class PositionEvaluation {
 	/**
 	 * Checks if both kings are on their starting squares.
 	 * Assumptions:
-	 *   - The white king starts at e1 (0-indexed: column 4, row 7).
-	 *   - The black king starts at e8 (0-indexed: column 4, row 0).
+	 * - The white king starts at e1 (0-indexed: column 4, row 7).
+	 * - The black king starts at e8 (0-indexed: column 4, row 0).
 	 *
 	 * @return true if both kings are on their starting positions, otherwise false.
 	 */
@@ -126,18 +135,28 @@ public class PositionEvaluation {
 
 	/**
 	 * Checks if both kings are in a typical castled position.
-	 * For white: g1 (column 6, row 7) or c1 (column 2, row 7).<br>
-	 * For black: g8 (column 6, row 0) or c8 (column 2, row 0).
 	 *
 	 * @return true if both kings are in a castled position, otherwise false.
 	 */
 	private boolean areKingsCastled() {
-		King whiteKing = BOARD.getMoveValidator().findKing(true);
-		King blackKing = BOARD.getMoveValidator().findKing(false);
-		boolean whiteCastled = (whiteKing.getColumn() == 6 && whiteKing.getRow() == 7)
-			                       || (whiteKing.getColumn() == 2 && whiteKing.getRow() == 7);
-		boolean blackCastled = (blackKing.getColumn() == 6 && blackKing.getRow() == 0)
-			                       || (blackKing.getColumn() == 2 && blackKing.getRow() == 0);
-		return whiteCastled && blackCastled;
+		return isKingCastled(true) && isKingCastled(false);
 	}
+
+	/**
+	 * Checks if the king (based on color) is in a typical castled position.
+	 * For white: g1 (column 6, row 7) or c1 (column 2, row 7).
+	 * For black: g8 (column 6, row 0) or c8 (column 2, row 0).
+	 *
+	 * @param whiteKing
+	 * 	true for the white king; false for the black king.
+	 *
+	 * @return true if the king is in a castled position, otherwise false.
+	 */
+	private boolean isKingCastled(boolean whiteKing) {
+		King king = BOARD.getMoveValidator().findKing(whiteKing);
+		// Check if the king is in one of the castled positions
+		return (king.getColumn() == 6 && king.getRow() == 7)
+			       || (king.getColumn() == 2 && king.getRow() == 7);
+	}
+
 }
