@@ -8,6 +8,8 @@ package com.mlprograms.chess.game.ui;
 
 import com.mlprograms.chess.game.Player;
 import com.mlprograms.chess.game.engine.*;
+import com.mlprograms.chess.game.engine.ai.Ai;
+import com.mlprograms.chess.game.engine.state.PositionEvaluation;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
@@ -71,6 +73,7 @@ public class Board extends JPanel {
 	private boolean isWhiteTurn = true;
 	private boolean mouseDragged = false;
 	private boolean hasCastled = false;
+	private boolean isPromotion = false;
 	private boolean isWhiteAtBottom;
 
 	private Player playerWhite;
@@ -85,6 +88,9 @@ public class Board extends JPanel {
 	 * Sets up the JFrame and prepares the chessboard layout.
 	 */
 	public Board(Player playerWhite, Player playerBlack, boolean isWhiteAtBottom) {
+		playerWhite.setBoard(this);
+		playerBlack.setBoard(this);
+
 		this.playerWhite = playerWhite;
 		this.playerBlack = playerBlack;
 		this.moveValidator = new MoveValidator(this);
@@ -102,6 +108,12 @@ public class Board extends JPanel {
 
 		initializeBoardConfigurations();
 		setPreferredSize(new Dimension(getColumns() * getTileSize(), getRows() * getTileSize()));
+
+		SwingUtilities.invokeLater(this::checkForAiMove);
+	}
+
+	public Board(Player playerWhite, Player playerBlack) {
+		this(playerWhite, playerBlack, true);
 	}
 
 	/**
@@ -154,6 +166,19 @@ public class Board extends JPanel {
 		this.enPassantTile = fetchIntegerConfig(CHESS_SECTION, "EN_PASSANT_TILE");
 
 		loadPositionFromFen(getStartingPosition());
+	}
+
+	/**
+	 * Checks if it is the AI's turn to move and makes the move if it is.
+	 * If it is the white player's turn and the white player is an AI, the AI makes a move.
+	 * If it is the black player's turn and the black player is an AI, the AI makes a move.
+	 */
+	public void checkForAiMove() {
+		if (isWhiteTurn() && playerWhite instanceof Ai) {
+			((Ai) playerWhite).makeMove();
+		} else if (!isWhiteTurn() && playerBlack instanceof Ai) {
+			((Ai) playerBlack).makeMove();
+		}
 	}
 
 	/**
@@ -363,8 +388,17 @@ public class Board extends JPanel {
 		// Add the move to the move history
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
 
+		PositionEvaluation positionEvaluation = new PositionEvaluation(this);
+
+		System.out.println("White: " + positionEvaluation.evaluatePosition(getPieceList(), true));
+		System.out.println("Black: " + positionEvaluation.evaluatePosition(getPieceList(), false));
+		System.out.println(positionEvaluation.evaluateGameState());
+
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {
+			if(isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
+				checkForAiMove();
+			}
 			return;
 		}
 
@@ -487,6 +521,13 @@ public class Board extends JPanel {
 		int promotionRank = isWhiteAtBottom() ? isPieceWhite ? 0 : 7 : isPieceWhite ? 7 : 0;
 
 		if (move.getNewRow() == promotionRank) {
+			if (isWhiteTurn() && getPlayerWhite() instanceof Ai || !isWhiteTurn() && getPlayerBlack() instanceof Ai) {
+				promotePawn(move, new Queen(this, move.getNewColumn(), move.getNewRow(), move.getPiece().isWhite()));
+				return;
+			}
+
+			setPromotion(true);
+
 			// Show the promotion dialog to allow the player to choose a piece to promote to
 			SwingUtilities.invokeLater(() -> {
 				// Get the parent window
@@ -523,6 +564,12 @@ public class Board extends JPanel {
 		// Remove the pawn from the board and replace it with the new piece
 		getPieceList().remove(move.getPiece());
 		getPieceList().add(chosenPiece);
+
+		setPromotion(false);
+
+		if(isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
+			checkForAiMove();
+		}
 
 		repaint();  // Refresh the board after promotion
 	}

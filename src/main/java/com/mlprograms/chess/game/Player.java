@@ -6,6 +6,22 @@
 
 package com.mlprograms.chess.game;
 
+import com.mlprograms.chess.game.ui.Board;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
 public abstract class Player {
+
+	private Board board;
+
+	public Player(Board board) {
+		this.board = board;
+	}
 
 }
