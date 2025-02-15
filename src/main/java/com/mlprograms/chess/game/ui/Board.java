@@ -564,9 +564,12 @@ public class Board extends JPanel {
 		getPieceList().add(chosenPiece);
 
 		setPromotion(false);
-		checkForAiMove();
 
 		repaint();  // Refresh the board after promotion
+
+		if(isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
+			checkForAiMove();
+		}
 	}
 
 	/**
