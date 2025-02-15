@@ -31,15 +31,13 @@ public class PositionEvaluation {
 	 *
 	 * @return the cumulative positional score.
 	 */
-	public double evaluatePosition(boolean evaluateForWhite) {
+	public double evaluatePosition(List<Piece> pieceList, boolean evaluateForWhite) {
 		int positionValue = 0;
 		GameState gameState = evaluateGameState();
 
-		List<Piece> pieces = BOARD.getPieceList().stream()
-			                     .filter(piece -> piece.isWhite() == evaluateForWhite)
-			                     .toList();
+		pieceList = pieceList.stream().filter(piece -> piece.isWhite() == evaluateForWhite).toList();
 
-		for (Piece piece : pieces) {
+		for (Piece piece : pieceList) {
 			int[][] table;
 
 			switch (piece) {

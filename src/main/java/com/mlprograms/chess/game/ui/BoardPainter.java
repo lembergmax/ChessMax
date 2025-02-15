@@ -28,16 +28,14 @@ public class BoardPainter {
 
 	private static final float HEAD_LENGTH = ConfigFetcher.fetchFloatConfig("Arrow", "HEAD_LENGTH");
 	private static final double HEAD_ANGLE = ConfigFetcher.fetchFloatConfig("Arrow", "HEAD_ANGLE");
-
 	private static final double START_MARGIN = ConfigFetcher.fetchFloatConfig("Arrow", "START_MARGIN");
 	private static final double START_MARGIN_DIAGONAL = ConfigFetcher.fetchFloatConfig("Arrow", "START_MARGIN_DIAGONAL");
-
 	private final int ALPHA = ConfigFetcher.fetchIntegerConfig("Colors", "ARROW_ALPHA");
 	private final Color ARROW_COLOR = ConfigFetcher.fetchColorWithAlphaConfig("Colors", "ARROW_COLOR", ALPHA);
 	private final float THICKNESS = ConfigFetcher.fetchFloatConfig("Arrow", "THICKNESS");
 	private final Board BOARD;
-
 	private final List<Double> STRAIGHT_ARROWS = new ArrayList<>(Arrays.asList(Math.PI / -2, 0.0, Math.PI / 2, Math.PI));
+	private boolean isBlinkingActive = false;
 
 	public BoardPainter(Board board) {
 		this.BOARD = board;
@@ -201,6 +199,11 @@ public class BoardPainter {
 		int column = king.getColumn();
 		int row = king.getRow();
 
+		if (isBlinkingActive) {
+			return;
+		}
+		isBlinkingActive = true;
+
 		// Let the king's tile blink a few times
 		new Thread(() -> {
 			graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_ILLEGAL", 105));
@@ -214,6 +217,8 @@ public class BoardPainter {
 				sleep(400);
 				BOARD.repaint();
 			}
+
+			isBlinkingActive = false;
 		}).start();
 	}
 

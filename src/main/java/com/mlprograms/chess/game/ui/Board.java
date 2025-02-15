@@ -73,6 +73,7 @@ public class Board extends JPanel {
 	private boolean isWhiteTurn = true;
 	private boolean mouseDragged = false;
 	private boolean hasCastled = false;
+	private boolean isPromotion = false;
 	private boolean isWhiteAtBottom;
 
 	private Player playerWhite;
@@ -389,8 +390,8 @@ public class Board extends JPanel {
 
 		PositionEvaluation positionEvaluation = new PositionEvaluation(this);
 
-		System.out.println("White: " + positionEvaluation.evaluatePosition(true));
-		System.out.println("Black: " + positionEvaluation.evaluatePosition(false));
+		System.out.println("White: " + positionEvaluation.evaluatePosition(getPieceList(), true));
+		System.out.println("Black: " + positionEvaluation.evaluatePosition(getPieceList(), false));
 		System.out.println(positionEvaluation.evaluateGameState());
 
 		GameEnding gameEnding = checkForGameEnding();
@@ -518,6 +519,13 @@ public class Board extends JPanel {
 		int promotionRank = isWhiteAtBottom() ? isPieceWhite ? 0 : 7 : isPieceWhite ? 7 : 0;
 
 		if (move.getNewRow() == promotionRank) {
+			if (isWhiteTurn() && getPlayerWhite() instanceof Ai || !isWhiteTurn() && getPlayerBlack() instanceof Ai) {
+				promotePawn(move, new Queen(this, move.getNewColumn(), move.getNewRow(), move.getPiece().isWhite()));
+				return;
+			}
+
+			setPromotion(true);
+
 			// Show the promotion dialog to allow the player to choose a piece to promote to
 			SwingUtilities.invokeLater(() -> {
 				// Get the parent window
@@ -554,6 +562,9 @@ public class Board extends JPanel {
 		// Remove the pawn from the board and replace it with the new piece
 		getPieceList().remove(move.getPiece());
 		getPieceList().add(chosenPiece);
+
+		setPromotion(false);
+		checkForAiMove();
 
 		repaint();  // Refresh the board after promotion
 	}

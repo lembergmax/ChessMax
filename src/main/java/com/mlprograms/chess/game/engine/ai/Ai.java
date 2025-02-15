@@ -62,9 +62,13 @@ public abstract class Ai extends Player {
 	}
 
 	public void makeMove() {
-		getBoard().makeMove(findcStrategicMove());
+		if(getBoard().isPromotion()) {
+			return;
+		}
+
+		getBoard().makeMove(findStrategicMove());
 	}
 
-	protected abstract Move findcStrategicMove();
+	protected abstract Move findStrategicMove();
 
 }

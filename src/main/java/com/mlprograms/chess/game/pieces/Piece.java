@@ -30,7 +30,7 @@ import java.util.Objects;
 @Setter
 @ToString
 @EqualsAndHashCode
-public abstract class Piece {
+public abstract class Piece implements Cloneable{
 
 	// Name of the piece, e.g., "Pawn", "Rook"
 	private String name;
@@ -356,4 +356,14 @@ public abstract class Piece {
 
 		return false;
 	}
+
+	@Override
+	public Piece clone() {
+		try {
+			return (Piece) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
+
 }
