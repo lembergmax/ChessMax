@@ -79,6 +79,7 @@ public abstract class Piece {
 	 */
 	public Piece(Board board) {
 		this.board = board;
+		setPieceValue(0);
 
 		try {
 			// Load the sprite sheet for the chess pieces
