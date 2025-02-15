@@ -37,7 +37,7 @@ public class BoardPainter {
 	private final float THICKNESS = ConfigFetcher.fetchFloatConfig("Arrow", "THICKNESS");
 	private final Board BOARD;
 
-	private final List<Double> straightArrows = new ArrayList<>(Arrays.asList(Math.PI / -2, 0.0, Math.PI / 2, Math.PI));
+	private final List<Double> STRAIGHT_ARROWS = new ArrayList<>(Arrays.asList(Math.PI / -2, 0.0, Math.PI / 2, Math.PI));
 
 	public BoardPainter(Board board) {
 		this.BOARD = board;
@@ -527,7 +527,7 @@ public class BoardPainter {
 	 * @return a Point representing the adjusted starting position for the arrow
 	 */
 	private Point getAdjustedStartPoint(int tileCenterX, int tileCenterY, double angle, int tileSize) {
-		boolean isStraightArrow = straightArrows.contains(angle);
+		boolean isStraightArrow = STRAIGHT_ARROWS.contains(angle);
 
 		// Calculate the distance to the tile edge along the given direction.
 		double distanceToEdgeX = (tileSize / 2.0) / Math.abs(Math.cos(angle));
