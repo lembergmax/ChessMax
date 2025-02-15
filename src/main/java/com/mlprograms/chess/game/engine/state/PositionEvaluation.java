@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2025 Max Lemberg.
+ * This file is part of ChessMax.
+ * Licensed under the CC BY-NC 4.0 License.
+ * See "http://creativecommons.org/licenses/by-nc/4.0/".
+ */
+
 package com.mlprograms.chess.game.engine.state;
 
 import com.mlprograms.chess.game.pieces.*;

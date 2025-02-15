@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2025 Max Lemberg. This file is part of ChessMax.
- * Licenced under the CC BY-NC 4.0 License.
+ * Licensed under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -35,21 +35,23 @@ public class Martin extends Ai {
 		Move bestMove = null;
 		List<Move> possibleMoves = new ArrayList<>();
 
-		// Alle legalen Züge der weißen Figuren sammeln
-		for (Piece piece : getBoard().getPieceList().stream().filter(piece -> piece.isWhite() == getBoard().isWhiteTurn()).toList()) {
+		// Gather all legal moves for the pieces of the player whose turn it is
+		for (Piece piece : getBoard().getPieceList().stream()
+			                   .filter(piece -> piece.isWhite() == getBoard().isWhiteTurn())
+			                   .toList()) {
 			possibleMoves.addAll(piece.getLegalMoves(getBoard()));
 		}
 
-		// Für jeden möglichen Zug simulieren wir die Stellung
+		// For each possible move, simulate the resulting position
 		for (Move move : possibleMoves) {
-			// Simuliere den Zug anhand einer tiefen Kopie der PieceList
+			// Simulate the move using a deep copy of the current piece list
 			List<Piece> simulatedPieceList = simulateMove(getBoard().getPieceList(), move);
 
-			// Bewertet wird die simulierte Stellung
+			// Evaluate the simulated position
 			double evaluation = new PositionEvaluation(getBoard())
 				                    .evaluatePosition(simulatedPieceList, getBoard().isWhiteTurn());
 
-			// Speichern des besten Zugs
+			// Store the best move if the evaluation is higher than the current best
 			if (evaluation > highestValue) {
 				highestValue = evaluation;
 				bestMove = move;
@@ -60,27 +62,27 @@ public class Martin extends Ai {
 	}
 
 	/**
-	 * Erzeugt eine tiefe Kopie der übergebenen Figurenliste, simuliert den Zug
-	 * und gibt die modifizierte Liste zurück.
+	 * Creates a deep copy of the provided piece list, simulates the move,
+	 * and returns the modified list.
 	 * <p>
-	 * Zusätzlich wird überprüft, ob am Ziel des Zugs ein gegnerisches Piece steht.
-	 * Ist dies der Fall, wird das Piece als geschlagen markiert (mittels move.setCapturedPiece)
-	 * und aus der Liste entfernt – dies ermöglicht auch Schlagzüge, bei denen kein materieller Verlust entsteht.
+	 * Additionally, this method checks if an opponent's piece is located at the target square.
+	 * If so, the piece is marked as captured (via move.setCapturedPiece) and removed from the list—
+	 * enabling capture moves that do not result in material loss.
 	 *
 	 * @param originalPieceList
-	 * 	die aktuelle Figurenliste
+	 * 	the current list of pieces on the board
 	 * @param move
-	 * 	der zu simulierende Zug
+	 * 	the move to simulate
 	 *
-	 * @return eine neue Figurenliste, in der der Zug simuliert wurde
+	 * @return a new piece list reflecting the board state after the move is executed
 	 */
 	private List<Piece> simulateMove(List<Piece> originalPieceList, Move move) {
-		// Erstelle eine tiefe Kopie der Figurenliste (vorausgesetzt, jede Figur implementiert copy())
+		// Create a deep copy of the piece list (assuming each piece implements clone())
 		List<Piece> newPieceList = originalPieceList.stream()
 			                           .map(Piece::clone)
 			                           .collect(Collectors.toList());
 
-		// Finde die bewegte Figur anhand ihrer Startposition
+		// Find the piece that is moving based on its starting position
 		Piece movingPiece = newPieceList.stream()
 			                    .filter(piece -> piece.getRow() == move.getOldRow() && piece.getColumn() == move.getOldColumn())
 			                    .findFirst()
@@ -90,7 +92,7 @@ public class Martin extends Ai {
 			return newPieceList;
 		}
 
-		// Prüfe, ob am Zielfeld ein gegnerisches Piece steht
+		// Check if an opponent's piece is at the target position
 		Piece capturedPiece = newPieceList.stream()
 			                      .filter(piece -> piece.getRow() == move.getNewRow() &&
 				                                       piece.getColumn() == move.getNewColumn() &&
@@ -99,13 +101,13 @@ public class Martin extends Ai {
 			                      .orElse(null);
 
 		if (capturedPiece != null) {
-			// Das geschlagene Piece wird dem Move zugeordnet
+			// Assign the captured piece to the move
 			move.setCapturedPiece(capturedPiece);
-			// Entferne das geschlagene Piece aus der Liste
+			// Remove the captured piece from the list
 			newPieceList.remove(capturedPiece);
 		}
 
-		// Aktualisiere die Position der bewegten Figur
+		// Update the position of the moving piece
 		movingPiece.setRow(move.getNewRow());
 		movingPiece.setColumn(move.getNewColumn());
 
