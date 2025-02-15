@@ -7,6 +7,7 @@
 package com.mlprograms.chess.game.engine.ai;
 
 import com.mlprograms.chess.game.Player;
+import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.utils.ConfigFetcher;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,31 +24,25 @@ import java.util.Objects;
 @Setter
 @EqualsAndHashCode(callSuper = false)
 @ToString(callSuper = true)
-public class Ai extends Player {
+public abstract class Ai extends Player {
 
 	// Name of the AI
 	private String name;
-
 	// The difficulty level of the AI
 	private int elo;
-
 	// The maximum depth the AI will search to
 	private int depth;
-
 	// Scale factor for the sprite sheet
 	private int sheetScale;
-
 	// The sprite number for this piece
 	private int spriteNumber;
-
 	// The sprite sheet containing the piece image
 	private BufferedImage sheet;
-
 	// The specific sprite for this piece
 	private Image sprite;
 
 	public Ai(String name, int sprite, int elo, int depth) {
-		super();
+		super(null);
 		setName(name);
 		setElo(elo);
 		setDepth(depth);
@@ -65,5 +60,11 @@ public class Ai extends Player {
 		setSprite(getSheet().getSubimage((sprite - 1) * sheetScale, 0, sheetScale, sheetScale).getScaledInstance(sheetScale, sheetScale, BufferedImage.SCALE_SMOOTH));
 
 	}
+
+	public void makeMove() {
+		getBoard().makeMove(findcStrategicMove());
+	}
+
+	protected abstract Move findcStrategicMove();
 
 }

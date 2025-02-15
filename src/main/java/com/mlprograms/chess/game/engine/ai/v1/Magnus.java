@@ -6,6 +6,7 @@
 
 package com.mlprograms.chess.game.engine.ai.v1;
 
+import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.engine.ai.Ai;
 import com.mlprograms.chess.utils.ConfigFetcher;
 
@@ -22,4 +23,8 @@ public class Magnus extends Ai {
 		);
 	}
 
+	@Override
+	protected Move findcStrategicMove() {
+		return null;
+	}
 }

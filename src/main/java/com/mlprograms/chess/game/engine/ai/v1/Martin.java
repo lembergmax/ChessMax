@@ -6,6 +6,7 @@
 
 package com.mlprograms.chess.game.engine.ai.v1;
 
+import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.engine.ai.Ai;
 import com.mlprograms.chess.utils.ConfigFetcher;
 
@@ -20,6 +21,17 @@ public class Martin extends Ai {
 			ConfigFetcher.fetchIntegerConfig("Bots", "BOT_" + BOT_NUMBER + "_ELO"),
 			ConfigFetcher.fetchIntegerConfig("Bots", "BOT_" + BOT_NUMBER + "_DEPTH")
 		);
+	}
+
+	@Override
+	protected Move findcStrategicMove() {
+		// Get all possible moves
+		// Iterate over all moves
+		// Mark the move which bring the position evaluation to the highest value
+
+		// Make the move
+
+		return null;
 	}
 
 }
