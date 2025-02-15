@@ -6,7 +6,6 @@
 
 package com.mlprograms.chess.game.engine.state;
 
-
 /**
  * Enum representing the different phases of a chess game.
  */
