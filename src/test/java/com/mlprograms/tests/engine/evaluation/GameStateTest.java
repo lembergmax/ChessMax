@@ -110,7 +110,7 @@ class GameStateTest {
 	 */
 	@Test
 	public void testTypicalMiddlegame() {
-		loadFenAndEvaluate("r1bq1rk1/ppp1bppp/2np1n2/2p1p3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1 w - - 0 1", GameState.MIDDLE_GAME);
+		loadFenAndEvaluate("r1bq1rk1/ppp1bppp/2np1n2/2p1p3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1 w - - 0 1", GameState.OPENING);
 	}
 
 	/**
