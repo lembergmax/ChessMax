@@ -368,8 +368,6 @@ public class Board extends JPanel {
 		// Add the move to the move history
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
 
-		Logger.logDebug(new PositionEvaluation(this).evaluateGameState());
-
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {
 			return;
