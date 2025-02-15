@@ -49,14 +49,6 @@ public class Martin extends Ai {
 			double evaluation = new PositionEvaluation(getBoard())
 				                    .evaluatePosition(simulatedPieceList, getBoard().isWhiteTurn());
 
-			// Wurde ein gegnerisches Piece geschlagen? (auch wenn dabei kein materieller Verlust entsteht)
-			// Hier könnte man zusätzlich prüfen, ob das Tauschen günstig oder zumindest materialgleich ist.
-			// Beispiel:
-			// if (move.getCapturedPiece() != null &&
-			//     move.getPiece().getPieceValue() < move.getCapturedPiece().getPieceValue()) {
-			//     // Schlagzug bringt einen Vorteil
-			// }
-
 			// Speichern des besten Zugs
 			if (evaluation > highestValue) {
 				highestValue = evaluation;

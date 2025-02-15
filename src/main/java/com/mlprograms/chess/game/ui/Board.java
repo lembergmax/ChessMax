@@ -396,7 +396,9 @@ public class Board extends JPanel {
 
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {
-			checkForAiMove();
+			if(isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
+				checkForAiMove();
+			}
 			return;
 		}
 
@@ -565,11 +567,11 @@ public class Board extends JPanel {
 
 		setPromotion(false);
 
-		repaint();  // Refresh the board after promotion
-
 		if(isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
 			checkForAiMove();
 		}
+
+		repaint();  // Refresh the board after promotion
 	}
 
 	/**

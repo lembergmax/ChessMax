@@ -58,7 +58,6 @@ public abstract class Ai extends Player {
 		}
 
 		setSprite(getSheet().getSubimage((sprite - 1) * sheetScale, 0, sheetScale, sheetScale).getScaledInstance(sheetScale, sheetScale, BufferedImage.SCALE_SMOOTH));
-
 	}
 
 	public void makeMove() {
