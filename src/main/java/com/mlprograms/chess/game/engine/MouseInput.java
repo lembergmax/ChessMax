@@ -151,7 +151,7 @@ public class MouseInput extends MouseAdapter {
 			board.repaint();
 		}
 
-		if(tempRedHighlight.x != column && tempRedHighlight.y != row) {
+		if (tempRedHighlight != null && tempRedHighlight.x != column && tempRedHighlight.y != row) {
 			// Remove temporary red highlight
 			tempRedHighlight = null;
 		}
