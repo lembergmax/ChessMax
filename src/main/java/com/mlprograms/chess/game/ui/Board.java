@@ -365,7 +365,7 @@ public class Board extends JPanel {
 		setWhiteTurn(!isWhiteTurn());
 
 		// Play appropriate sound effects based on the move
-		// TODO: playGameSound(move);
+		playGameSound(move);
 
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
@@ -405,14 +405,6 @@ public class Board extends JPanel {
 			getSoundPlayer().play(Sounds.GAME_END);
 			return;
 		}
-
-		// TODO: fix:
-		//  - Alle Sounds, die durch "klicken" entstehen, werden nicht korrekt abgespielt
-		//  - Es wird wahrscheinlich das Board nicht korrekt aktualisiert (siehe logDebug statements)
-
-		// If King is in Check
-		// Logger.logDebug("White King in Check: " + getMoveValidator().isKingInCheck(true));
-		// Logger.logDebug("Black King in Check: " + getMoveValidator().isKingInCheck(false));
 
 		if (getMoveValidator().isKingInCheck()) {
 			getSoundPlayer().play(Sounds.CHECK);
