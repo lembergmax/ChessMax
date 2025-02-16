@@ -349,6 +349,7 @@ public class Board extends JPanel {
 			animateMove(piece, move.getNewColumn(), move.getNewRow());
 		}
 
+		// Set the new position of the piece
 		piece.setColumn(move.getNewColumn());
 		piece.setRow(move.getNewRow());
 		piece.setXPos(move.getNewColumn() * getTileSize());
