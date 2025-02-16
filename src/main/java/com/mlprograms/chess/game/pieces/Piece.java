@@ -183,30 +183,14 @@ public abstract class Piece implements Cloneable{
 
 		for (int col = 0; col < board.getColumns(); col++) {
 			for (int row = 0; row < board.getRows(); row++) {
-				addMoveToArrayIfValid(board, legalMoves, col, row);
+				Move move = new Move(board, this, col, row);
+				if (isLegalMove(board, move)) {
+					legalMoves.add(move);
+				}
 			}
 		}
 
 		return legalMoves;
-	}
-
-	/**
-	 * Validates and adds a move to the list of legal moves if it's valid.
-	 *
-	 * @param board
-	 * 	the board to evaluate moves on
-	 * @param legalMoves
-	 * 	the list of legal moves to add to
-	 * @param col
-	 * 	the target column
-	 * @param row
-	 * 	the target row
-	 */
-	private void addMoveToArrayIfValid(Board board, List<Move> legalMoves, int col, int row) {
-		Move move = new Move(board, this, col, row);
-		if (isLegalMove(board, move)) {
-			legalMoves.add(move);
-		}
 	}
 
 	/**
