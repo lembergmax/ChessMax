@@ -18,6 +18,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * MouseInput class handles all mouse interactions on the chessboard.
@@ -157,96 +158,146 @@ public class MouseInput extends MouseAdapter {
 		}
 	}
 
-	/**
-	 * Handles the mouse release event during a piece drag or arrow drawing operation.
-	 * <p>
-	 * For right-click:
-	 * - If the temporary arrow's start and end differ, search for an existing arrow with the same
-	 * coordinates. If found, remove it; otherwise, add the new arrow.
-	 * <p>
-	 * For left-click:
-	 * - If the drag distance is less than or equal to 25 pixels, reset the piece to its original position
-	 * and show possible moves.
-	 * - Otherwise, attempt to move the piece to the target tile.
-	 *
-	 * @param event
-	 * 	the MouseEvent triggered upon releasing the mouse button.
-	 */
 	@Override
 	public void mouseReleased(MouseEvent event) {
+		int boardColumn = event.getX() / board.getTileSize();
+		int boardRow = event.getY() / board.getTileSize();
+
 		if (SwingUtilities.isRightMouseButton(event)) {
-
-			if (tempRedHighlight != null) {
-				List<Point> redHighlights = board.getRedHighlights();
-				// If the temporary red highlight is already in the list, remove it; otherwise, add it
-				if (redHighlights.contains(tempRedHighlight)) {
-					redHighlights.remove(tempRedHighlight);
-				} else {
-					redHighlights.add(tempRedHighlight);
-				}
-			}
-
-			Arrow tempArrow = board.getTempArrow();
-			if (tempArrow != null) {
-				// Check if start and end coordinates are different (if not, no action is taken)
-				if (tempArrow.getStartColumn() != tempArrow.getEndColumn() ||
-					    tempArrow.getStartRow() != tempArrow.getEndRow()) {
-					// Search for an existing arrow with the same start and end coordinates.
-					Arrow duplicateArrow = null;
-					for (Arrow arrow : board.getArrows()) {
-						if (arrow.getStartColumn() == tempArrow.getStartColumn() &&
-							    arrow.getStartRow() == tempArrow.getStartRow() &&
-							    arrow.getEndColumn() == tempArrow.getEndColumn() &&
-							    arrow.getEndRow() == tempArrow.getEndRow()) {
-							duplicateArrow = arrow;
-							break;
-						}
-					}
-					// If an identical arrow exists, remove it; otherwise, add the new arrow.
-					if (duplicateArrow != null) {
-						board.getArrows().remove(duplicateArrow);
-					} else {
-						board.getArrows().add(tempArrow);
-					}
-				}
-				board.setTempArrow(null);
-				board.repaint();
-			}
-
+			handleRightClick(boardColumn, boardRow);
 			return;
 		}
 
-		// Left-click: handle piece movement
 		if (!board.isMouseDragged()) {
 			return;
 		}
 
+		handleLeftClick(event, boardColumn, boardRow);
+	}
+
+	/**
+	 * Behandelt den Rechtsklick: Erst werden rote Highlights (falls vorhanden) umgeschaltet,
+	 * dann wird das temporäre Pfeil-Objekt verarbeitet.
+	 */
+	private void handleRightClick(int boardColumn, int boardRow) {
+		toggleRedHighlight(boardColumn, boardRow);
+		processTemporaryArrow();
+	}
+
+	/**
+	 * Schaltet das rote Highlight um, sofern ein temporäres Highlight vorhanden ist und sich
+	 * die Koordinaten decken.
+	 */
+	private void toggleRedHighlight(int boardColumn, int boardRow) {
+		if (tempRedHighlight == null) {
+			return;
+		}
+
+		if (tempRedHighlight.x == boardColumn && tempRedHighlight.y == boardRow) {
+			List<Point> redHighlights = board.getRedHighlights();
+			if (redHighlights.contains(tempRedHighlight)) {
+				redHighlights.remove(tempRedHighlight);
+			} else {
+				redHighlights.add(tempRedHighlight);
+			}
+		} else {
+			tempRedHighlight = null;
+		}
+	}
+
+	/**
+	 * Prüft und verarbeitet das temporäre Pfeil-Objekt: Ist der Pfeil gültig, wird geprüft, ob
+	 * bereits ein identischer Pfeil existiert – wenn ja, wird er entfernt, ansonsten hinzugefügt.
+	 */
+	private void processTemporaryArrow() {
+		Arrow tempArrow = board.getTempArrow();
+		if (tempArrow == null) {
+			return;
+		}
+
+		if (isValidArrow(tempArrow)) {
+			Optional<Arrow> duplicateArrow = board.getArrows().stream()
+				                                 .filter(existingArrow -> arrowsAreEqual(existingArrow, tempArrow))
+				                                 .findFirst();
+
+			if (duplicateArrow.isPresent()) {
+				board.getArrows().remove(duplicateArrow.get());
+			} else {
+				board.getArrows().add(tempArrow);
+			}
+		}
+		board.setTempArrow(null);
+		board.repaint();
+	}
+
+	/**
+	 * Ein Pfeil gilt als "gültig", wenn seine Start- und Endkoordinate unterschiedlich sind.
+	 */
+	private boolean isValidArrow(Arrow arrow) {
+		return arrow.getStartColumn() != arrow.getEndColumn() ||
+			       arrow.getStartRow() != arrow.getEndRow();
+	}
+
+	/**
+	 * Vergleicht zwei Pfeile anhand ihrer Start- und Endkoordinaten.
+	 */
+	private boolean arrowsAreEqual(Arrow arrow1, Arrow arrow2) {
+		return arrow1.getStartColumn() == arrow2.getStartColumn() &&
+			       arrow1.getStartRow() == arrow2.getStartRow() &&
+			       arrow1.getEndColumn() == arrow2.getEndColumn() &&
+			       arrow1.getEndRow() == arrow2.getEndRow();
+	}
+
+	/**
+	 * Behandelt den Linksklick und führt den Zug bzw. das Zurücksetzen der Figur aus.
+	 */
+	private void handleLeftClick(MouseEvent event, int boardColumn, int boardRow) {
 		Piece selectedPiece = board.getSelectedPiece();
 
-		if (board.getMoveValidator().isKingInCheck() && selectedPiece.getLegalMoves(board).isEmpty()) {
+		if (isIllegalMove(selectedPiece)) {
 			board.getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
 			board.getBoardPainter().blinkKingsTile((Graphics2D) board.getGraphics(), board.isWhiteTurn());
 		}
 
-		int column = event.getX() / board.getTileSize();
-		int row = event.getY() / board.getTileSize();
-
-		int draggedX = event.getX();
-		int draggedY = event.getY();
-		int originalX = getOriginalColumn() * board.getTileSize() + board.getTileSize() / 2;
-		int originalY = getOriginalRow() * board.getTileSize() + board.getTileSize() / 2;
-		double distance = Math.sqrt(Math.pow(draggedX - originalX, 2) + Math.pow(draggedY - originalY, 2));
-
-		if (distance <= 25) {
+		if (hasDraggedShortDistance(event)) {
 			resetPiecePosition(selectedPiece);
 			board.showPossibleMoves(selectedPiece);
 		} else {
-			attemptMove(selectedPiece, column, row);
+			attemptMove(selectedPiece, boardColumn, boardRow);
 		}
 
 		board.setMouseDragged(false);
 		board.repaint();
 	}
+
+	/**
+	 * Prüft, ob der aktuelle Zustand einen illegalen Zug (beispielsweise aufgrund eines Schachgebots)
+	 * signalisiert.
+	 */
+	private boolean isIllegalMove(Piece selectedPiece) {
+		return board.getMoveValidator().isKingInCheck() &&
+			       selectedPiece.getLegalMoves(board).isEmpty();
+	}
+
+	/**
+	 * Berechnet, ob die Drag-Distanz unterhalb des Schwellwertes liegt.
+	 */
+	private boolean hasDraggedShortDistance(MouseEvent event) {
+		double dragDistance = calculateDragDistance(event);
+		return dragDistance <= 25;
+	}
+
+	/**
+	 * Berechnet die Distanz zwischen der ursprünglichen Position und der aktuellen Mausposition.
+	 */
+	private double calculateDragDistance(MouseEvent event) {
+		int draggedX = event.getX();
+		int draggedY = event.getY();
+		int originalX = getOriginalColumn() * board.getTileSize() + board.getTileSize() / 2;
+		int originalY = getOriginalRow() * board.getTileSize() + board.getTileSize() / 2;
+		return Math.hypot(draggedX - originalX, draggedY - originalY);
+	}
+
 
 	/**
 	 * Clears the current piece selection and resets possible moves.
