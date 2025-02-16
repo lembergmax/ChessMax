@@ -62,12 +62,6 @@ public class Board extends JPanel {
 	private int halfMoveClock;
 	private int fullMoveNumber;
 	private int tempFullMoveNumber;
-	private int targetColumn;
-	private int targetRow;
-	private int oldColumn;
-	private int oldRow;
-	private int newColumn;
-	private int newRow;
 	private int enPassantTile = -1;
 
 	private boolean isWhiteTurn = true;
@@ -157,12 +151,12 @@ public class Board extends JPanel {
 		this.halfMoveClock = fetchIntegerConfig(CHESS_SECTION, "HALF_MOVE_CLOCK");
 		this.fullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "FULL_MOVE_NUMBER");
 		this.tempFullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "TEMP_FULL_MOVE_NUMBER");
-		this.targetColumn = fetchIntegerConfig(CHESS_SECTION, "TARGET_COLUMN");
-		this.targetRow = fetchIntegerConfig(CHESS_SECTION, "TARGET_ROW");
-		this.oldColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_COLUMN");
-		this.oldRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
-		this.newColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
-		this.newRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
+		// this.targetColumn = fetchIntegerConfig(CHESS_SECTION, "TARGET_COLUMN");
+		// this.targetRow = fetchIntegerConfig(CHESS_SECTION, "TARGET_ROW");
+		// this.oldColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_COLUMN");
+		// this.oldRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
+		// this.newColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
+		// this.newRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
 		this.enPassantTile = fetchIntegerConfig(CHESS_SECTION, "EN_PASSANT_TILE");
 
 		loadPositionFromFen(getStartingPosition());
@@ -335,12 +329,6 @@ public class Board extends JPanel {
 		// Get the piece being moved
 		Piece piece = move.getPiece();
 
-		// Update the last move's start and end positions
-		setOldColumn(move.getOldColumn());
-		setOldRow(move.getOldRow());
-		setNewColumn(move.getNewColumn());
-		setNewRow(move.getNewRow());
-
 		// Increment move counts and other related updates
 		incrementMoveCounts(move, piece);
 
@@ -359,12 +347,13 @@ public class Board extends JPanel {
 		// Animate the move or update the piece position directly if dragging
 		if (!isMouseDragged()) {
 			animateMove(piece, move.getNewColumn(), move.getNewRow());
-		} else {
-			piece.setColumn(move.getNewColumn());
-			piece.setRow(move.getNewRow());
-			piece.setXPos(move.getNewColumn() * getTileSize());
-			piece.setYPos(move.getNewRow() * getTileSize());
 		}
+
+		// Set the new position of the piece
+		piece.setColumn(move.getNewColumn());
+		piece.setRow(move.getNewRow());
+		piece.setXPos(move.getNewColumn() * getTileSize());
+		piece.setYPos(move.getNewRow() * getTileSize());
 
 		// Mark the piece as no longer being in its initial state
 		piece.setFirstMove(false);
@@ -376,23 +365,13 @@ public class Board extends JPanel {
 		setWhiteTurn(!isWhiteTurn());
 
 		// Play appropriate sound effects based on the move
-		// TODO: playGameSound(move);
+		playGameSound(move);
 
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
 
-		// Reset target column and row indicators
-		setTargetColumn(-1);
-		setTargetRow(-1);
-
 		// Add the move to the move history
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
-
-		PositionEvaluation positionEvaluation = new PositionEvaluation(this);
-
-		System.out.println("White: " + positionEvaluation.evaluatePosition(getPieceList(), true));
-		System.out.println("Black: " + positionEvaluation.evaluatePosition(getPieceList(), false));
-		System.out.println(positionEvaluation.evaluateGameState());
 
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {
@@ -426,14 +405,6 @@ public class Board extends JPanel {
 			getSoundPlayer().play(Sounds.GAME_END);
 			return;
 		}
-
-		// TODO: fix:
-		//  - Alle Sounds, die durch "klicken" entstehen, werden nicht korrekt abgespielt
-		//  - Es wird wahrscheinlich das Board nicht korrekt aktualisiert (siehe logDebug statements)
-
-		// If King is in Check
-		// Logger.logDebug("White King in Check: " + getMoveValidator().isKingInCheck(true));
-		// Logger.logDebug("Black King in Check: " + getMoveValidator().isKingInCheck(false));
 
 		if (getMoveValidator().isKingInCheck()) {
 			getSoundPlayer().play(Sounds.CHECK);

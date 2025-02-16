@@ -129,9 +129,6 @@ public class MouseInput extends MouseAdapter {
 		int column = event.getX() / board.getTileSize();
 		int row = event.getY() / board.getTileSize();
 
-		// Remove temporary red highlight
-		tempRedHighlight = null;
-
 		// Right-click dragging for drawing arrows and highlighting tiles.
 		if (SwingUtilities.isRightMouseButton(event)) {
 			Arrow tempArrow = board.getTempArrow();
@@ -152,6 +149,11 @@ public class MouseInput extends MouseAdapter {
 			updatePiecePositionDuringDrag(selectedPiece, event);
 			// Repaint the board to show the dragging effect.
 			board.repaint();
+		}
+
+		if (tempRedHighlight != null && tempRedHighlight.x != column && tempRedHighlight.y != row) {
+			// Remove temporary red highlight
+			tempRedHighlight = null;
 		}
 	}
 
