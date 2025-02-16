@@ -62,12 +62,6 @@ public class Board extends JPanel {
 	private int halfMoveClock;
 	private int fullMoveNumber;
 	private int tempFullMoveNumber;
-	private int targetColumn;
-	private int targetRow;
-	private int oldColumn;
-	private int oldRow;
-	private int newColumn;
-	private int newRow;
 	private int enPassantTile = -1;
 
 	private boolean isWhiteTurn = true;
@@ -157,12 +151,12 @@ public class Board extends JPanel {
 		this.halfMoveClock = fetchIntegerConfig(CHESS_SECTION, "HALF_MOVE_CLOCK");
 		this.fullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "FULL_MOVE_NUMBER");
 		this.tempFullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "TEMP_FULL_MOVE_NUMBER");
-		this.targetColumn = fetchIntegerConfig(CHESS_SECTION, "TARGET_COLUMN");
-		this.targetRow = fetchIntegerConfig(CHESS_SECTION, "TARGET_ROW");
-		this.oldColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_COLUMN");
-		this.oldRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
-		this.newColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
-		this.newRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
+		// this.targetColumn = fetchIntegerConfig(CHESS_SECTION, "TARGET_COLUMN");
+		// this.targetRow = fetchIntegerConfig(CHESS_SECTION, "TARGET_ROW");
+		// this.oldColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_COLUMN");
+		// this.oldRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
+		// this.newColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
+		// this.newRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
 		this.enPassantTile = fetchIntegerConfig(CHESS_SECTION, "EN_PASSANT_TILE");
 
 		loadPositionFromFen(getStartingPosition());
@@ -335,12 +329,6 @@ public class Board extends JPanel {
 		// Get the piece being moved
 		Piece piece = move.getPiece();
 
-		// Update the last move's start and end positions
-		setOldColumn(move.getOldColumn());
-		setOldRow(move.getOldRow());
-		setNewColumn(move.getNewColumn());
-		setNewRow(move.getNewRow());
-
 		// Increment move counts and other related updates
 		incrementMoveCounts(move, piece);
 
@@ -381,18 +369,8 @@ public class Board extends JPanel {
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
 
-		// Reset target column and row indicators
-		setTargetColumn(-1);
-		setTargetRow(-1);
-
 		// Add the move to the move history
 		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
-
-		PositionEvaluation positionEvaluation = new PositionEvaluation(this);
-
-		System.out.println("White: " + positionEvaluation.evaluatePosition(getPieceList(), true));
-		System.out.println("Black: " + positionEvaluation.evaluatePosition(getPieceList(), false));
-		System.out.println(positionEvaluation.evaluateGameState());
 
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {
