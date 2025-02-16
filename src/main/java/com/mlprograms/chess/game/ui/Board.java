@@ -9,7 +9,6 @@ package com.mlprograms.chess.game.ui;
 import com.mlprograms.chess.game.Player;
 import com.mlprograms.chess.game.engine.*;
 import com.mlprograms.chess.game.engine.ai.Ai;
-import com.mlprograms.chess.game.engine.state.PositionEvaluation;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
@@ -55,7 +54,6 @@ public class Board extends JPanel {
 	private int height;
 	private int padding;
 	private int blinkCount;
-	private int delay;
 	private int tileSize;
 	private int columns;
 	private int rows;
@@ -144,19 +142,12 @@ public class Board extends JPanel {
 		this.height = fetchIntegerConfig(CHESS_SECTION, "HEIGHT");
 		this.padding = fetchIntegerConfig(CHESS_SECTION, "PADDING");
 		this.blinkCount = fetchIntegerConfig(CHESS_SECTION, "BLINK_COUNT");
-		this.delay = fetchIntegerConfig(CHESS_SECTION, "DELAY");
 		this.tileSize = fetchIntegerConfig(CHESS_SECTION, "TILE_SIZE");
 		this.columns = fetchIntegerConfig(CHESS_SECTION, "COLUMNS");
 		this.rows = fetchIntegerConfig(CHESS_SECTION, "ROWS");
 		this.halfMoveClock = fetchIntegerConfig(CHESS_SECTION, "HALF_MOVE_CLOCK");
 		this.fullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "FULL_MOVE_NUMBER");
 		this.tempFullMoveNumber = fetchIntegerConfig(CHESS_SECTION, "TEMP_FULL_MOVE_NUMBER");
-		// this.targetColumn = fetchIntegerConfig(CHESS_SECTION, "TARGET_COLUMN");
-		// this.targetRow = fetchIntegerConfig(CHESS_SECTION, "TARGET_ROW");
-		// this.oldColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_COLUMN");
-		// this.oldRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_FROM_ROW");
-		// this.newColumn = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_COLUMN");
-		// this.newRow = fetchIntegerConfig(CHESS_SECTION, "LAST_MOVE_TO_ROW");
 		this.enPassantTile = fetchIntegerConfig(CHESS_SECTION, "EN_PASSANT_TILE");
 
 		loadPositionFromFen(getStartingPosition());
@@ -346,7 +337,7 @@ public class Board extends JPanel {
 
 		// Animate the move or update the piece position directly if dragging
 		if (!isMouseDragged()) {
-			animateMove(piece, move.getNewColumn(), move.getNewRow());
+			// TODO: animateMove(piece, move.getNewColumn(), move.getNewRow());
 		}
 
 		// Set the new position of the piece
@@ -627,7 +618,12 @@ public class Board extends JPanel {
 				// Stop the animation once all steps are completed and set the final position
 				if (step >= steps) {
 					((Timer) e.getSource()).stop(); // Stop the timer once the animation is complete
-					piece.setPosition(targetColumn, targetRow); // Set the final position of the piece
+
+					// Set the new position of the piece
+					piece.setColumn(targetColumn);
+					piece.setRow(targetRow);
+					piece.setXPos(targetColumn * getTileSize());
+					piece.setYPos(targetRow * getTileSize());
 				}
 			}
 		});
