@@ -799,11 +799,7 @@ public class Board extends JPanel {
 		}
 
 		// Ensure the move doesn't collide with another piece
-		if (move.getPiece().moveCollidesWithPiece(move.getNewColumn(), move.getNewRow())) {
-			return false; // The move is blocked by another piece
-		}
-
-		return true;
+		return !move.getPiece().moveCollidesWithPiece(move.getNewColumn(), move.getNewRow()); // The move is blocked by another piece
 	}
 
 	/**
