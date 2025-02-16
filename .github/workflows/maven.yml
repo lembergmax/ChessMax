@@ -26,9 +26,6 @@ jobs:
           java-version: '23'
           cache: 'maven'
 
-      - name: Abhängigkeiten auflösen
-        run: mvn clean install -Dmaven.compiler.forceJavacCompilerUse=true
-
       - name: Projekt kompilieren (mit Lombok)
         run: mvn clean compile
 
