@@ -75,6 +75,8 @@ public class Board extends JPanel {
 	private List<Point> redHighlights = new ArrayList<>();
 	private Arrow tempArrow;
 
+	private Point hoveredTile;
+
 	/**
 	 * Constructs the Board and initializes its components and configurations.
 	 * Sets up the JFrame and prepares the chessboard layout.
@@ -125,6 +127,7 @@ public class Board extends JPanel {
 		getBoardPainter().highlightPossibleMoves((Graphics2D) graphics);
 		getBoardPainter().paintRedHighlights((Graphics2D) graphics);
 		getBoardPainter().drawCoordinates((Graphics2D) graphics);
+		getBoardPainter().drawTileHoverBorder((Graphics2D) graphics);
 		getBoardPainter().paintPieces((Graphics2D) graphics);
 		getBoardPainter().drawArrows((Graphics2D) graphics);
 	}

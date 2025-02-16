@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorConfig;
-import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorWithAlphaConfig;
+import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 @Getter
 public class BoardPainter {
@@ -126,6 +125,28 @@ public class BoardPainter {
 		// Draw the highlight on the specified tile
 		graphics2D.fillRect(point.x * BOARD.getTileSize(), point.y * BOARD.getTileSize(),
 			BOARD.getTileSize(), BOARD.getTileSize());
+	}
+
+	/**
+	 * Draws a border around the tile currently being hovered over by the mouse.
+	 * <p>
+	 * This method checks if there is a tile being hovered over. If so, it sets the color and stroke
+	 * for the border and draws a rectangle around the hovered tile.
+	 * </p>
+	 *
+	 * @param graphics2D
+	 * 	the Graphics2D context used for drawing
+	 */
+	public void drawTileHoverBorder(Graphics2D graphics2D) {
+		if (BOARD.getHoveredTile() == null) {
+			return;
+		}
+
+		graphics2D.setColor(fetchColorConfig("Colors", "TILE_HOVER_BORDER"));
+		graphics2D.setStroke(new BasicStroke(fetchIntegerConfig("Colors", "TILE_HOVER_BORDER_THICKNESS")));
+		graphics2D.drawRect(BOARD.getHoveredTile().x * BOARD.getTileSize(), BOARD.getHoveredTile().y * BOARD.getTileSize(),
+			BOARD.getTileSize(), BOARD.getTileSize());
+
 	}
 
 	/**

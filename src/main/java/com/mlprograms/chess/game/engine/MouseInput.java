@@ -70,7 +70,7 @@ public class MouseInput extends MouseAdapter {
 			// Create a temporary arrow with starting and ending points equal to the clicked tile.
 			board.setTempArrow(new Arrow(column, row, column, row));
 
-			// Add temporary red highlight
+			// Add temporary red highlight.
 			tempRedHighlight = new Point(column, row);
 
 			// Exit early for right-click events.
@@ -81,6 +81,7 @@ public class MouseInput extends MouseAdapter {
 		// Clear any pre-existing arrows on the board.
 		board.getArrows().clear();
 		board.getRedHighlights().clear();
+		board.setHoveredTile(null);
 
 		// Reset the flag indicating if a piece is being dragged.
 		board.setMouseDragged(false);
@@ -130,6 +131,8 @@ public class MouseInput extends MouseAdapter {
 		int column = event.getX() / board.getTileSize();
 		int row = event.getY() / board.getTileSize();
 
+		board.setHoveredTile(new Point(column, row));
+
 		// Right-click dragging for drawing arrows and highlighting tiles.
 		if (SwingUtilities.isRightMouseButton(event)) {
 			Arrow tempArrow = board.getTempArrow();
@@ -153,7 +156,7 @@ public class MouseInput extends MouseAdapter {
 		}
 
 		if (tempRedHighlight != null && tempRedHighlight.x != column && tempRedHighlight.y != row) {
-			// Remove temporary red highlight
+			// Remove temporary red highlight.
 			tempRedHighlight = null;
 		}
 	}
@@ -176,17 +179,27 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Behandelt den Rechtsklick: Erst werden rote Highlights (falls vorhanden) umgeschaltet,
-	 * dann wird das temporäre Pfeil-Objekt verarbeitet.
+	 * Handles right-click events:
+	 * First toggles red highlights (if any) and then processes the temporary arrow object.
+	 *
+	 * @param boardColumn
+	 * 	the board column where the event occurred.
+	 * @param boardRow
+	 * 	the board row where the event occurred.
 	 */
 	private void handleRightClick(int boardColumn, int boardRow) {
+		board.setHoveredTile(null);
 		toggleRedHighlight(boardColumn, boardRow);
 		processTemporaryArrow();
 	}
 
 	/**
-	 * Schaltet das rote Highlight um, sofern ein temporäres Highlight vorhanden ist und sich
-	 * die Koordinaten decken.
+	 * Toggles the red highlight if a temporary highlight exists and the coordinates match.
+	 *
+	 * @param boardColumn
+	 * 	the board column of the highlight.
+	 * @param boardRow
+	 * 	the board row of the highlight.
 	 */
 	private void toggleRedHighlight(int boardColumn, int boardRow) {
 		if (tempRedHighlight == null) {
@@ -206,8 +219,9 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Prüft und verarbeitet das temporäre Pfeil-Objekt: Ist der Pfeil gültig, wird geprüft, ob
-	 * bereits ein identischer Pfeil existiert – wenn ja, wird er entfernt, ansonsten hinzugefügt.
+	 * Validates and processes the temporary arrow object:
+	 * If the arrow is valid, it checks whether an identical arrow already exists.
+	 * If it exists, the duplicate is removed; otherwise, the arrow is added.
 	 */
 	private void processTemporaryArrow() {
 		Arrow tempArrow = board.getTempArrow();
@@ -231,7 +245,12 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Ein Pfeil gilt als "gültig", wenn seine Start- und Endkoordinate unterschiedlich sind.
+	 * An arrow is considered valid if its starting and ending coordinates are different.
+	 *
+	 * @param arrow
+	 * 	the arrow to validate.
+	 *
+	 * @return true if the arrow is valid, false otherwise.
 	 */
 	private boolean isValidArrow(Arrow arrow) {
 		return arrow.getStartColumn() != arrow.getEndColumn() ||
@@ -239,7 +258,14 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Vergleicht zwei Pfeile anhand ihrer Start- und Endkoordinaten.
+	 * Compares two arrows based on their starting and ending coordinates.
+	 *
+	 * @param arrow1
+	 * 	the first arrow.
+	 * @param arrow2
+	 * 	the second arrow.
+	 *
+	 * @return true if both arrows are equal, false otherwise.
 	 */
 	private boolean arrowsAreEqual(Arrow arrow1, Arrow arrow2) {
 		return arrow1.getStartColumn() == arrow2.getStartColumn() &&
@@ -249,10 +275,18 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Behandelt den Linksklick und führt den Zug bzw. das Zurücksetzen der Figur aus.
+	 * Handles left-click events and executes a move or resets the piece.
+	 *
+	 * @param event
+	 * 	the mouse release event.
+	 * @param boardColumn
+	 * 	the target board column.
+	 * @param boardRow
+	 * 	the target board row.
 	 */
 	private void handleLeftClick(MouseEvent event, int boardColumn, int boardRow) {
 		Piece selectedPiece = board.getSelectedPiece();
+		board.setHoveredTile(null);
 
 		if (isIllegalMove(selectedPiece)) {
 			board.getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
@@ -271,8 +305,13 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Prüft, ob der aktuelle Zustand einen illegalen Zug (beispielsweise aufgrund eines Schachgebots)
-	 * signalisiert.
+	 * Checks if the current state indicates an illegal move
+	 * (e.g., due to a check condition).
+	 *
+	 * @param selectedPiece
+	 * 	the piece being moved.
+	 *
+	 * @return true if the move is illegal, false otherwise.
 	 */
 	private boolean isIllegalMove(Piece selectedPiece) {
 		return board.getMoveValidator().isKingInCheck() &&
@@ -280,7 +319,12 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Berechnet, ob die Drag-Distanz unterhalb des Schwellwertes liegt.
+	 * Determines if the drag distance is below the threshold.
+	 *
+	 * @param event
+	 * 	the mouse event.
+	 *
+	 * @return true if the drag distance is short, false otherwise.
 	 */
 	private boolean hasDraggedShortDistance(MouseEvent event) {
 		double dragDistance = calculateDragDistance(event);
@@ -288,7 +332,12 @@ public class MouseInput extends MouseAdapter {
 	}
 
 	/**
-	 * Berechnet die Distanz zwischen der ursprünglichen Position und der aktuellen Mausposition.
+	 * Calculates the distance between the original position and the current mouse position.
+	 *
+	 * @param event
+	 * 	the mouse event.
+	 *
+	 * @return the distance in pixels.
 	 */
 	private double calculateDragDistance(MouseEvent event) {
 		int draggedX = event.getX();
@@ -297,7 +346,6 @@ public class MouseInput extends MouseAdapter {
 		int originalY = getOriginalRow() * board.getTileSize() + board.getTileSize() / 2;
 		return Math.hypot(draggedX - originalX, draggedY - originalY);
 	}
-
 
 	/**
 	 * Clears the current piece selection and resets possible moves.
@@ -311,24 +359,24 @@ public class MouseInput extends MouseAdapter {
 	 * Selects the given piece and highlights its possible moves.
 	 *
 	 * @param piece
-	 * 	the piece to select
+	 * 	the piece to select.
 	 */
 	private void selectPiece(Piece piece) {
 		getBoard().setSelectedPiece(piece);
 		setOriginalColumn(piece.getColumn());
 		setOriginalRow(piece.getRow());
-		getBoard().showPossibleMoves(piece); // Highlight possible moves for the selected piece
+		getBoard().showPossibleMoves(piece); // Highlight possible moves for the selected piece.
 	}
 
 	/**
 	 * Attempts to move the selected piece to the specified position.
 	 *
 	 * @param selectedPiece
-	 * 	the currently selected piece
+	 * 	the currently selected piece.
 	 * @param column
-	 * 	the target column
+	 * 	the target column.
 	 * @param row
-	 * 	the target row
+	 * 	the target row.
 	 */
 	private void attemptMove(Piece selectedPiece, int column, int row) {
 		Piece pieceToCapture = getBoard().getPieceList().stream()
@@ -339,36 +387,36 @@ public class MouseInput extends MouseAdapter {
 		Move move = new Move(getBoard(), selectedPiece, column, row, pieceToCapture);
 
 		if (getBoard().isValidMove(move)) {
-			getBoard().makeMove(move); // Execute the move if valid
+			getBoard().makeMove(move); // Execute the move if valid.
 		} else {
-			resetPiecePosition(selectedPiece); // Reset the piece to its original position
+			resetPiecePosition(selectedPiece); // Reset the piece to its original position.
 		}
-		clearSelection(); // Clear selection after the move
+		clearSelection(); // Clear selection after the move.
 	}
 
 	/**
 	 * Updates the position of a piece during a drag operation.
 	 *
 	 * @param piece
-	 * 	the piece being dragged
+	 * 	the piece being dragged.
 	 * @param event
-	 * 	the mouse drag event
+	 * 	the mouse drag event.
 	 */
 	private void updatePiecePositionDuringDrag(Piece piece, MouseEvent event) {
 		int offsetX = getBoard().getTileSize() / 2;
 		int offsetY = getBoard().getTileSize() / 2;
-		piece.setXPos(event.getX() - offsetX); // Adjust X position based on drag
-		piece.setYPos(event.getY() - offsetY); // Adjust Y position based on drag
+		piece.setXPos(event.getX() - offsetX); // Adjust X position based on drag.
+		piece.setYPos(event.getY() - offsetY); // Adjust Y position based on drag.
 	}
 
 	/**
 	 * Resets the piece's position to its original location if the move is invalid.
 	 *
 	 * @param piece
-	 * 	the piece to reset
+	 * 	the piece to reset.
 	 */
 	private void resetPiecePosition(Piece piece) {
-		piece.setPosition(originalColumn, originalRow); // Revert to the original position
+		piece.setPosition(originalColumn, originalRow); // Revert to the original position.
 	}
 
 }
