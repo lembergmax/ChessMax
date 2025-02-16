@@ -347,12 +347,12 @@ public class Board extends JPanel {
 		// Animate the move or update the piece position directly if dragging
 		if (!isMouseDragged()) {
 			animateMove(piece, move.getNewColumn(), move.getNewRow());
-		} else {
-			piece.setColumn(move.getNewColumn());
-			piece.setRow(move.getNewRow());
-			piece.setXPos(move.getNewColumn() * getTileSize());
-			piece.setYPos(move.getNewRow() * getTileSize());
 		}
+
+		piece.setColumn(move.getNewColumn());
+		piece.setRow(move.getNewRow());
+		piece.setXPos(move.getNewColumn() * getTileSize());
+		piece.setYPos(move.getNewRow() * getTileSize());
 
 		// Mark the piece as no longer being in its initial state
 		piece.setFirstMove(false);
