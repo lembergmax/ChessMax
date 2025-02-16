@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorConfig;
-import static com.mlprograms.chess.utils.ConfigFetcher.fetchColorWithAlphaConfig;
+import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 @Getter
 public class BoardPainter {
@@ -129,6 +128,28 @@ public class BoardPainter {
 	}
 
 	/**
+	 * Draws a border around the tile currently being hovered over by the mouse.
+	 * <p>
+	 * This method checks if there is a tile being hovered over. If so, it sets the color and stroke
+	 * for the border and draws a rectangle around the hovered tile.
+	 * </p>
+	 *
+	 * @param graphics2D
+	 * 	the Graphics2D context used for drawing
+	 */
+	public void drawTileHoverBorder(Graphics2D graphics2D) {
+		if (BOARD.getHoveredTile() == null) {
+			return;
+		}
+
+		graphics2D.setColor(fetchColorConfig("Colors", "TILE_HOVER_BORDER"));
+		graphics2D.setStroke(new BasicStroke(fetchIntegerConfig("Colors", "TILE_HOVER_BORDER_THICKNESS")));
+		graphics2D.drawRect(BOARD.getHoveredTile().x * BOARD.getTileSize(), BOARD.getHoveredTile().y * BOARD.getTileSize(),
+			BOARD.getTileSize(), BOARD.getTileSize());
+
+	}
+
+	/**
 	 * Highlights all possible moves for the currently selected piece on the board.
 	 *
 	 * @param graphics2D
@@ -211,10 +232,10 @@ public class BoardPainter {
 			BOARD.getSoundPlayer().play(Sounds.ILLEGAL_MOVE);
 
 			for (int i = 0; i < 3; i++) {
-				sleep(400);
+				sleep400();
 				graphics2D.fillRect(column * BOARD.getTileSize(), row * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
 				paintPieces(graphics2D);
-				sleep(400);
+				sleep400();
 				BOARD.repaint();
 			}
 
@@ -223,14 +244,11 @@ public class BoardPainter {
 	}
 
 	/**
-	 * Pauses the current thread for the specified number of milliseconds.
-	 *
-	 * @param millis
-	 * 	the duration in milliseconds for which the thread should sleep
+	 * Pauses the current thread for 400 milliseconds.
 	 */
-	private void sleep(int millis) {
+	private void sleep400() {
 		try {
-			Thread.sleep(millis);
+			Thread.sleep(400);
 		} catch (InterruptedException e) {
 			Logger.logError(e.getMessage());
 		}
