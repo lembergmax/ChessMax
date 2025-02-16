@@ -143,11 +143,11 @@ public class Startmenu extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonPlayAsGuestActionPerformed
 
     private void onWhiteButtonClick() {
-        new ChessMax(new Human(), new Martin(), true).play();
+        new ChessMax(new Human(), new Human(), true).play();
     }
 
     private void onBlackButtonClick() {
-        new ChessMax(new Martin(), new Human(), false).play();
+        new ChessMax(new Human(), new Human(), false).play();
     }
 
     private void onCancel() {
