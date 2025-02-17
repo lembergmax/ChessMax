@@ -12,31 +12,17 @@ package com.mlprograms.chess.account.ui;
 
 import com.mlprograms.chess.account.AccountManager;
 import com.mlprograms.chess.utils.TabTraversalManager;
-import com.mlprograms.chess.utils.WindowPositionManager;
 
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.util.List;
 
 public class Registration extends javax.swing.JFrame {
-
-    private final WindowPositionManager positionManager;
 
     /**
      * Creates new form LoginUI
      */
     public Registration() {
-        positionManager = new WindowPositionManager(this);
         initComponents();
-        positionManager.loadPosition();
-
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                positionManager.savePosition();
-            }
-        });
-
+        setLocationRelativeTo(null);
         TabTraversalManager.enableTabTraversal(List.of(jTextPaneUsername, jTextPaneEmail, jTextPaneFirstname, jTextPaneLastname, jPasswordFieldPassword, jPasswordFieldConfirmPassword, jButtonSwitchToLogin, jButtonBack, jButtonCreateAccount));
     }
 

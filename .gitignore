@@ -39,4 +39,3 @@ build/
 
 ### User Data ###
 *.db
-window_settings.json

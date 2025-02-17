@@ -12,11 +12,7 @@ package com.mlprograms.chess.account.ui;
 
 import com.mlprograms.chess.game.ChessMax;
 import com.mlprograms.chess.human.*;
-import com.mlprograms.chess.utils.WindowPositionManager;
 import com.mlprograms.chess.utils.ui.OptionMessage;
-
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 /**
  *
@@ -24,22 +20,12 @@ import java.awt.event.ComponentEvent;
  */
 public class Startmenu extends javax.swing.JFrame {
 
-    private final WindowPositionManager positionManager;
-
     /**
      * Creates new form LoginUI
      */
     public Startmenu() {
-        positionManager = new WindowPositionManager(this);
         initComponents();
-        positionManager.loadPosition();
-
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                positionManager.savePosition();
-            }
-        });
+        setLocationRelativeTo(null);
     }
 
     /**

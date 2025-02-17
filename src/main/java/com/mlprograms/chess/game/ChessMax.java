@@ -8,6 +8,7 @@ package com.mlprograms.chess.game;
 
 import com.mlprograms.chess.game.engine.ai.BotSpriteSheetCreator;
 import com.mlprograms.chess.game.ui.Board;
+
 import javax.swing.*;
 import java.awt.*;
 
