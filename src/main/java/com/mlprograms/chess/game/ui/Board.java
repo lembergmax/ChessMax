@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
  * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
@@ -12,6 +12,7 @@ import com.mlprograms.chess.game.engine.ai.Ai;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
+import com.mlprograms.chess.human.Human;
 import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.InformationMessage;
 import lombok.Getter;
@@ -40,12 +41,15 @@ public class Board extends JPanel {
 	private SoundPlayer soundPlayer;
 	private BoardPainter boardPainter;
 	private MoveValidator moveValidator;
+
 	private String title;
 	private String startingPosition;
+	private String promotedTo = "";
 
 	private JPanel boardContainer;
 	private JPanel promotionPanel;
 
+	private GameEnding gameEnding = GameEnding.IN_PROGRESS;
 	private List<HistoryMove> moveHistory = new ArrayList<>();
 	private List<Move> possibleMoves = new ArrayList<>();
 	private List<Piece> pieceList = new ArrayList<>();
@@ -67,6 +71,7 @@ public class Board extends JPanel {
 	private boolean mouseDragged = false;
 	private boolean hasCastled = false;
 	private boolean isPromotion = false;
+	private boolean moveHistoryKingInCheck = false;
 	private boolean isWhiteAtBottom;
 
 	private Player playerWhite;
@@ -109,6 +114,13 @@ public class Board extends JPanel {
 
 	public Board(Player playerWhite, Player playerBlack) {
 		this(playerWhite, playerBlack, true);
+	}
+
+	/**
+	 * Only for testing purposes.
+	 */
+	public Board() {
+		this(new Human(), new Human());
 	}
 
 	/**
@@ -365,19 +377,22 @@ public class Board extends JPanel {
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
 
-		// Add the move to the move history
-		HistoryMove historyMove = new HistoryMove(
-			getMoveHistory().size() + 1,
-			move.toAlgebraicNotation(),
-			move,
-			getCurrentPositionsFenNotation()
-		);
+		setGameEnding(checkForGameEnding());
 
-		getMoveHistory().add(historyMove);
-		addMove(historyMove);
+		if (!isPromotion()) {
+			// Create a new HistoryMove object to store the move details
+			HistoryMove historyMove = new HistoryMove(
+				getMoveHistory().size() + 1,
+				move.toAlgebraicNotation(),
+				move,
+				getCurrentPositionsFenNotation()
+			);
 
-		GameEnding gameEnding = checkForGameEnding();
-		if (gameEnding == GameEnding.IN_PROGRESS) {
+			// Add the move to the move history
+			addMove(historyMove);
+		}
+
+		if (getGameEnding() == GameEnding.IN_PROGRESS) {
 			if (isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
 				checkForAiMove();
 			}
@@ -387,7 +402,7 @@ public class Board extends JPanel {
 		getSoundPlayer().play(Sounds.GAME_END);
 
 		// TODO: make better ui for game ending
-		boolean isDraw = gameEnding != GameEnding.CHECKMATE;
+		boolean isDraw = getGameEnding() != GameEnding.CHECKMATE;
 		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!") + "\nGrund: " + gameEnding);
 	}
 
@@ -410,6 +425,7 @@ public class Board extends JPanel {
 		}
 
 		if (getMoveValidator().isKingInCheck()) {
+			setMoveHistoryKingInCheck(true);
 			getSoundPlayer().play(Sounds.CHECK);
 			return;
 		}
@@ -538,6 +554,22 @@ public class Board extends JPanel {
 		// Remove the pawn from the board and replace it with the new piece
 		getPieceList().remove(move.getPiece());
 		getPieceList().add(chosenPiece);
+
+		if (getMoveValidator().isKingInCheck()) {
+			getSoundPlayer().play(Sounds.CHECK);
+			return;
+		}
+
+		// Create a new HistoryMove object to store the move details
+		HistoryMove historyMove = new HistoryMove(
+			getMoveHistory().size() + 1,
+			move.toAlgebraicNotation(String.valueOf(chosenPiece.getFenChar()).toUpperCase() /* TODO: remove .toUpperCase() to use ascii character pieces */),
+			move,
+			getCurrentPositionsFenNotation()
+		);
+
+		// Add the move to the move history
+		addMove(historyMove);
 
 		setPromotion(false);
 
