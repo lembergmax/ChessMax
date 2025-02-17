@@ -17,12 +17,15 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class HistoryMove {
 
-	private Move madeMove;
+	private int moveNumber;
+	private String moveAlgebraic;
+	private Move move;
 	private FenNotation fenNotation;
 
-	public HistoryMove(Move madeMove, FenNotation fen) {
-		this.madeMove = madeMove;
-		this.fenNotation = fen;
+	public HistoryMove(int moveNumber, String moveAlgebraic, Move move, FenNotation fenNotation) {
+		this.moveNumber = moveNumber;
+		this.moveAlgebraic = moveAlgebraic;
+		this.move = move;
+		this.fenNotation = fenNotation;
 	}
-
 }
