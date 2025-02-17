@@ -340,7 +340,7 @@ public class Board extends JPanel {
 
 		// Animate the move or update the piece position directly if dragging
 		// if (!isMouseDragged()) {
-			// TODO: animateMove(piece, move.getNewColumn(), move.getNewRow());
+		// TODO: animateMove(piece, move.getNewColumn(), move.getNewRow());
 		// }
 
 		// Set the new position of the piece
@@ -369,7 +369,7 @@ public class Board extends JPanel {
 
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {
-			if(isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
+			if (isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
 				checkForAiMove();
 			}
 			return;
@@ -532,7 +532,7 @@ public class Board extends JPanel {
 
 		setPromotion(false);
 
-		if(isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
+		if (isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
 			checkForAiMove();
 		}
 
@@ -648,8 +648,8 @@ public class Board extends JPanel {
 
 		// If the captured piece is not null and the scoreboard is available, add it to the scoreboard
 		// if (move.getCapturedPiece() != null) {
-			// TODO: implement scoreboard functionality to track captured pieces
-			// scoreboard.addCapturedPiece(move.capturedPiece);
+		// TODO: implement scoreboard functionality to track captured pieces
+		// scoreboard.addCapturedPiece(move.capturedPiece);
 		// }
 	}
 
