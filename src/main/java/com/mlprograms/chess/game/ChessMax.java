@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
- * Licensed under the CC BY-NC 4.0 License.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -18,6 +18,7 @@ import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
+import static com.mlprograms.chess.game.pieces.AsciiPieces.*;
 import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 public class ChessMax {
@@ -27,9 +28,9 @@ public class ChessMax {
 	// Scroll pane for the move history panel (used for scrolling to the bottom when a move is added)
 	private static JScrollPane historyScrollPane;
 	private JFrame frame;
-	private Player playerWhite;
-	private Player playerBlack;
-	private boolean isWhiteAtBottom;
+	private final Player playerWhite;
+	private final Player playerBlack;
+	private final boolean isWhiteAtBottom;
 
 	/**
 	 * Creates a new ChessMax game instance.
@@ -64,6 +65,8 @@ public class ChessMax {
 			return;
 		}
 
+		String updatedAlgebraicNotation = getUpdatedAlgebraicNotation(historyMove);
+
 		int rowCount = moveTableModel.getRowCount();
 
 		// Check if the last entry already contains a black move.
@@ -71,11 +74,11 @@ public class ChessMax {
 		if (rowCount == 0 || (moveTableModel.getValueAt(rowCount - 1, 2) != null
 			                      && !moveTableModel.getValueAt(rowCount - 1, 2).toString().isEmpty())) {
 			// New white move: Insert move number and white move.
-			Object[] row = new Object[] { rowCount + 1, historyMove.getMoveAlgebraic(), "" };
+			Object[] row = new Object[] { rowCount + 1, updatedAlgebraicNotation, "" };
 			moveTableModel.addRow(row);
 		} else {
 			// The last row is missing the black move – so we insert the algebraic notation there.
-			moveTableModel.setValueAt(historyMove.getMoveAlgebraic(), rowCount - 1, 2);
+			moveTableModel.setValueAt(updatedAlgebraicNotation, rowCount - 1, 2);
 		}
 
 		// Scroll the history display to the end so that the new move is immediately visible.
@@ -85,6 +88,37 @@ public class ChessMax {
 				verticalBar.setValue(verticalBar.getMaximum());
 			});
 		}
+	}
+
+	/**
+	 * Updates the algebraic notation of a move with the corresponding ASCII symbols for the pieces.
+	 *
+	 * @param historyMove
+	 * 	The move whose algebraic notation needs to be updated.
+	 *
+	 * @return The updated algebraic notation with ASCII symbols.
+	 */
+	private static String getUpdatedAlgebraicNotation(HistoryMove historyMove) {
+		String updatedAlgebraicNotation = historyMove.getMoveAlgebraic();
+
+		if (historyMove.getMove().getPiece().isWhite()) {
+			updatedAlgebraicNotation = updatedAlgebraicNotation
+				                           .replace("K", WHITE_KING.getSYMBOL())
+				                           .replace("Q", WHITE_QUEEN.getSYMBOL())
+				                           .replace("R", WHITE_ROOK.getSYMBOL())
+				                           .replace("B", WHITE_BISHOP.getSYMBOL())
+				                           .replace("N", WHITE_KNIGHT.getSYMBOL())
+				                           .replace("P", WHITE_PAWN.getSYMBOL());
+		} else {
+			updatedAlgebraicNotation = updatedAlgebraicNotation
+				                           .replace("K", BLACK_KING.getSYMBOL())
+				                           .replace("Q", BLACK_QUEEN.getSYMBOL())
+				                           .replace("R", BLACK_ROOK.getSYMBOL())
+				                           .replace("B", BLACK_BISHOP.getSYMBOL())
+				                           .replace("N", BLACK_KNIGHT.getSYMBOL())
+				                           .replace("P", BLACK_PAWN.getSYMBOL());
+		}
+		return updatedAlgebraicNotation;
 	}
 
 	/**
