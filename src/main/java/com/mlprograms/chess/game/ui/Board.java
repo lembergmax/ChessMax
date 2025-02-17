@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import static com.mlprograms.chess.game.ChessMax.addMove;
 import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 /**
@@ -365,7 +366,15 @@ public class Board extends JPanel {
 		getPossibleMoves().clear();
 
 		// Add the move to the move history
-		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
+		HistoryMove historyMove = new HistoryMove(
+			getMoveHistory().size() + 1,
+			move.toAlgebraicNotation(),
+			move,
+			getCurrentPositionsFenNotation()
+		);
+
+		getMoveHistory().add(historyMove);
+		addMove(historyMove);
 
 		GameEnding gameEnding = checkForGameEnding();
 		if (gameEnding == GameEnding.IN_PROGRESS) {

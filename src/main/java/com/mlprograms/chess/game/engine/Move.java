@@ -46,4 +46,66 @@ public class Move {
 		this.capturedPiece = capturedPiece;
 	}
 
+	/**
+	 * Converts the move to algebraic notation.
+	 * Example: e2, e4 -> "e4" or for pieces "Nxe4" etc.
+	 */
+	public String toAlgebraicNotation() {
+		// Special case: Castling (assumption: King moves 2 columns)
+		if (piece.getClass().getSimpleName().equals("King")) {
+			if (newColumn - oldColumn == 2) {
+				return "O-O";    // Kingside
+			} else if (oldColumn - newColumn == 2) {
+				return "O-O-O";  // Queenside
+			}
+		}
+
+		StringBuilder notation = new StringBuilder();
+
+		// Determine the piece abbreviation (usually omitted for pawns)
+		String pieceAbbr = getPieceAbbreviation(piece);
+
+		// For pawns capturing, add the origin file letter.
+		if (pieceAbbr.isEmpty() && capturedPiece != null) {
+			pieceAbbr = String.valueOf((char) ('a' + oldColumn));
+		}
+		notation.append(pieceAbbr);
+
+		// If a capture occurs, add an "x".
+		if (capturedPiece != null) {
+			notation.append("x");
+		}
+
+		// Add the destination square (e.g., "e4").
+		notation.append(convertToSquare(newColumn, newRow));
+
+		return notation.toString();
+	}
+
+	/**
+	 * Returns the typical abbreviation of the piece.
+	 * For pawns, an empty string is returned.
+	 */
+	private String getPieceAbbreviation(Piece piece) {
+		String pieceName = piece.getClass().getSimpleName();
+		return switch (pieceName) {
+			case "Knight" -> "N";
+			case "Bishop" -> "B";
+			case "Rook" -> "R";
+			case "Queen" -> "Q";
+			case "King" -> "K";
+			default -> "";
+		};
+	}
+
+	/**
+	 * Converts column and row indices to a chess square.
+	 * Assumption: Column 0 corresponds to "a" and row 0 corresponds to "1".
+	 */
+	private String convertToSquare(int column, int row) {
+		char file = (char) ('a' + column);  // 0 -> 'a', 1 -> 'b', etc.
+		int rank = row + 1;                // 0 -> 1, 1 -> 2, etc.
+		return "" + file + rank;
+	}
+
 }

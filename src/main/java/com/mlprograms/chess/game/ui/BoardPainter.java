@@ -192,7 +192,7 @@ public class BoardPainter {
 		}
 
 		// Get the last move made on the board
-		Move lastMove = BOARD.getMoveHistory().getLast().getMadeMove();
+		Move lastMove = BOARD.getMoveHistory().getLast().getMove();
 
 		// Set the highlight color based on the move type
 		graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
