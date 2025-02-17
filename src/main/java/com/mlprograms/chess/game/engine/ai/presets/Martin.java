@@ -4,7 +4,7 @@
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
-package com.mlprograms.chess.game.engine.ai.v1;
+package com.mlprograms.chess.game.engine.ai.presets;
 
 import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.engine.ai.Ai;

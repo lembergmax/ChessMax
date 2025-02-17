@@ -8,7 +8,7 @@ package com.mlprograms.tests.bots;
 
 import com.mlprograms.chess.game.engine.ai.Ai;
 import com.mlprograms.chess.game.engine.ai.BotSpriteSheetCreator;
-import com.mlprograms.chess.game.engine.ai.v1.Martin;
+import com.mlprograms.chess.game.engine.ai.presets.Martin;
 import com.mlprograms.chess.utils.ConfigFetcher;
 
 import javax.imageio.ImageIO;

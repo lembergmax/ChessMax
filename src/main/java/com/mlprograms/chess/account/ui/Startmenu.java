@@ -11,7 +11,6 @@
 package com.mlprograms.chess.account.ui;
 
 import com.mlprograms.chess.game.ChessMax;
-import com.mlprograms.chess.game.engine.ai.v1.Martin;
 import com.mlprograms.chess.human.*;
 import com.mlprograms.chess.utils.WindowPositionManager;
 import com.mlprograms.chess.utils.ui.OptionMessage;

@@ -339,9 +339,9 @@ public class Board extends JPanel {
 		}
 
 		// Animate the move or update the piece position directly if dragging
-		if (!isMouseDragged()) {
+		// if (!isMouseDragged()) {
 			// TODO: animateMove(piece, move.getNewColumn(), move.getNewRow());
-		}
+		// }
 
 		// Set the new position of the piece
 		piece.setColumn(move.getNewColumn());
@@ -647,10 +647,10 @@ public class Board extends JPanel {
 		getPieceList().remove(move.getCapturedPiece());
 
 		// If the captured piece is not null and the scoreboard is available, add it to the scoreboard
-		if (move.getCapturedPiece() != null) {
+		// if (move.getCapturedPiece() != null) {
 			// TODO: implement scoreboard functionality to track captured pieces
 			// scoreboard.addCapturedPiece(move.capturedPiece);
-		}
+		// }
 	}
 
 	/**
