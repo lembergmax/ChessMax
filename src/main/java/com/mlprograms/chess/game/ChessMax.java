@@ -6,6 +6,7 @@
 
 package com.mlprograms.chess.game;
 
+import com.mlprograms.chess.game.engine.HistoryMove;
 import com.mlprograms.chess.game.engine.ai.BotSpriteSheetCreator;
 import com.mlprograms.chess.game.ui.Board;
 import com.mlprograms.chess.game.ui.MoveTableCellRenderer;
@@ -21,23 +22,24 @@ import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 public class ChessMax {
 
+	// Table model for dynamically updating move history
+	private static DefaultTableModel moveTableModel;
+	// Scroll pane for the move history panel (used for scrolling to the bottom when a move is added)
+	private static JScrollPane historyScrollPane;
 	private JFrame frame;
 	private Player playerWhite;
 	private Player playerBlack;
 	private boolean isWhiteAtBottom;
 
-	// Table model for dynamically updating move history
-	private DefaultTableModel moveTableModel;
-
-	// Scroll pane for the move history panel (used for scrolling to the bottom when a move is added)
-	private JScrollPane historyScrollPane;
-
 	/**
 	 * Creates a new ChessMax game instance.
 	 *
-	 * @param playerWhite    The white player.
-	 * @param playerBlack    The black player.
-	 * @param isWhiteAtBottom Determines if the white pieces are displayed at the bottom of the board.
+	 * @param playerWhite
+	 * 	The white player.
+	 * @param playerBlack
+	 * 	The black player.
+	 * @param isWhiteAtBottom
+	 * 	Determines if the white pieces are displayed at the bottom of the board.
 	 */
 	public ChessMax(Player playerWhite, Player playerBlack, boolean isWhiteAtBottom) {
 		this.playerWhite = playerWhite;
@@ -49,6 +51,40 @@ public class ChessMax {
 
 		// Initialize the graphical user interface.
 		initializeJFrame();
+	}
+
+	/**
+	 * Adds a move to the move history table.
+	 *
+	 * @param historyMove
+	 * 	The move to be added to the history.
+	 */
+	public static void addMove(HistoryMove historyMove) {
+		if (moveTableModel == null || historyMove == null) {
+			return;
+		}
+
+		int rowCount = moveTableModel.getRowCount();
+
+		// Check if the last entry already contains a black move.
+		// If so, it is the next white move, which requires a new row.
+		if (rowCount == 0 || (moveTableModel.getValueAt(rowCount - 1, 2) != null
+			                      && !moveTableModel.getValueAt(rowCount - 1, 2).toString().isEmpty())) {
+			// New white move: Insert move number and white move.
+			Object[] row = new Object[] { rowCount + 1, historyMove.getMoveAlgebraic(), "" };
+			moveTableModel.addRow(row);
+		} else {
+			// The last row is missing the black move – so we insert the algebraic notation there.
+			moveTableModel.setValueAt(historyMove.getMoveAlgebraic(), rowCount - 1, 2);
+		}
+
+		// Scroll the history display to the end so that the new move is immediately visible.
+		if (historyScrollPane != null) {
+			SwingUtilities.invokeLater(() -> {
+				JScrollBar verticalBar = historyScrollPane.getVerticalScrollBar();
+				verticalBar.setValue(verticalBar.getMaximum());
+			});
+		}
 	}
 
 	/**
@@ -172,46 +208,6 @@ public class ChessMax {
 	 */
 	public void play() {
 		frame.setVisible(true);
-	}
-
-	/**
-	 * Adds a move to the move history table and scrolls the history panel to the bottom.
-	 *
-	 * @param moveNumber The move number.
-	 * @param whiteMove  The move made by the white player.
-	 * @param blackMove  The move made by the black player.
-	 */
-	public void addMove(int moveNumber, String whiteMove, String blackMove) {
-		if (moveTableModel == null) {
-			return;
-		}
-
-		boolean moveUpdated = false;
-		// Update an existing row if the move number already exists.
-		for (int i = 0; i < moveTableModel.getRowCount(); i++) {
-			if (moveTableModel.getValueAt(i, 0).equals(String.valueOf(moveNumber))) {
-				if (!whiteMove.isEmpty()) {
-					moveTableModel.setValueAt(whiteMove, i, 1);
-				}
-				if (!blackMove.isEmpty()) {
-					moveTableModel.setValueAt(blackMove, i, 2);
-				}
-				moveUpdated = true;
-				break;
-			}
-		}
-		// If the move number does not exist, add a new row.
-		if (!moveUpdated) {
-			moveTableModel.addRow(new Object[] { String.valueOf(moveNumber), whiteMove, blackMove });
-		}
-
-		// Scroll the history panel to the bottom after adding/updating a move.
-		if (historyScrollPane != null) {
-			SwingUtilities.invokeLater(() -> {
-				JScrollBar verticalBar = historyScrollPane.getVerticalScrollBar();
-				verticalBar.setValue(verticalBar.getMaximum());
-			});
-		}
 	}
 
 	/**
