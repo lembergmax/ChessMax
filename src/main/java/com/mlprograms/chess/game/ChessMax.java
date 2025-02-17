@@ -49,61 +49,6 @@ public class ChessMax {
 
 		// Initialize the graphical user interface.
 		initializeJFrame();
-
-		// Example moves added for testing purposes.
-		addMove(1, "e4", "e5");
-		addMove(2, "Nf3", "Nc6");
-		addMove(3, "Bb5", "a6");
-		addMove(4, "Ba4", "Nf6");
-		addMove(5, "O-O", "");
-		addMove(5, "", "Be7");
-		addMove(6, "Re1", "O-O");
-		addMove(7, "c3", "d6");
-		addMove(8, "d4", "exd4");
-		addMove(9, "cxd4", "Bd7");
-		addMove(10, "Nc3", "O-O");
-		addMove(11, "Bc2", "Re8");
-		addMove(12, "e5", "dxe5");
-		addMove(13, "dxe5", "Nh5");
-		addMove(14, "Qd3", "g6");
-		addMove(15, "Bh6", "Ng7");
-		addMove(16, "Rad1", "Bf5");
-		addMove(17, "Qe2", "Qc8");
-		addMove(18, "Nd5", "Bxc2");
-		addMove(19, "Qxc2", "Bd8");
-		addMove(20, "Bxg7", "Kxg7");
-		addMove(21, "Qc3", "Kg8");
-		addMove(22, "Nf6+", "Bxf6");
-		addMove(23, "exf6", "Rxe1+");
-		addMove(24, "Rxe1", "Qd7");
-		addMove(25, "Qe3", "Qd6");
-		addMove(26, "Qe8+", "Rxe8");
-		addMove(27, "Qe8+", "Rxe8");
-		addMove(28, "Qe8+", "Rxe8");
-		addMove(29, "Qe8+", "Rxe8");
-		addMove(30, "Qe8+", "Rxe8");
-		addMove(31, "Qe8+", "Rxe8");
-		addMove(32, "Qe8+", "Rxe8");
-
-		addMove(33, "Qe3", "Qd6");
-		addMove(34, "Qe8+", "Rxe8");
-		addMove(35, "Qe8+", "Rxe8");
-		addMove(36, "Qe8+", "Rxe8");
-		addMove(37, "Qe8+", "Rxe8");
-		addMove(38, "Qe8+", "Rxe8");
-		addMove(39, "Qe8+", "Rxe8");
-		addMove(40, "Qe8+", "Rxe8");
-		addMove(41, "Qe3", "Qd6");
-		addMove(42, "Qe8+", "Rxe8");
-		addMove(43, "Qe8+", "Rxe8");
-		addMove(44, "Qe8+", "Rxe8");
-		addMove(45, "Qe8+", "Rxe8");
-		addMove(46, "Qe8+", "Rxe8");
-		addMove(47, "Qe8+", "Rxe8");
-		addMove(48, "Qe8+", "Rxe8");
-
-		addMove(49, "Qe8+", "Rxe8");
-		addMove(50, "Rxe8#", "");
 	}
 
 	/**
