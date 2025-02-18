@@ -30,8 +30,8 @@ class MoveAlgebraicNotationTest {
 	@Test
 	void testPawnMove() {
 		Piece pawn = new Pawn(board, 4, 1, true);
-		Move move = new Move(board, pawn, 4, 3);
-		assertEquals("e4", move.toAlgebraicNotation());
+		Move move = new Move(board, pawn, 4, 2);
+		assertEquals("e6", move.toAlgebraicNotation());
 	}
 
 	@Test
@@ -40,7 +40,7 @@ class MoveAlgebraicNotationTest {
 		Piece capturedPiece = new Pawn(board, 5, 5, false);
 
 		Move move = new Move(board, pawn, 5, 5, capturedPiece);
-		assertEquals("exf6", move.toAlgebraicNotation());
+		assertEquals("exf3", move.toAlgebraicNotation());
 	}
 
 	@Test
@@ -61,21 +61,21 @@ class MoveAlgebraicNotationTest {
 	void testPawnPromotion() {
 		Piece pawn = new Pawn(board, 0, 6, true);
 		Move move = new Move(board, pawn, 0, 7);
-		assertEquals("a8=Q", move.toAlgebraicNotation("Q"));
+		assertEquals("a1=Q", move.toAlgebraicNotation("Q"));
 	}
 
 	@Test
 	void testPawnDoubleMove() {
 		Piece pawn = new Pawn(board, 4, 1, true);
 		Move move = new Move(board, pawn, 4, 3);
-		assertEquals("e4", move.toAlgebraicNotation());
+		assertEquals("e5", move.toAlgebraicNotation());
 	}
 
 	@Test
 	void testKnightMove() {
 		Piece knight = new Knight(board, 1, 0, true);
 		Move move = new Move(board, knight, 2, 2);
-		assertEquals("Nc3", move.toAlgebraicNotation());
+		assertEquals("Nc6", move.toAlgebraicNotation());
 	}
 
 	@Test
@@ -83,7 +83,72 @@ class MoveAlgebraicNotationTest {
 		Piece knight = new Knight(board, 1, 0, true);
 		Piece capturedPiece = new Pawn(board, 2, 2, false);
 		Move move = new Move(board, knight, 2, 2, capturedPiece);
-		assertEquals("Nxc3", move.toAlgebraicNotation());
+		assertEquals("Nxc6", move.toAlgebraicNotation());
 	}
 
+	@Test
+	void testPawnMove_Black() {
+		board.setWhiteAtBottom(false);
+		Piece pawn = new Pawn(board, 4, 6, false);
+		Move move = new Move(board, pawn, 4, 5);
+		assertEquals("d6", move.toAlgebraicNotation());
+	}
+
+	@Test
+	void testPawnCapture_Black() {
+		board.setWhiteAtBottom(false);
+		Piece pawn = new Pawn(board, 4, 3, false);
+		Piece capturedPiece = new Pawn(board, 3, 2, true);
+		Move move = new Move(board, pawn, 3, 2, capturedPiece);
+		assertEquals("dxe3", move.toAlgebraicNotation());
+	}
+
+	@Test
+	void testKingsideCastling_Black() {
+		board.setWhiteAtBottom(false);
+		Piece king = new King(board, 4, 7, false);
+		Move move = new Move(board, king, 6, 7);
+		assertEquals("O-O", move.toAlgebraicNotation());
+	}
+
+	@Test
+	void testQueensideCastling_Black() {
+		board.setWhiteAtBottom(false);
+		Piece king = new King(board, 4, 7, false);
+		Move move = new Move(board, king, 2, 7);
+		assertEquals("O-O-O", move.toAlgebraicNotation());
+	}
+
+	@Test
+	void testPawnPromotion_Black() {
+		board.setWhiteAtBottom(false);
+		Piece pawn = new Pawn(board, 0, 1, false);
+		Move move = new Move(board, pawn, 0, 0);
+		assertEquals("h1=Q", move.toAlgebraicNotation("Q"));
+	}
+
+	@Test
+	void testPawnDoubleMove_Black() {
+		board.setWhiteAtBottom(false);
+		Piece pawn = new Pawn(board, 4, 6, false);
+		Move move = new Move(board, pawn, 4, 4);
+		assertEquals("d5", move.toAlgebraicNotation());
+	}
+
+	@Test
+	void testKnightMove_Black() {
+		board.setWhiteAtBottom(false);
+		Piece knight = new Knight(board, 6, 7, false);
+		Move move = new Move(board, knight, 5, 5);
+		assertEquals("Nc6", move.toAlgebraicNotation());
+	}
+
+	@Test
+	void testKnightCapture_Black() {
+		board.setWhiteAtBottom(false);
+		Piece knight = new Knight(board, 6, 7, false);
+		Piece capturedPiece = new Pawn(board, 5, 5, true);
+		Move move = new Move(board, knight, 5, 5, capturedPiece);
+		assertEquals("Nxc6", move.toAlgebraicNotation());
+	}
 }
