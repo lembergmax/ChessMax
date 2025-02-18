@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2025 Max Lemberg. This file is part of ChessMax.
- * Licensed under the CC BY-NC 4.0 License.
+ * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -105,6 +105,10 @@ public class MouseInput extends MouseAdapter {
 		}
 		// Otherwise, if a piece is already selected, attempt to move it to the clicked tile.
 		else if (selectedPiece != null) {
+			if (getBoard().isHistoryLookup()) {
+				return;
+			}
+
 			attemptMove(selectedPiece, column, row);
 		}
 
@@ -141,6 +145,10 @@ public class MouseInput extends MouseAdapter {
 				tempArrow.setEndColumn(column);
 				tempArrow.setEndRow(row);
 			}
+			return;
+		}
+
+		if (getBoard().isHistoryLookup()) {
 			return;
 		}
 

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2025 Max Lemberg. This file is part of ChessMax.
+  ~ Licenced under the CC BY-NC 4.0 License.
+  ~ See "http://creativecommons.org/licenses/by-nc/4.0/".
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -56,6 +62,20 @@
             <artifactId>junit-jupiter</artifactId>
             <version>RELEASE</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- Apache Batik Transcoder zum Umwandeln von SVG in Rasterbilder -->
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.14</version>
+        </dependency>
+
+        <!-- Apache Batik Codec, falls du ImageIO-Unterstützung für SVG benötigst -->
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-codec</artifactId>
+            <version>1.14</version>
         </dependency>
 
     </dependencies>

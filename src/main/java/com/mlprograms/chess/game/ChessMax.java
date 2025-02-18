@@ -10,78 +10,91 @@ import com.mlprograms.chess.game.engine.HistoryMove;
 import com.mlprograms.chess.game.engine.ai.BotSpriteSheetCreator;
 import com.mlprograms.chess.game.ui.Board;
 import com.mlprograms.chess.game.ui.MoveTableCellRenderer;
+import com.mlprograms.chess.game.ui.RoundedButton;
+import com.mlprograms.chess.utils.Logger;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
 
 import static com.mlprograms.chess.game.pieces.AsciiPieces.*;
 import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 public class ChessMax {
 
-	// Table model for dynamically updating move history
-	private static DefaultTableModel moveTableModel;
-	// Scroll pane for the move history panel (used for scrolling to the bottom when a move is added)
+	private static final int BUTTON_CORNER_RADIUS = 15;
+	private static final int BUTTON_PADDING = 20;
+	private static DefaultTableModel moveHistoryTableModel;
+	private static Board board;
+	private final boolean IS_WHITE_AT_BOTTOM;
+	private final Player PLAYER_WHITE;
 	private static JScrollPane historyScrollPane;
+
 	private JFrame frame;
-	private final Player playerWhite;
-	private final Player playerBlack;
-	private final boolean isWhiteAtBottom;
+	private final Player PLAYER_BLACK;
 
 	/**
 	 * Creates a new ChessMax game instance.
 	 *
 	 * @param playerWhite
-	 * 	The white player.
+	 * 	the white player.
 	 * @param playerBlack
-	 * 	The black player.
+	 * 	the black player.
 	 * @param isWhiteAtBottom
-	 * 	Determines if the white pieces are displayed at the bottom of the board.
+	 * 	determines if the white pieces are displayed at the bottom.
 	 */
 	public ChessMax(Player playerWhite, Player playerBlack, boolean isWhiteAtBottom) {
-		this.playerWhite = playerWhite;
-		this.playerBlack = playerBlack;
-		this.isWhiteAtBottom = isWhiteAtBottom;
+		this.PLAYER_WHITE = playerWhite;
+		this.PLAYER_BLACK = playerBlack;
+		this.IS_WHITE_AT_BOTTOM = isWhiteAtBottom;
 
-		// Generate the bot sprite sheet for AI usage.
+		// Generate the sprite sheet for the bot (AI).
 		BotSpriteSheetCreator.createSpriteSheet();
 
-		// Initialize the graphical user interface.
-		initializeJFrame();
+		// Initialize the main game window.
+		initializeMainFrame();
 	}
 
 	/**
 	 * Adds a move to the move history table.
 	 *
 	 * @param historyMove
-	 * 	The move to be added to the history.
+	 * 	the move to be added.
 	 */
 	public static void addMove(HistoryMove historyMove) {
-		if (moveTableModel == null || historyMove == null) {
+		if (moveHistoryTableModel == null || historyMove == null) {
 			return;
 		}
 
-		String updatedAlgebraicNotation = getUpdatedAlgebraicNotation(historyMove);
+		board.getMoveHistory().add(historyMove);
+		board.setHistoryLookup(false);
+		board.setHistoryLookupIndex(board.getMoveHistory().size());
 
-		int rowCount = moveTableModel.getRowCount();
+		String updatedNotation = updateAlgebraicNotationSymbols(historyMove);
+		int rowCount = moveHistoryTableModel.getRowCount();
 
-		// Check if the last entry already contains a black move.
-		// If so, it is the next white move, which requires a new row.
-		if (rowCount == 0 || (moveTableModel.getValueAt(rowCount - 1, 2) != null
-			                      && !moveTableModel.getValueAt(rowCount - 1, 2).toString().isEmpty())) {
-			// New white move: Insert move number and white move.
-			Object[] row = new Object[] { rowCount + 1, updatedAlgebraicNotation, "" };
-			moveTableModel.addRow(row);
+		// If the last row already contains a black move, start a new row for the white move.
+		if (rowCount == 0 || (moveHistoryTableModel.getValueAt(rowCount - 1, 2) != null
+			                      && !moveHistoryTableModel.getValueAt(rowCount - 1, 2).toString().isEmpty())) {
+			Object[] row = new Object[] { rowCount + 1, updatedNotation, "" };
+			moveHistoryTableModel.addRow(row);
 		} else {
-			// The last row is missing the black move – so we insert the algebraic notation there.
-			moveTableModel.setValueAt(updatedAlgebraicNotation, rowCount - 1, 2);
+			// Otherwise, update the last row with the black move.
+			moveHistoryTableModel.setValueAt(updatedNotation, rowCount - 1, 2);
 		}
 
-		// Scroll the history display to the end so that the new move is immediately visible.
+		// Scroll to the bottom of the move history.
 		if (historyScrollPane != null) {
 			SwingUtilities.invokeLater(() -> {
 				JScrollBar verticalBar = historyScrollPane.getVerticalScrollBar();
@@ -91,40 +104,38 @@ public class ChessMax {
 	}
 
 	/**
-	 * Updates the algebraic notation of a move with the corresponding ASCII symbols for the pieces.
+	 * Updates the algebraic notation for a move by replacing piece letters with corresponding ASCII symbols.
 	 *
 	 * @param historyMove
-	 * 	The move whose algebraic notation needs to be updated.
+	 * 	the move whose notation will be updated.
 	 *
-	 * @return The updated algebraic notation with ASCII symbols.
+	 * @return the updated algebraic notation.
 	 */
-	private static String getUpdatedAlgebraicNotation(HistoryMove historyMove) {
-		String updatedAlgebraicNotation = historyMove.getMoveAlgebraic();
+	private static String updateAlgebraicNotationSymbols(HistoryMove historyMove) {
+		String notation = historyMove.getMoveAlgebraic();
 
 		if (historyMove.getMove().getPiece().isWhite()) {
-			updatedAlgebraicNotation = updatedAlgebraicNotation
-				                           .replace("K", WHITE_KING.getSYMBOL())
-				                           .replace("Q", WHITE_QUEEN.getSYMBOL())
-				                           .replace("R", WHITE_ROOK.getSYMBOL())
-				                           .replace("B", WHITE_BISHOP.getSYMBOL())
-				                           .replace("N", WHITE_KNIGHT.getSYMBOL())
-				                           .replace("P", WHITE_PAWN.getSYMBOL());
+			notation = notation.replace("K", WHITE_KING.getSYMBOL())
+				           .replace("Q", WHITE_QUEEN.getSYMBOL())
+				           .replace("R", WHITE_ROOK.getSYMBOL())
+				           .replace("B", WHITE_BISHOP.getSYMBOL())
+				           .replace("N", WHITE_KNIGHT.getSYMBOL())
+				           .replace("P", WHITE_PAWN.getSYMBOL());
 		} else {
-			updatedAlgebraicNotation = updatedAlgebraicNotation
-				                           .replace("K", BLACK_KING.getSYMBOL())
-				                           .replace("Q", BLACK_QUEEN.getSYMBOL())
-				                           .replace("R", BLACK_ROOK.getSYMBOL())
-				                           .replace("B", BLACK_BISHOP.getSYMBOL())
-				                           .replace("N", BLACK_KNIGHT.getSYMBOL())
-				                           .replace("P", BLACK_PAWN.getSYMBOL());
+			notation = notation.replace("K", BLACK_KING.getSYMBOL())
+				           .replace("Q", BLACK_QUEEN.getSYMBOL())
+				           .replace("R", BLACK_ROOK.getSYMBOL())
+				           .replace("B", BLACK_BISHOP.getSYMBOL())
+				           .replace("N", BLACK_KNIGHT.getSYMBOL())
+				           .replace("P", BLACK_PAWN.getSYMBOL());
 		}
-		return updatedAlgebraicNotation;
+		return notation;
 	}
 
 	/**
-	 * Initializes the main window (JFrame) with the chessboard and move history panel.
+	 * Initializes the main JFrame with the chessboard and side panels.
 	 */
-	private void initializeJFrame() {
+	private void initializeMainFrame() {
 		frame = new JFrame(fetchStringConfig("ChessGame", "TITLE"));
 		frame.setLayout(new GridBagLayout());
 		frame.setMinimumSize(new Dimension(
@@ -136,25 +147,33 @@ public class ChessMax {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
-		// Add the chessboard component to the main window.
-		Board board = new Board(playerWhite, playerBlack, isWhiteAtBottom);
-		GridBagConstraints gbcBoard = new GridBagConstraints();
-		gbcBoard.gridx = 0;
-		gbcBoard.gridy = 0;
-		gbcBoard.weightx = 1.0;
-		gbcBoard.weighty = 1.0;
-		gbcBoard.anchor = GridBagConstraints.CENTER;
-		frame.add(board.getBoardContainer(), gbcBoard);
+		// Create and add the chessboard.
+		board = new Board(PLAYER_WHITE, PLAYER_BLACK, IS_WHITE_AT_BOTTOM);
+		GridBagConstraints boardConstraints = new GridBagConstraints();
+		boardConstraints.gridx = 0;
+		boardConstraints.gridy = 0;
+		boardConstraints.weightx = 1.0;
+		boardConstraints.weighty = 1.0;
+		boardConstraints.anchor = GridBagConstraints.CENTER;
+		frame.add(board.getBoardContainer(), boardConstraints);
 
-		// Add the move history panel next to the chessboard.
+		// Create the move history panel.
 		JPanel historyPanel = createHistoryPanel();
-		GridBagConstraints gbcHistory = new GridBagConstraints();
-		gbcHistory.gridx = 1;
-		gbcHistory.gridy = 0;
-		gbcHistory.weighty = 1.0;
-		gbcHistory.fill = GridBagConstraints.VERTICAL;
-		gbcHistory.anchor = GridBagConstraints.CENTER;
-		frame.add(historyPanel, gbcHistory);
+		// Create the button panel.
+		JPanel buttonPanel = createButtonPanel();
+
+		// Create a right-side container combining the history panel and buttons.
+		JPanel rightPanel = new JPanel(new BorderLayout());
+		rightPanel.add(historyPanel, BorderLayout.CENTER);
+		rightPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+		GridBagConstraints rightPanelConstraints = new GridBagConstraints();
+		rightPanelConstraints.gridx = 1;
+		rightPanelConstraints.gridy = 0;
+		rightPanelConstraints.weighty = 1.0;
+		rightPanelConstraints.fill = GridBagConstraints.VERTICAL;
+		rightPanelConstraints.anchor = GridBagConstraints.CENTER;
+		frame.add(rightPanel, rightPanelConstraints);
 
 		frame.setVisible(false);
 	}
@@ -162,23 +181,26 @@ public class ChessMax {
 	/**
 	 * Creates the move history panel containing a table of moves.
 	 *
-	 * @return A JPanel representing the history panel.
+	 * @return a JPanel representing the move history.
 	 */
 	private JPanel createHistoryPanel() {
-		Color mainBgColor = fetchColorConfig("Colors", "BACKGROUND");
+		Color mainBackground = fetchColorConfig("Colors", "BACKGROUND");
 
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.setPreferredSize(new Dimension(fetchIntegerConfig("History", "WIDTH"), fetchIntegerConfig("History", "HEIGHT")));
-		panel.setBackground(mainBgColor);
+		panel.setPreferredSize(new Dimension(
+			fetchIntegerConfig("History", "WIDTH"),
+			fetchIntegerConfig("History", "HEIGHT")
+		));
+		panel.setBackground(mainBackground);
 		panel.setOpaque(true);
 
-		// Retrieve padding configurations for the history panel.
+		// Retrieve padding configurations.
 		int paddingTop = fetchIntegerConfig("History", "PADDING_TOP");
 		int paddingLeft = fetchIntegerConfig("History", "PADDING_LEFT");
 		int paddingBottom = fetchIntegerConfig("History", "PADDING_BOTTOM");
 		int paddingRight = fetchIntegerConfig("History", "PADDING_RIGHT");
 
-		// Create a titled border with the specified padding and font settings.
+		// Create a titled border with specified padding and font.
 		TitledBorder titledBorder = BorderFactory.createTitledBorder(
 			BorderFactory.createEmptyBorder(paddingTop, paddingLeft, paddingBottom, paddingRight),
 			"",
@@ -190,40 +212,39 @@ public class ChessMax {
 		panel.setBorder(BorderFactory.createCompoundBorder(extraMargin, titledBorder));
 
 		// Initialize the move history table model with columns: Move, White, Black.
-		moveTableModel = new DefaultTableModel(new Object[] { "Zug", "Weiß", "Schwarz" }, 0);
-		JTable moveTable = new JTable(moveTableModel);
+		moveHistoryTableModel = new DefaultTableModel(new Object[] { "Move", "White", "Black" }, 0);
+		JTable moveTable = new JTable(moveHistoryTableModel);
 		moveTable.setShowGrid(false);
 		moveTable.setIntercellSpacing(new Dimension(0, 0));
 		moveTable.setRowHeight(30);
-
-		moveTable.setBackground(mainBgColor);
+		moveTable.setBackground(mainBackground);
 		moveTable.setOpaque(true);
 		moveTable.setFillsViewportHeight(true);
 
 		moveTable.getTableHeader().setReorderingAllowed(false);
-		moveTable.getTableHeader().setBackground(mainBgColor.darker());
+		moveTable.getTableHeader().setBackground(mainBackground.darker());
 		moveTable.getTableHeader().setForeground(fetchColorConfig("Colors", "TABLE_FOREGROUND"));
 		moveTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, fetchIntegerConfig("History", "HEADER_FONT_SIZE")));
 		moveTable.getTableHeader().setBorder(BorderFactory.createEmptyBorder());
 		moveTable.getTableHeader().setOpaque(true);
 
-		// Custom renderer for centering text in the cells and setting alternating row colors.
-		MoveTableCellRenderer cellRenderer = new MoveTableCellRenderer(mainBgColor);
+		// Set custom renderer for centering text and alternating row colors.
+		MoveTableCellRenderer cellRenderer = new MoveTableCellRenderer(mainBackground);
 		for (int i = 0; i < moveTable.getColumnCount(); i++) {
 			moveTable.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
 		}
 
 		// Adjust column widths based on configuration.
-		moveTable.getColumnModel().getColumn(0).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_MOVE_NUMBER_WIDTH"));  // Move number
-		moveTable.getColumnModel().getColumn(1).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_WHITE_WIDTH"));       // White move
-		moveTable.getColumnModel().getColumn(2).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_BLACK_WIDTH"));       // Black move
+		moveTable.getColumnModel().getColumn(0).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_MOVE_NUMBER_WIDTH"));
+		moveTable.getColumnModel().getColumn(1).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_WHITE_WIDTH"));
+		moveTable.getColumnModel().getColumn(2).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_BLACK_WIDTH"));
 
 		JScrollPane scrollPane = new JScrollPane(moveTable);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		scrollPane.getViewport().setBackground(mainBgColor);
+		scrollPane.getViewport().setBackground(mainBackground);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-		// Set a custom scrollbar UI for the vertical scrollbar.
+		// Customize the vertical scrollbar.
 		JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
 		verticalScrollBar.setUI(new CustomScrollBarUI());
 		verticalScrollBar.setPreferredSize(new Dimension(10, 0));
@@ -231,10 +252,166 @@ public class ChessMax {
 
 		panel.add(scrollPane, BorderLayout.CENTER);
 
-		// Save the scroll pane reference for scrolling to the bottom when a move is added.
+		// Save reference to scroll pane for auto-scrolling.
 		historyScrollPane = scrollPane;
+		return panel;
+	}
+
+	/**
+	 * Creates a panel with navigation buttons.
+	 *
+	 * @return a JPanel containing the navigation buttons.
+	 */
+	private JPanel createButtonPanel() {
+		Color mainBackground = fetchColorConfig("Colors", "BACKGROUND");
+
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+		panel.setOpaque(true);
+		panel.setBackground(mainBackground);
+
+		// Retrieve padding configurations.
+		int paddingTop = fetchIntegerConfig("History", "PADDING_TOP");
+		int paddingLeft = fetchIntegerConfig("History", "PADDING_LEFT");
+		int paddingBottom = fetchIntegerConfig("History", "PADDING_BOTTOM");
+		int paddingRight = fetchIntegerConfig("History", "PADDING_RIGHT");
+
+		TitledBorder titledBorder = BorderFactory.createTitledBorder(
+			BorderFactory.createEmptyBorder(paddingTop, paddingLeft, paddingBottom, paddingRight),
+			"",
+			TitledBorder.CENTER,
+			TitledBorder.TOP,
+			new Font("Arial", Font.BOLD, 18)
+		);
+		Border extraMargin = BorderFactory.createEmptyBorder(20, 0, 20, 20);
+		panel.setBorder(BorderFactory.createCompoundBorder(extraMargin, titledBorder));
+
+		// Icon dimensions from configuration.
+		int iconWidth = fetchIntegerConfig("History", "ARROWS_ICON_WIDTH");
+		int iconHeight = fetchIntegerConfig("History", "ARROWS_ICON_HEIGHT");
+
+		// Create navigation buttons.
+		JButton buttonToStart = createStyledButton(
+			"/images/buttons/To_Start.svg", iconWidth, iconHeight, board::toHistoryStart);
+		JButton buttonBackward = createStyledButton(
+			"/images/buttons/Backward.svg", iconWidth, iconHeight, board::historyBackward);
+		JButton buttonForward = createStyledButton(
+			"/images/buttons/Forward.svg", iconWidth, iconHeight, board::historyForward);
+		JButton buttonToEnd = createStyledButton(
+			"/images/buttons/To_End.svg", iconWidth, iconHeight, board::toHistoryEnd);
+
+		panel.add(buttonToStart);
+		panel.add(buttonBackward);
+		panel.add(buttonForward);
+		panel.add(buttonToEnd);
 
 		return panel;
+	}
+
+	/**
+	 * Creates a styled button with custom icon and hover/pressed effects.
+	 *
+	 * @param iconPath
+	 * 	the resource path to the button icon.
+	 * @param iconWidth
+	 * 	the desired icon width.
+	 * @param iconHeight
+	 * 	the desired icon height.
+	 * @param runnable
+	 *
+	 * @return the styled JButton.
+	 */
+	private JButton createStyledButton(String iconPath, int iconWidth, int iconHeight, Runnable runnable) {
+		Color normalColor = fetchColorConfig("Colors", "BUTTON_NORMAL");
+		Color hoverColor = fetchColorConfig("Colors", "BUTTON_HOVER");
+		Color pressedColor = fetchColorConfig("Colors", "BUTTON_PRESSED");
+
+		// Create a rounded button.
+		RoundedButton button = new RoundedButton(BUTTON_CORNER_RADIUS);
+		button.setIcon(getScaledIcon(iconPath, iconWidth, iconHeight));
+		button.setBackground(normalColor);
+		button.setPreferredSize(new Dimension(iconWidth + BUTTON_PADDING, iconHeight + BUTTON_PADDING));
+
+		// Log debug text on button click.
+		button.addActionListener(e -> {
+			// TODO:
+			runnable.run();
+		});
+
+		// Mouse listener for hover and pressed effects.
+		button.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				button.setBackground(hoverColor);
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				button.setBackground(normalColor);
+			}
+
+			@Override
+			public void mousePressed(java.awt.event.MouseEvent evt) {
+				button.setBackground(pressedColor);
+			}
+
+			@Override
+			public void mouseReleased(java.awt.event.MouseEvent evt) {
+				if (button.contains(evt.getPoint())) {
+					button.setBackground(hoverColor);
+				} else {
+					button.setBackground(normalColor);
+				}
+			}
+		});
+
+		return button;
+	}
+
+	/**
+	 * Scales an SVG icon from the resource path to the specified width and height.
+	 * Requires Apache Batik to be available in the classpath.
+	 *
+	 * @param resourcePath
+	 * 	the path to the image resource.
+	 * @param width
+	 * 	the target width.
+	 * @param height
+	 * 	the target height.
+	 *
+	 * @return the scaled ImageIcon, or null if an error occurs.
+	 */
+	private ImageIcon getScaledIcon(String resourcePath, int width, int height) {
+		URL url = getClass().getResource(resourcePath);
+		if (url == null) {
+			System.err.println("Resource not found: " + resourcePath);
+			return null;
+		}
+
+		// Only process SVG files.
+		if (!resourcePath.toLowerCase().endsWith(".svg")) {
+			return null;
+		}
+
+		try {
+			TranscoderInput transcoderInput = new TranscoderInput(url.toString());
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			TranscoderOutput transcoderOutput = new TranscoderOutput(byteArrayOutputStream);
+
+			PNGTranscoder pngTranscoder = new PNGTranscoder();
+			pngTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, (float) width);
+			pngTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, (float) height);
+
+			pngTranscoder.transcode(transcoderInput, transcoderOutput);
+			byteArrayOutputStream.flush();
+
+			ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+			BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
+
+			return new ImageIcon(bufferedImage);
+		} catch (Exception e) {
+			Logger.logError(e.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -245,28 +422,28 @@ public class ChessMax {
 	}
 
 	/**
-	 * Custom ScrollBar UI that draws a round thumb without the default arrow buttons.
+	 * Custom ScrollBar UI that draws a rounded thumb without default arrow buttons.
 	 */
 	static class CustomScrollBarUI extends BasicScrollBarUI {
-		// The arc size for the scrollbar thumb, fetched from configuration.
+		// Arc size for the scrollbar thumb from configuration.
 		private final int THUMB_ARC = fetchIntegerConfig("Colors", "HISTORY_SCROLLBAR_THUMB_ARC");
 
 		@Override
 		protected JButton createDecreaseButton(int orientation) {
-			return createZeroButton();
+			return createZeroSizeButton();
 		}
 
 		@Override
 		protected JButton createIncreaseButton(int orientation) {
-			return createZeroButton();
+			return createZeroSizeButton();
 		}
 
 		/**
-		 * Creates a button with zero size to remove the default arrow buttons.
+		 * Creates an invisible button to remove the default arrow buttons.
 		 *
-		 * @return A JButton with no size.
+		 * @return a zero-sized JButton.
 		 */
-		private JButton createZeroButton() {
+		private JButton createZeroSizeButton() {
 			JButton button = new JButton();
 			Dimension zeroDim = new Dimension(0, 0);
 			button.setPreferredSize(zeroDim);
@@ -283,7 +460,7 @@ public class ChessMax {
 			Graphics2D g2 = (Graphics2D) g.create();
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-			// Fetch the thumb color with the specified transparency.
+			// Get thumb color with configured transparency.
 			int alpha = fetchIntegerConfig("Colors", "HISTORY_SCROLLBAR_THUMB_ALPHA");
 			Color thumbColor = fetchColorWithAlphaConfig("Colors", "HISTORY_SCROLLBAR_THUMB", alpha);
 
@@ -294,7 +471,6 @@ public class ChessMax {
 
 		@Override
 		protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-			// Optionally adjust the color of the scrollbar track to match the background.
 			Graphics2D g2 = (Graphics2D) g.create();
 			g2.setPaint(c.getBackground());
 			g2.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
@@ -303,7 +479,6 @@ public class ChessMax {
 
 		@Override
 		protected Dimension getMinimumThumbSize() {
-			// Minimum size for the thumb to remain clickable.
 			return new Dimension(10, 30);
 		}
 	}
