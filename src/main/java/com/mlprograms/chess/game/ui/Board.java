@@ -518,6 +518,7 @@ public class Board extends JPanel {
 		loadPositionFromFen(getStartingPosition());
 
 		clearHistoryMoveSelection();
+		clearHighlightsAndArrows();
 	}
 
 	/**
@@ -539,6 +540,7 @@ public class Board extends JPanel {
 		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
+		clearHighlightsAndArrows();
 	}
 
 	/**
@@ -581,6 +583,7 @@ public class Board extends JPanel {
 		}
 
 		markHistoryMoveCell(getHistoryLookupIndex());
+		clearHighlightsAndArrows();
 	}
 
 	/**
@@ -589,13 +592,7 @@ public class Board extends JPanel {
 	 */
 	public void historyForward() {
 		// If there is no move history, do nothing
-		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
-			return;
-		}
-
-		// If already at the final move, disable history lookup mode and exit
-		if (getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
-			setHistoryLookup(false);
+		if (getMoveHistory() == null || getMoveHistory().isEmpty() || getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
 			return;
 		}
 
@@ -609,6 +606,24 @@ public class Board extends JPanel {
 		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
+
+		// If already at the final move, disable history lookup mode and exit
+		if (getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
+			setHistoryLookup(false);
+		}
+
+		clearHighlightsAndArrows();
+	}
+
+	/**
+	 * Clears all red highlights and arrows from the board.
+	 * This method removes any visual indicators such as red highlights and arrows,
+	 * and resets the temporary arrow to null.
+	 */
+	private void clearHighlightsAndArrows() {
+		getRedHighlights().clear();
+		getArrows().clear();
+		setTempArrow(null);
 	}
 
 	/**
