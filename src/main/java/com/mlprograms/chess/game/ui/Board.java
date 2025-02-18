@@ -125,6 +125,9 @@ public class Board extends JPanel {
 		this(new Human(), new Human());
 	}
 
+	/**
+	 * Plays the sound effect for the start of the game.
+	 */
 	private void playStartGameSound() {
 		getSoundPlayer().play(Sounds.GAME_START);
 	}
