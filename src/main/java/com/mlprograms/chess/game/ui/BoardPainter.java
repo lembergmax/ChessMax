@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
- * Licensed under the CC BY-NC 4.0 License.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -138,7 +138,7 @@ public class BoardPainter {
 	 * 	the Graphics2D context used for drawing
 	 */
 	public void drawTileHoverBorder(Graphics2D graphics2D) {
-		if (BOARD.getHoveredTile() == null) {
+		if (BOARD.getHoveredTile() == null || BOARD.getSelectedPiece() == null) {
 			return;
 		}
 
@@ -146,7 +146,6 @@ public class BoardPainter {
 		graphics2D.setStroke(new BasicStroke(fetchIntegerConfig("Colors", "TILE_HOVER_BORDER_THICKNESS")));
 		graphics2D.drawRect(BOARD.getHoveredTile().x * BOARD.getTileSize(), BOARD.getHoveredTile().y * BOARD.getTileSize(),
 			BOARD.getTileSize(), BOARD.getTileSize());
-
 	}
 
 	/**

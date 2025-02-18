@@ -178,8 +178,13 @@ public class Move {
 	 * @return the square in algebraic notation (e.g., "e4")
 	 */
 	private String convertToSquare(int column, int row) {
-		char file = getBoard().isWhiteAtBottom() ? (char) ('a' + column) : (char) ('a' + getBoard().getColumns() - 1 - column);
+		char file = (char) ('a' + getBoard().getColumns() - 1 - column);
 		int rank = row + 1;
+
+		if (getBoard().isWhiteAtBottom()) {
+			file = (char) ('a' + column);
+			rank = getBoard().getRows() - row;
+		}
 
 		return "" + file + rank;
 	}
