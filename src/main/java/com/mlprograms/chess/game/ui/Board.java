@@ -531,6 +531,9 @@ public class Board extends JPanel {
 
 				// Proceed with the pawn promotion
 				promotePawn(move, chosenPiece);
+
+				// Refresh the board after promotion
+				repaint();
 			});
 		}
 	}
@@ -570,14 +573,12 @@ public class Board extends JPanel {
 
 		// Add the move to the move history
 		addMove(historyMove);
-
 		setPromotion(false);
 
 		if (isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
 			checkForAiMove();
 		}
 
-		repaint();  // Refresh the board after promotion
 	}
 
 	/**
