@@ -23,6 +23,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,12 +38,11 @@ public class ChessMax {
 	private static final int BUTTON_PADDING = 20;
 	private static DefaultTableModel moveHistoryTableModel;
 	private static Board board;
+	private static JScrollPane historyScrollPane;
 	private final boolean IS_WHITE_AT_BOTTOM;
 	private final Player PLAYER_WHITE;
-	private static JScrollPane historyScrollPane;
-
-	private JFrame frame;
 	private final Player PLAYER_BLACK;
+	private JFrame frame;
 
 	/**
 	 * Creates a new ChessMax game instance.
@@ -133,6 +133,60 @@ public class ChessMax {
 	}
 
 	/**
+	 * Marks a single cell in the move history corresponding to the given move index.
+	 *
+	 * @param index
+	 * 	the move index in the move list (0-based).
+	 * 	It is assumed that even indices represent white moves (column 1)
+	 * 	and odd indices represent black moves (column 2).
+	 */
+	public static void markHistoryMoveCell(int index) {
+		if (moveHistoryTableModel == null || historyScrollPane == null) {
+			return;
+		}
+
+		// Retrieve the JTable instance from the JScrollPane
+		JTable moveTable = (JTable) historyScrollPane.getViewport().getView();
+		if (moveTable == null || index <= -1) {
+			clearHistoryMoveSelection();
+			return;
+		}
+
+		// Calculate row and column:
+		// Row = index / 2, Column = 1 (white) if index is even, otherwise Column = 2 (black)
+		int row = index / 2;
+		int col = (index % 2 == 0) ? 1 : 2;
+
+		// Check if the calculated row exists
+		if (row >= moveHistoryTableModel.getRowCount()) {
+			Logger.logError("Invalid Move-Index: " + index);
+			return;
+		}
+
+		// Select the cell in the table
+		moveTable.changeSelection(row, col, false, false);
+	}
+
+	/**
+	 * Clears any current selection in the move history.
+	 */
+	public static void clearHistoryMoveSelection() {
+		if (historyScrollPane == null) {
+			return;
+		}
+
+		// Retrieve the JTable instance from the JScrollPane
+		JTable moveTable = (JTable) historyScrollPane.getViewport().getView();
+		if (moveTable == null) {
+			return;
+		}
+
+		// Clear all selections
+		moveTable.clearSelection();
+	}
+
+
+	/**
 	 * Initializes the main JFrame with the chessboard and side panels.
 	 */
 	private void initializeMainFrame() {
@@ -212,14 +266,31 @@ public class ChessMax {
 		panel.setBorder(BorderFactory.createCompoundBorder(extraMargin, titledBorder));
 
 		// Initialize the move history table model with columns: Move, White, Black.
-		moveHistoryTableModel = new DefaultTableModel(new Object[] { "Move", "White", "Black" }, 0);
-		JTable moveTable = new JTable(moveHistoryTableModel);
+		moveHistoryTableModel = new DefaultTableModel(new Object[] { "Move", "White", "Black" }, 0) {
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false; // All cells are non-editable.
+			}
+		};
+
+		// Create the JTable with the move history table model.
+		JTable moveTable = new JTable(moveHistoryTableModel) {
+			@Override
+			protected void processMouseEvent(MouseEvent e) {
+				// Prevent user-initiated selection by overriding mouse events.
+			}
+		};
+
 		moveTable.setShowGrid(false);
 		moveTable.setIntercellSpacing(new Dimension(0, 0));
 		moveTable.setRowHeight(30);
 		moveTable.setBackground(mainBackground);
 		moveTable.setOpaque(true);
+		moveTable.setFocusable(false);
 		moveTable.setFillsViewportHeight(true);
+		moveTable.setCellSelectionEnabled(true);
+		moveTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		moveTable.setSelectionBackground(fetchColorWithAlphaConfig("Colors", "HISTORY_CELL_HIGHLIGHT", fetchIntegerConfig("Colors", "HISTORY_CELL_HIGHLIGHT_ALPHA")));
 
 		moveTable.getTableHeader().setReorderingAllowed(false);
 		moveTable.getTableHeader().setBackground(mainBackground.darker());
@@ -383,7 +454,7 @@ public class ChessMax {
 	private ImageIcon getScaledIcon(String resourcePath, int width, int height) {
 		URL url = getClass().getResource(resourcePath);
 		if (url == null) {
-			System.err.println("Resource not found: " + resourcePath);
+			Logger.logError("Resource not found: " + resourcePath);
 			return null;
 		}
 

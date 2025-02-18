@@ -25,7 +25,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mlprograms.chess.game.ChessMax.addMove;
+import static com.mlprograms.chess.game.ChessMax.*;
 import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 /**
@@ -137,7 +137,15 @@ public class Board extends JPanel {
 
 		// Delegate drawing tasks to the BoardPainter
 		getBoardPainter().drawChessBoard((Graphics2D) graphics);
-		getBoardPainter().highlightMadeMove((Graphics2D) graphics);
+
+		if (isHistoryLookup()) {
+			if (getHistoryLookupIndex() != -1) {
+				getBoardPainter().highlightMadeMove((Graphics2D) graphics, getMoveHistory().get(getHistoryLookupIndex()).getMove());
+			}
+		} else {
+			getBoardPainter().highlightMadeMove((Graphics2D) graphics);
+		}
+
 		getBoardPainter().highlightPossibleMoves((Graphics2D) graphics);
 		getBoardPainter().paintRedHighlights((Graphics2D) graphics);
 		getBoardPainter().drawCoordinates((Graphics2D) graphics);
@@ -475,6 +483,8 @@ public class Board extends JPanel {
 			addMove(historyMove);
 		}
 
+		markHistoryMoveCell(getHistoryLookupIndex() - 1);
+
 		if (getGameEnding() == GameEnding.IN_PROGRESS) {
 			if (isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
 				checkForAiMove();
@@ -506,6 +516,8 @@ public class Board extends JPanel {
 		getPossibleMoves().clear();
 		// Load the starting board position using FEN notation
 		loadPositionFromFen(getStartingPosition());
+
+		clearHistoryMoveSelection();
 	}
 
 	/**
@@ -525,6 +537,8 @@ public class Board extends JPanel {
 		getPossibleMoves().clear();
 		// Load the board position from the FEN of the last move in history
 		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+
+		markHistoryMoveCell(getHistoryLookupIndex());
 	}
 
 	/**
@@ -558,9 +572,15 @@ public class Board extends JPanel {
 			if (getHistoryLookupIndex() == -1) {
 				loadPositionFromFen(getStartingPosition());
 			} else {
+				if (getHistoryLookupIndex() == getMoveHistory().size() - 1) {
+					setHistoryLookupIndex(getHistoryLookupIndex() - 1);
+				}
+
 				loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 			}
 		}
+
+		markHistoryMoveCell(getHistoryLookupIndex());
 	}
 
 	/**
@@ -587,6 +607,8 @@ public class Board extends JPanel {
 		getPossibleMoves().clear();
 		// Load the board position corresponding to the new history index
 		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+
+		markHistoryMoveCell(getHistoryLookupIndex());
 	}
 
 	/**

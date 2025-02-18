@@ -105,7 +105,7 @@ public class MouseInput extends MouseAdapter {
 		}
 		// Otherwise, if a piece is already selected, attempt to move it to the clicked tile.
 		else if (selectedPiece != null) {
-			if (getBoard().isHistoryLookup()) {
+			if (getBoard().isHistoryLookup() || getBoard().getGameEnding() != GameEnding.IN_PROGRESS) {
 				return;
 			}
 
@@ -148,7 +148,7 @@ public class MouseInput extends MouseAdapter {
 			return;
 		}
 
-		if (getBoard().isHistoryLookup()) {
+		if (getBoard().isHistoryLookup() || getBoard().getGameEnding() != GameEnding.IN_PROGRESS) {
 			return;
 		}
 
