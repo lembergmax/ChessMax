@@ -110,6 +110,7 @@ public class Board extends JPanel {
 		initializeBoardConfigurations();
 		setPreferredSize(new Dimension(getColumns() * getTileSize(), getRows() * getTileSize()));
 
+		SwingUtilities.invokeLater(this::playStartGameSound);
 		SwingUtilities.invokeLater(this::checkForAiMove);
 	}
 
@@ -122,6 +123,10 @@ public class Board extends JPanel {
 	 */
 	public Board() {
 		this(new Human(), new Human());
+	}
+
+	private void playStartGameSound() {
+		getSoundPlayer().play(Sounds.GAME_START);
 	}
 
 	/**
