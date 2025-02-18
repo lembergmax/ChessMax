@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
  * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
@@ -12,6 +12,7 @@ import com.mlprograms.chess.game.engine.ai.Ai;
 import com.mlprograms.chess.game.pieces.*;
 import com.mlprograms.chess.game.utils.SoundPlayer;
 import com.mlprograms.chess.game.utils.Sounds;
+import com.mlprograms.chess.human.Human;
 import com.mlprograms.chess.utils.Logger;
 import com.mlprograms.chess.utils.ui.InformationMessage;
 import lombok.Getter;
@@ -23,8 +24,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
+import static com.mlprograms.chess.game.ChessMax.*;
 import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 /**
@@ -39,12 +40,15 @@ public class Board extends JPanel {
 	private SoundPlayer soundPlayer;
 	private BoardPainter boardPainter;
 	private MoveValidator moveValidator;
+
 	private String title;
 	private String startingPosition;
+	private String promotedTo = "";
 
 	private JPanel boardContainer;
 	private JPanel promotionPanel;
 
+	private GameEnding gameEnding = GameEnding.IN_PROGRESS;
 	private List<HistoryMove> moveHistory = new ArrayList<>();
 	private List<Move> possibleMoves = new ArrayList<>();
 	private List<Piece> pieceList = new ArrayList<>();
@@ -61,11 +65,14 @@ public class Board extends JPanel {
 	private int fullMoveNumber;
 	private int tempFullMoveNumber;
 	private int enPassantTile = -1;
+	private int historyLookupIndex = 0;
 
+	private boolean historyLookup = false;
 	private boolean isWhiteTurn = true;
 	private boolean mouseDragged = false;
 	private boolean hasCastled = false;
 	private boolean isPromotion = false;
+	private boolean moveHistoryKingInCheck = false;
 	private boolean isWhiteAtBottom;
 
 	private Player playerWhite;
@@ -111,6 +118,13 @@ public class Board extends JPanel {
 	}
 
 	/**
+	 * Only for testing purposes.
+	 */
+	public Board() {
+		this(new Human(), new Human());
+	}
+
+	/**
 	 * Overrides the paintComponent method to customize the drawing of the chessboard.
 	 *
 	 * @param graphics
@@ -123,7 +137,15 @@ public class Board extends JPanel {
 
 		// Delegate drawing tasks to the BoardPainter
 		getBoardPainter().drawChessBoard((Graphics2D) graphics);
-		getBoardPainter().highlightMadeMove((Graphics2D) graphics);
+
+		if (isHistoryLookup()) {
+			if (getHistoryLookupIndex() != -1) {
+				getBoardPainter().highlightMadeMove((Graphics2D) graphics, getMoveHistory().get(getHistoryLookupIndex()).getMove());
+			}
+		} else {
+			getBoardPainter().highlightMadeMove((Graphics2D) graphics);
+		}
+
 		getBoardPainter().highlightPossibleMoves((Graphics2D) graphics);
 		getBoardPainter().paintRedHighlights((Graphics2D) graphics);
 		getBoardPainter().drawCoordinates((Graphics2D) graphics);
@@ -178,46 +200,128 @@ public class Board extends JPanel {
 	 * 	the FEN string representing the chess position
 	 */
 	public void loadPositionFromFen(String fenString) {
-		// Clear the current list of pieces to prepare for loading a new position
-		getPieceList().clear();
 
-		// Split the FEN string into its components
-		StringTokenizer tokenizer = new StringTokenizer(fenString, " ");
-		String position = tokenizer.nextToken(); // Piece placement section
-		setWhiteTurn(tokenizer.nextToken().equals("w")); // Whose turn it is
-		String castlingRights = tokenizer.nextToken(); // Castling availability
-		String enPassant = tokenizer.nextToken(); // En passant target square
+		// Retrieve local reference to the piece list to avoid repeated getter calls.
+		List<Piece> pieceList = getPieceList();
+		pieceList.clear();
 
-		// Initialize row and column for placing pieces
+		// Manually parse the FEN string instead of using StringTokenizer.
+		// FEN Format: [piece placement] [active color] [castling availability] [en passant square] ...
+		int firstSpace = fenString.indexOf(' ');
+		if (firstSpace == -1) return; // Invalid FEN, abort
+
+		String placement = fenString.substring(0, firstSpace);
+
+		int secondSpace = fenString.indexOf(' ', firstSpace + 1);
+		if (secondSpace == -1) return; // Invalid FEN, abort
+		// Active color: "w" or "b"
+		boolean whiteTurn = fenString.charAt(firstSpace + 1) == 'w';
+		setWhiteTurn(whiteTurn);
+
+		int thirdSpace = fenString.indexOf(' ', secondSpace + 1);
+		if (thirdSpace == -1) return; // Invalid FEN, abort
+		String castlingRights = fenString.substring(secondSpace + 1, thirdSpace);
+
+		int fourthSpace = fenString.indexOf(' ', thirdSpace + 1);
+		// If no fourth space exists, en passant goes bis zum Ende.
+		String enPassant = (fourthSpace == -1)
+			                   ? fenString.substring(thirdSpace + 1)
+			                   : fenString.substring(thirdSpace + 1, fourthSpace);
+
+		// Parse the piece placement section using a char array for performance.
+		char[] placementChars = placement.toCharArray();
 		int row = 0;
 		int column = 0;
-
-		// Parse the piece placement section of the FEN string
-		for (int i = 0; i < position.length(); i++) {
-			char character = position.charAt(i);
-
-			if (character == '/') {
-				// Move to the next row when encountering a '/' separator
+		for (char ch : placementChars) {
+			if (ch == '/') {
+				// New row detected; move to the next row and reset column.
 				row++;
 				column = 0;
-			} else if (Character.isDigit(character)) {
-				// Skip a number of empty squares based on the digit
-				column += Character.getNumericValue(character);
+			} else if (ch >= '1' && ch <= '8') {
+				// Advance the column by the numeric value (number of empty squares).
+				column += ch - '0';
 			} else {
-				// Add a piece to the list
-				boolean isWhite = Character.isUpperCase(character); // Determine if the piece is white
-				getPieceList().add(createPiece(character, column++, row, isWhite)); // Create and add the piece
+				// Create and add the piece.
+				// Determine the color by checking if the character is uppercase.
+				boolean isWhite = Character.isUpperCase(ch);
+				pieceList.add(createPiece(ch, column, row, isWhite));
+				column++;
 			}
 		}
 
-		// Update castling rights based on the FEN string
+		// Update castling rights and the en passant target square.
 		updateCastling(castlingRights);
-
-		// Update the en passant target square based on the FEN string
 		updateEnPassant(enPassant);
 
-		// Redraw the board to reflect the new position
+		// Redraw the board to reflect the new position.
 		repaint();
+	}
+
+	/**
+	 * Creates a chess piece based on the given character, position, and color.
+	 * The character is matched to its corresponding piece type (e.g., 'r' for Rook).
+	 *
+	 * @param character
+	 * 	the character representing the type of the chess piece (e.g., 'r' for rook)
+	 * @param column
+	 * 	the column where the piece is located
+	 * @param row
+	 * 	the row where the piece is located
+	 * @param isWhite
+	 * 	true if the piece belongs to the white player, false if it belongs to the black player
+	 *
+	 * @return a new instance of the corresponding chess piece
+	 */
+	private Piece createPiece(char character, int column, int row, boolean isWhite) {
+		return switch (Character.toLowerCase(character)) {
+			case 'r' -> new Rook(this, column, row, isWhite);
+			case 'n' -> new Knight(this, column, row, isWhite);
+			case 'b' -> new Bishop(this, column, row, isWhite);
+			case 'q' -> new Queen(this, column, row, isWhite);
+			case 'k' -> new King(this, column, row, isWhite);
+			default -> new Pawn(this, column, row, isWhite);
+		};
+	}
+
+	/**
+	 * Updates the castling rights for the rooks based on the provided castling rights string.
+	 * The string contains indicators (e.g., "K", "Q", "k", "q") for available castling moves.
+	 *
+	 * @param castlingRights
+	 * 	the FEN castling rights string, e.g., "KQkq" or "-" if no castling is allowed
+	 */
+	private void updateCastling(String castlingRights) {
+		// Update white king-side rook.
+		if (getPieceAt(7, 7) instanceof Rook wkr) {
+			wkr.setFirstMove(castlingRights.contains("K"));
+		}
+		// Update white queen-side rook.
+		if (getPieceAt(0, 7) instanceof Rook wqr) {
+			wqr.setFirstMove(castlingRights.contains("Q"));
+		}
+		// Update black king-side rook.
+		if (getPieceAt(7, 0) instanceof Rook bkr) {
+			bkr.setFirstMove(castlingRights.contains("k"));
+		}
+		// Update black queen-side rook.
+		if (getPieceAt(0, 0) instanceof Rook bqr) {
+			bqr.setFirstMove(castlingRights.contains("q"));
+		}
+	}
+
+	/**
+	 * Updates the en passant tile based on the provided en passant string from the FEN notation.
+	 * The en passant tile is calculated based on the column and row of the target square.
+	 *
+	 * @param enPassant
+	 * 	the FEN en passant string, e.g., "e3" or "-" if no en passant is available
+	 */
+	private void updateEnPassant(String enPassant) {
+		setEnPassantTile(
+			enPassant.equals("-")
+				? -1
+				: (7 - (enPassant.charAt(1) - '1')) * 8 + (enPassant.charAt(0) - 'a')
+		);
 	}
 
 	/**
@@ -340,7 +444,7 @@ public class Board extends JPanel {
 
 		// Animate the move or update the piece position directly if dragging
 		// if (!isMouseDragged()) {
-			// TODO: animateMove(piece, move.getNewColumn(), move.getNewRow());
+		// TODO: animateMove(piece, move.getNewColumn(), move.getNewRow());
 		// }
 
 		// Set the new position of the piece
@@ -364,12 +468,25 @@ public class Board extends JPanel {
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
 
-		// Add the move to the move history
-		getMoveHistory().add(new HistoryMove(move, getCurrentPositionsFenNotation()));
+		setGameEnding(checkForGameEnding());
 
-		GameEnding gameEnding = checkForGameEnding();
-		if (gameEnding == GameEnding.IN_PROGRESS) {
-			if(isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
+		if (!isPromotion()) {
+			// Create a new HistoryMove object to store the move details
+			HistoryMove historyMove = new HistoryMove(
+				getMoveHistory().size() + 1,
+				move.toAlgebraicNotation(),
+				move,
+				getCurrentPositionsFenNotation()
+			);
+
+			// Add the move to the move history
+			addMove(historyMove);
+		}
+
+		markHistoryMoveCell(getHistoryLookupIndex() - 1);
+
+		if (getGameEnding() == GameEnding.IN_PROGRESS) {
+			if (isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
 				checkForAiMove();
 			}
 			return;
@@ -378,8 +495,135 @@ public class Board extends JPanel {
 		getSoundPlayer().play(Sounds.GAME_END);
 
 		// TODO: make better ui for game ending
-		boolean isDraw = gameEnding != GameEnding.CHECKMATE;
+		boolean isDraw = getGameEnding() != GameEnding.CHECKMATE;
 		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!") + "\nGrund: " + gameEnding);
+	}
+
+	/**
+	 * Navigates to the start of the game (i.e. the initial board position).
+	 */
+	public void toHistoryStart() {
+		// If there is no move history, do nothing
+		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
+			return;
+		}
+
+		// Enable history lookup mode
+		setHistoryLookup(true);
+		// Set index to -1, representing the starting position
+		setHistoryLookupIndex(-1);
+		// Clear any cached possible moves
+		getPossibleMoves().clear();
+		// Load the starting board position using FEN notation
+		loadPositionFromFen(getStartingPosition());
+
+		clearHistoryMoveSelection();
+		clearHighlightsAndArrows();
+	}
+
+	/**
+	 * Navigates to the end of the move history (i.e. the final board position).
+	 */
+	public void toHistoryEnd() {
+		// If there is no move history, do nothing
+		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
+			return;
+		}
+
+		// Since we are at the final move, disable history lookup mode
+		setHistoryLookup(false);
+		// Set index to the last move (0-based index)
+		setHistoryLookupIndex(getMoveHistory().size() - 1);
+		// Clear any cached possible moves
+		getPossibleMoves().clear();
+		// Load the board position from the FEN of the last move in history
+		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+
+		markHistoryMoveCell(getHistoryLookupIndex());
+		clearHighlightsAndArrows();
+	}
+
+	/**
+	 * Moves one step backward in the move history.
+	 * If at the first move, it will revert to the starting position.
+	 */
+	public void historyBackward() {
+		// If there is no move history, do nothing
+		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
+			return;
+		}
+
+		// If already at the starting position (index -1), no further backward navigation is possible
+		if (getHistoryLookupIndex() <= -1) {
+			return;
+		}
+
+		// Ensure history lookup mode is enabled
+		setHistoryLookup(true);
+
+		// If currently at the first move (index 0), moving backward goes to the starting position
+		if (getHistoryLookupIndex() == 0) {
+			setHistoryLookupIndex(-1);
+			getPossibleMoves().clear();
+			loadPositionFromFen(getStartingPosition());
+		} else {
+			// Otherwise, decrement the index and load the corresponding board position
+			setHistoryLookupIndex(getHistoryLookupIndex() - 1);
+			getPossibleMoves().clear();
+			// If the new index is -1, load the starting position; else load the move's FEN
+			if (getHistoryLookupIndex() == -1) {
+				loadPositionFromFen(getStartingPosition());
+			} else {
+				if (getHistoryLookupIndex() == getMoveHistory().size() - 1) {
+					setHistoryLookupIndex(getHistoryLookupIndex() - 1);
+				}
+
+				loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+			}
+		}
+
+		markHistoryMoveCell(getHistoryLookupIndex());
+		clearHighlightsAndArrows();
+	}
+
+	/**
+	 * Moves one step forward in the move history.
+	 * When reaching the final move, the history lookup mode is disabled.
+	 */
+	public void historyForward() {
+		// If there is no move history, do nothing
+		if (getMoveHistory() == null || getMoveHistory().isEmpty() || getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
+			return;
+		}
+
+		// Increment the history index to move forward
+		setHistoryLookupIndex(getHistoryLookupIndex() + 1);
+		// Ensure history lookup mode remains enabled
+		setHistoryLookup(true);
+		// Clear any cached possible moves
+		getPossibleMoves().clear();
+		// Load the board position corresponding to the new history index
+		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+
+		markHistoryMoveCell(getHistoryLookupIndex());
+
+		// If already at the final move, disable history lookup mode and exit
+		if (getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
+			setHistoryLookup(false);
+		}
+
+		clearHighlightsAndArrows();
+	}
+
+	/**
+	 * Clears all red highlights and arrows from the board.
+	 * This method removes any visual indicators such as red highlights and arrows,
+	 * and resets the temporary arrow to null.
+	 */
+	private void clearHighlightsAndArrows() {
+		getRedHighlights().clear();
+		getArrows().clear();
+		setTempArrow(null);
 	}
 
 	/**
@@ -401,6 +645,7 @@ public class Board extends JPanel {
 		}
 
 		if (getMoveValidator().isKingInCheck()) {
+			setMoveHistoryKingInCheck(true);
 			getSoundPlayer().play(Sounds.CHECK);
 			return;
 		}
@@ -506,6 +751,9 @@ public class Board extends JPanel {
 
 				// Proceed with the pawn promotion
 				promotePawn(move, chosenPiece);
+
+				// Refresh the board after promotion
+				repaint();
 			});
 		}
 	}
@@ -530,13 +778,27 @@ public class Board extends JPanel {
 		getPieceList().remove(move.getPiece());
 		getPieceList().add(chosenPiece);
 
+		if (getMoveValidator().isKingInCheck()) {
+			getSoundPlayer().play(Sounds.CHECK);
+			return;
+		}
+
+		// Create a new HistoryMove object to store the move details
+		HistoryMove historyMove = new HistoryMove(
+			getMoveHistory().size() + 1,
+			move.toAlgebraicNotation(String.valueOf(chosenPiece.getFenChar()).toUpperCase()),
+			move,
+			getCurrentPositionsFenNotation()
+		);
+
+		// Add the move to the move history
+		addMove(historyMove);
 		setPromotion(false);
 
-		if(isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
+		if (isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
 			checkForAiMove();
 		}
 
-		repaint();  // Refresh the board after promotion
 	}
 
 	/**
@@ -648,78 +910,9 @@ public class Board extends JPanel {
 
 		// If the captured piece is not null and the scoreboard is available, add it to the scoreboard
 		// if (move.getCapturedPiece() != null) {
-			// TODO: implement scoreboard functionality to track captured pieces
-			// scoreboard.addCapturedPiece(move.capturedPiece);
+		// TODO: implement scoreboard functionality to track captured pieces
+		// scoreboard.addCapturedPiece(move.capturedPiece);
 		// }
-	}
-
-	/**
-	 * Creates a chess piece based on the given character, position, and color.
-	 * The character is matched to its corresponding piece type (e.g., 'r' for Rook).
-	 *
-	 * @param character
-	 * 	the character representing the type of the chess piece (e.g., 'r' for rook)
-	 * @param column
-	 * 	the column where the piece is located
-	 * @param row
-	 * 	the row where the piece is located
-	 * @param isWhite
-	 * 	true if the piece belongs to the white player, false if it belongs to the black player
-	 *
-	 * @return a new instance of the corresponding chess piece
-	 */
-	private Piece createPiece(char character, int column, int row, boolean isWhite) {
-		// Use a switch expression to map the character to the correct piece type.
-		return switch (Character.toLowerCase(character)) {
-			case 'r' -> new Rook(this, column, row, isWhite); // Create a Rook piece
-			case 'n' -> new Knight(this, column, row, isWhite); // Create a Knight piece
-			case 'b' -> new Bishop(this, column, row, isWhite); // Create a Bishop piece
-			case 'q' -> new Queen(this, column, row, isWhite); // Create a Queen piece
-			case 'k' -> new King(this, column, row, isWhite); // Create a King piece
-			default -> new Pawn(this, column, row, isWhite); // Create a Pawn piece for any other character
-		};
-	}
-
-	/**
-	 * Updates the castling rights for the rooks based on the provided castling rights string.
-	 * The string contains indicators (e.g., "K", "Q", "k", "q") for available castling moves.
-	 *
-	 * @param castlingRights
-	 * 	the FEN castling rights string, e.g., "KQkq" or "-" if no castling is allowed
-	 */
-	private void updateCastling(String castlingRights) {
-		// Check if the white king-side rook is at its initial position and update its first move status
-		if (getPieceAt(7, 7) instanceof Rook wkr) {
-			wkr.setFirstMove(castlingRights.contains("K")); // "K" indicates white king-side castling rights
-		}
-		// Check if the white queen-side rook is at its initial position and update its first move status
-		if (getPieceAt(0, 7) instanceof Rook wqr) {
-			wqr.setFirstMove(castlingRights.contains("Q")); // "Q" indicates white queen-side castling rights
-		}
-		// Check if the black king-side rook is at its initial position and update its first move status
-		if (getPieceAt(7, 0) instanceof Rook bkr) {
-			bkr.setFirstMove(castlingRights.contains("k")); // "k" indicates black king-side castling rights
-		}
-		// Check if the black queen-side rook is at its initial position and update its first move status
-		if (getPieceAt(0, 0) instanceof Rook bqr) {
-			bqr.setFirstMove(castlingRights.contains("q")); // "q" indicates black queen-side castling rights
-		}
-	}
-
-	/**
-	 * Updates the en passant tile based on the provided en passant string from the FEN notation.
-	 * The en passant tile is calculated based on the column and row of the target square.
-	 *
-	 * @param enPassant
-	 * 	the FEN en passant string, e.g., "e3" or "-" if no en passant is available
-	 */
-	private void updateEnPassant(String enPassant) {
-		// If en passant is "-", there is no valid en passant tile
-		setEnPassantTile(
-			enPassant.equals("-")
-				? -1 // No en passant
-				: (7 - (enPassant.charAt(1) - '1')) * 8 + (enPassant.charAt(0) - 'a')
-		);
 	}
 
 	/**

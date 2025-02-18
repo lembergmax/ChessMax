@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
- * Licensed under the CC BY-NC 4.0 License.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -138,7 +138,7 @@ public class BoardPainter {
 	 * 	the Graphics2D context used for drawing
 	 */
 	public void drawTileHoverBorder(Graphics2D graphics2D) {
-		if (BOARD.getHoveredTile() == null) {
+		if (BOARD.getHoveredTile() == null || BOARD.getSelectedPiece() == null) {
 			return;
 		}
 
@@ -146,7 +146,6 @@ public class BoardPainter {
 		graphics2D.setStroke(new BasicStroke(fetchIntegerConfig("Colors", "TILE_HOVER_BORDER_THICKNESS")));
 		graphics2D.drawRect(BOARD.getHoveredTile().x * BOARD.getTileSize(), BOARD.getHoveredTile().y * BOARD.getTileSize(),
 			BOARD.getTileSize(), BOARD.getTileSize());
-
 	}
 
 	/**
@@ -185,14 +184,22 @@ public class BoardPainter {
 	 *
 	 * @param graphics2D
 	 * 	the graphics context used for drawing
+	 * @param moveToHighlight
+	 * 	the move to highlight; if null, the last move from the move history is used
 	 */
-	public void highlightMadeMove(Graphics2D graphics2D) {
+	public void highlightMadeMove(Graphics2D graphics2D, Move moveToHighlight) {
 		if (BOARD.getMoveHistory().isEmpty()) {
 			return;
 		}
 
 		// Get the last move made on the board
-		Move lastMove = BOARD.getMoveHistory().getLast().getMadeMove();
+		Move lastMove;
+
+		if (moveToHighlight == null) {
+			lastMove = BOARD.getMoveHistory().getLast().getMove();
+		} else {
+			lastMove = moveToHighlight;
+		}
 
 		// Set the highlight color based on the move type
 		graphics2D.setColor(fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_MOVE_FROM_TO", 135));
@@ -200,6 +207,19 @@ public class BoardPainter {
 		// Draw the highlight on the source tile
 		graphics2D.fillRect(lastMove.getOldColumn() * BOARD.getTileSize(), lastMove.getOldRow() * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
 		graphics2D.fillRect(lastMove.getNewColumn() * BOARD.getTileSize(), lastMove.getNewRow() * BOARD.getTileSize(), BOARD.getTileSize(), BOARD.getTileSize());
+	}
+
+	/**
+	 * Highlights the last move made on the chessboard.
+	 * <p>
+	 * This method retrieves the last move from the move history and highlights both the source and destination tiles
+	 * using a semi-transparent color. If no moves have been made, the method returns without performing any action.
+	 *
+	 * @param graphics2D
+	 * 	the graphics context used for drawing
+	 */
+	public void highlightMadeMove(Graphics2D graphics2D) {
+		highlightMadeMove(graphics2D, null);
 	}
 
 	/**

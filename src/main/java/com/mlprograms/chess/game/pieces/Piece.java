@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
- * Licensed under the CC BY-NC 4.0 License.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -8,20 +8,16 @@ package com.mlprograms.chess.game.pieces;
 
 import com.mlprograms.chess.game.engine.Move;
 import com.mlprograms.chess.game.ui.Board;
-import com.mlprograms.chess.utils.ConfigFetcher;
-import com.mlprograms.chess.utils.Logger;
+import com.mlprograms.chess.game.utils.SpriteSheetCache;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Represents an abstract chess piece, providing common properties and methods for all pieces.
@@ -30,7 +26,7 @@ import java.util.Objects;
 @Setter
 @ToString
 @EqualsAndHashCode
-public abstract class Piece implements Cloneable{
+public abstract class Piece implements Cloneable {
 
 	// Name of the piece, e.g., "Pawn", "Rook"
 	private String name;
@@ -81,18 +77,10 @@ public abstract class Piece implements Cloneable{
 		this.board = board;
 		setPieceValue(0);
 
-		try {
-			// Load the sprite sheet for the chess pieces
-			setSheet(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(ConfigFetcher.fetchStringConfig("Images", "PIECES_SPRITE")))));
-			// Calculate the scale factor based on the sprite sheet dimensions
-			setSheetScale(getSheet().getWidth() / 6);
-		} catch (IOException e) {
-			// Log error if the image fails to load
-			Logger.logError("Error loading image: " + e.getMessage());
-		} catch (NullPointerException e) {
-			// Log error if the image file is not found
-			Logger.logError("Image file not found: " + e.getMessage());
-		}
+		// Load the sprite sheet for the chess pieces
+		setSheet(SpriteSheetCache.getPiecesSpriteSheet());
+		// Calculate the scale factor based on the sprite sheet dimensions
+		setSheetScale(getSheet().getWidth() / 6);
 	}
 
 	/**

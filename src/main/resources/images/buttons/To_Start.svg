@@ -1,0 +1,29 @@
+<?xml version="1.0" standalone="no"?>
+<!--
+  - Copyright (c) 2025 Max Lemberg. This file is part of ChessMax.
+  - Licenced under the CC BY-NC 4.0 License.
+  - See "http://creativecommons.org/licenses/by-nc/4.0/".
+  -->
+
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg height="512.000000pt" preserveAspectRatio="xMidYMid meet"
+     version="1.0" viewBox="0 0 512.000000 512.000000" width="512.000000pt"
+     xmlns="http://www.w3.org/2000/svg">
+    <metadata>
+        Created by potrace 1.16, written by Peter Selinger 2001-2019
+    </metadata>
+    <g fill="#DB9D47"
+       stroke="none" transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)">
+        <path d="M1040 5097 c-107 -32 -184 -79 -270 -166 -80 -81 -134 -170 -167
+-276 -17 -57 -18 -148 -18 -2095 0 -1947 1 -2038 18 -2095 33 -106 87 -195
+167 -276 130 -132 268 -189 455 -189 176 0 315 53 435 167 88 82 136 155 174
+263 l31 85 5 834 5 833 35 -43 c43 -54 1426 -1684 1489 -1756 134 -150 297
+-226 491 -226 118 -1 181 14 290 65 69 33 100 56 165 122 160 161 223 362 181
+576 -35 173 -35 174 -686 940 -324 382 -590 697 -590 700 0 3 266 317 590 699
+348 410 601 717 619 750 57 108 76 184 75 311 0 182 -52 315 -175 445 -123
+129 -277 196 -457 197 -53 1 -122 -4 -152 -11 -92 -21 -229 -93 -290 -153 -45
+-43 -1430 -1666 -1550 -1817 l-35 -43 -5 833 -5 834 -31 85 c-38 108 -86 181
+-174 263 -75 71 -175 127 -275 152 -90 23 -253 19 -345 -8z"/>
+    </g>
+</svg>

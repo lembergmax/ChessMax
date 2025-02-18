@@ -97,16 +97,7 @@ public abstract class Ai extends Player {
 		}
 
 		// Execute the move returned by the AI's strategic move finder
-		getBoard().makeMove(findStrategicMove());
+		// getBoard().makeMove();
 	}
-
-	/**
-	 * Determines the next strategic move for the AI.
-	 * <p>
-	 * Subclasses must implement this method to define their specific move strategy.
-	 *
-	 * @return the move selected by the AI based on its strategy
-	 */
-	protected abstract Move findStrategicMove();
 
 }
