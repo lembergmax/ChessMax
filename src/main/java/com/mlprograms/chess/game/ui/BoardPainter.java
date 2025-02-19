@@ -16,8 +16,6 @@ import com.mlprograms.chess.utils.Logger;
 import lombok.Getter;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.mlprograms.chess.utils.ConfigFetcher.*;
@@ -33,7 +31,7 @@ public class BoardPainter {
 	private final Color ARROW_COLOR = ConfigFetcher.fetchColorWithAlphaConfig("Colors", "ARROW_COLOR", ALPHA);
 	private final float THICKNESS = ConfigFetcher.fetchFloatConfig("Arrow", "THICKNESS");
 	private final Board BOARD;
-	private final List<Double> STRAIGHT_ARROWS = new ArrayList<>(Arrays.asList(Math.PI / -2, 0.0, Math.PI / 2, Math.PI));
+
 	private boolean isBlinkingActive = false;
 
 	public BoardPainter(Board board) {
@@ -369,16 +367,11 @@ public class BoardPainter {
 		}
 	}
 
-	/**
-	 * Draws all arrows stored on the board in a Chess.com-like style.
-	 * <p>
-	 * This method renders both permanent arrows and a temporary arrow (if one exists).
-	 * </p>
-	 *
-	 * @param graphics2D
-	 * 	the Graphics2D context used for drawing.
-	 */
 	public void drawArrows(Graphics2D graphics2D) {
+		// For smoother arrow rendering, enable antialiasing and stroke control
+		graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		graphics2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
 		// Draw each arrow from the board's list.
 		for (Arrow arrow : BOARD.getArrows()) {
 			if (!isValidArrow(arrow)) {
@@ -451,6 +444,10 @@ public class BoardPainter {
 	private void withArrowGraphics(Graphics2D g2d, Runnable action) {
 		Stroke previousStroke = g2d.getStroke();
 		Color previousColor = g2d.getColor();
+
+		// Enable antialiasing and stroke control for smoother arrow rendering
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
 		// Set arrow style (verwende ggf. Konstante wie THICKNESS und ARROW_COLOR)
 		g2d.setStroke(new BasicStroke(
@@ -570,7 +567,7 @@ public class BoardPainter {
 	 * @return a Point representing the adjusted starting position for the arrow
 	 */
 	private Point getAdjustedStartPoint(int tileCenterX, int tileCenterY, double angle, int tileSize) {
-		boolean isStraightArrow = STRAIGHT_ARROWS.contains(angle);
+		boolean isStraightArrow = isStraightAngle(angle);
 
 		// Calculate the distance to the tile edge along the given direction.
 		double distanceToEdgeX = (tileSize / 2.0) / Math.abs(Math.cos(angle));
@@ -583,5 +580,38 @@ public class BoardPainter {
 		int adjustedY = (int) Math.round(tileCenterY + adjustedDistance * Math.sin(angle));
 		return new Point(adjustedX, adjustedY);
 	}
+
+	/**
+	 * Checks if 'angle' (in radians) is close to 0, PI/2, PI, or 3*PI/2.
+	 */
+	private boolean isStraightAngle(double angle) {
+		// Normalize the angle to [0, 2π).
+		double normalized = normalizeAngle(angle);
+		// We use 1e-6 as epsilon.
+		double eps = 1e-6;
+
+		// Check for 0, π/2, π, 3π/2:
+		return isClose(normalized, 0.0, eps)
+			       || isClose(normalized, Math.PI / 2, eps)
+			       || isClose(normalized, Math.PI, eps)
+			       || isClose(normalized, 3.0 * Math.PI / 2, eps);
+	}
+
+	/**
+	 * Normalizes an angle to the range [0, 2π).
+	 */
+	private double normalizeAngle(double angle) {
+		double twoPi = 2.0 * Math.PI;
+		// Java modulo can be negative, so double it:
+		return (angle % twoPi + twoPi) % twoPi;
+	}
+
+	/**
+	 * Helper function to compare two double values with tolerance.
+	 */
+	private boolean isClose(double value, double target, double eps) {
+		return Math.abs(value - target) < eps;
+	}
+
 
 }
