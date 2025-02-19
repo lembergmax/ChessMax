@@ -471,8 +471,6 @@ public class Board extends JPanel {
 		// Toggle the turn to the other player
 		setWhiteTurn(!isWhiteTurn());
 
-		// Play appropriate sound effects based on the move
-		playGameSound(move);
 
 		// Clear possible moves for the next turn
 		getPossibleMoves().clear();
@@ -480,6 +478,9 @@ public class Board extends JPanel {
 		setGameEnding(checkForGameEnding());
 
 		if (!isPromotion()) {
+			// Play appropriate sound effects based on the move
+			playGameSound(move);
+
 			// Create a new HistoryMove object to store the move details
 			HistoryMove historyMove = new HistoryMove(
 				getMoveHistory().size() + 1,
@@ -490,10 +491,10 @@ public class Board extends JPanel {
 
 			// Add the move to the move history
 			addMove(historyMove);
+			checkGameEnd();
 		}
 
 		markHistoryMoveCell(getHistoryLookupIndex() - 1);
-		checkGameEnd();
 	}
 
 	/**
@@ -598,7 +599,12 @@ public class Board extends JPanel {
 					setHistoryLookupIndex(getHistoryLookupIndex() - 1);
 				}
 
-				loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+				if (getHistoryLookupIndex() == -1) {
+					toHistoryStart();
+				} else {
+					loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+				}
+
 			}
 		}
 
@@ -634,7 +640,12 @@ public class Board extends JPanel {
 		}
 
 		clearHighlightsAndArrows();
-		playHistoryGameSound(getHistoryLookupIndex() + 1);
+
+		if (getMoveHistory().size() > 1) {
+			playHistoryGameSound(getHistoryLookupIndex());
+		} else {
+			playHistoryGameSound(getHistoryLookupIndex() + 1);
+		}
 	}
 
 	/**
@@ -658,8 +669,6 @@ public class Board extends JPanel {
 	 * 	The move that is being made, including the captured piece (if any).
 	 */
 	private void playGameSound(Move move) {
-		repaint();
-
 		// If the game has ended
 		if (getMoveValidator().isCheckmate() || getMoveValidator().isStalemate()) {
 			playAndAddSoundToHistory(Sounds.GAME_END);
@@ -704,6 +713,10 @@ public class Board extends JPanel {
 	 * based on the current history lookup index and plays the corresponding sound.
 	 */
 	private void playHistoryGameSound(int index) {
+		if (index == getMoveHistory().size()) {
+			return;
+		}
+
 		getSoundPlayer().play(getMoveSoundHistory().get(index));
 	}
 
@@ -838,6 +851,7 @@ public class Board extends JPanel {
 
 		// Add the move to the move history
 		addMove(historyMove);
+		markHistoryMoveCell(getHistoryLookupIndex() - 1);
 		setPromotion(false);
 
 		if (isWhiteTurn() && playerBlack instanceof Ai || !isWhiteTurn() && playerWhite instanceof Ai) {
