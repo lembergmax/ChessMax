@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mlprograms.chess</groupId>
-    <artifactId>ChessMax-2.0</artifactId>
+    <artifactId>ChessMax</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>

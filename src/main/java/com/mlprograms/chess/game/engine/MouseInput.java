@@ -33,6 +33,8 @@ public class MouseInput extends MouseAdapter {
 	private int originalRow;
 	private Point tempRedHighlight;
 
+	private boolean allowRightClick = true;
+
 	/**
 	 * Initializes the MouseInput with the game board.
 	 *
@@ -64,7 +66,7 @@ public class MouseInput extends MouseAdapter {
 	@Override
 	public void mousePressed(MouseEvent event) {
 		// Handle right-click (typically used for drawing arrows).
-		if (SwingUtilities.isRightMouseButton(event)) {
+		if (SwingUtilities.isRightMouseButton(event) && allowRightClick) {
 			int column = event.getX() / board.getTileSize();
 			int row = event.getY() / board.getTileSize();
 			// Create a temporary arrow with starting and ending points equal to the clicked tile.
@@ -106,6 +108,8 @@ public class MouseInput extends MouseAdapter {
 		// Otherwise, if a piece is already selected, attempt to move it to the clicked tile.
 		else if (selectedPiece != null) {
 			if (getBoard().isHistoryLookup() || getBoard().getGameEnding() != GameEnding.IN_PROGRESS) {
+				clearSelection();
+				board.repaint();
 				return;
 			}
 
@@ -138,7 +142,7 @@ public class MouseInput extends MouseAdapter {
 		board.setHoveredTile(new Point(column, row));
 
 		// Right-click dragging for drawing arrows and highlighting tiles.
-		if (SwingUtilities.isRightMouseButton(event)) {
+		if (SwingUtilities.isRightMouseButton(event) && allowRightClick) {
 			Arrow tempArrow = board.getTempArrow();
 			if (tempArrow != null) {
 				// Update the end coordinates of the temporary arrow.
@@ -155,6 +159,7 @@ public class MouseInput extends MouseAdapter {
 		// Left-click dragging for moving a piece.
 		Piece selectedPiece = board.getSelectedPiece();
 		if (selectedPiece != null) {
+			setAllowRightClick(false);
 			// Set the flag to indicate that a drag is in progress.
 			board.setMouseDragged(true);
 			// Update the piece's graphical position based on the current mouse location.
@@ -174,7 +179,7 @@ public class MouseInput extends MouseAdapter {
 		int boardColumn = event.getX() / board.getTileSize();
 		int boardRow = event.getY() / board.getTileSize();
 
-		if (SwingUtilities.isRightMouseButton(event)) {
+		if (SwingUtilities.isRightMouseButton(event) && allowRightClick) {
 			handleRightClick(boardColumn, boardRow);
 			return;
 		}
@@ -308,6 +313,7 @@ public class MouseInput extends MouseAdapter {
 			attemptMove(selectedPiece, boardColumn, boardRow);
 		}
 
+		setAllowRightClick(true);
 		board.setMouseDragged(false);
 		board.repaint();
 	}
