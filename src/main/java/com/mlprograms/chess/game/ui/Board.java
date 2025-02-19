@@ -50,6 +50,7 @@ public class Board extends JPanel {
 
 	private GameEnding gameEnding = GameEnding.IN_PROGRESS;
 	private List<HistoryMove> moveHistory = new ArrayList<>();
+	private List<String> moveSoundHistory = new ArrayList<>();
 	private List<Move> possibleMoves = new ArrayList<>();
 	private List<Piece> pieceList = new ArrayList<>();
 	private Piece selectedPiece;
@@ -492,7 +493,16 @@ public class Board extends JPanel {
 		}
 
 		markHistoryMoveCell(getHistoryLookupIndex() - 1);
+		checkGameEnd();
+	}
 
+	/**
+	 * Checks if the game has ended and handles the end-of-game logic.
+	 * If the game is still in progress, it checks if it is the AI's turn to move.
+	 * If the game has ended, it plays the game end sound and displays an information message.
+	 */
+	private void checkGameEnd() {
+		setGameEnding(checkForGameEnding());
 		if (getGameEnding() == GameEnding.IN_PROGRESS) {
 			if (isWhiteTurn() && playerWhite instanceof Ai || !isWhiteTurn() && playerBlack instanceof Ai) {
 				checkForAiMove();
@@ -549,6 +559,8 @@ public class Board extends JPanel {
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 		clearHighlightsAndArrows();
+
+		playHistoryGameSound(getMoveHistory().size());
 	}
 
 	/**
@@ -592,6 +604,7 @@ public class Board extends JPanel {
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 		clearHighlightsAndArrows();
+		playHistoryGameSound(getHistoryLookupIndex() + 1);
 	}
 
 	/**
@@ -621,6 +634,7 @@ public class Board extends JPanel {
 		}
 
 		clearHighlightsAndArrows();
+		playHistoryGameSound(getHistoryLookupIndex() + 1);
 	}
 
 	/**
@@ -648,29 +662,49 @@ public class Board extends JPanel {
 
 		// If the game has ended
 		if (getMoveValidator().isCheckmate() || getMoveValidator().isStalemate()) {
-			getSoundPlayer().play(Sounds.GAME_END);
+			playAndAddSoundToHistory(Sounds.GAME_END);
 			return;
 		}
 
 		if (getMoveValidator().isKingInCheck()) {
 			setMoveHistoryKingInCheck(true);
-			getSoundPlayer().play(Sounds.CHECK);
+			playAndAddSoundToHistory(Sounds.CHECK);
 			return;
 		}
 
 		// King has castled
 		if (isHasCastled()) {
-			getSoundPlayer().play(Sounds.CASTLE);
+			playAndAddSoundToHistory(Sounds.CASTLE);
 			return;
 		}
 
 		// If a Piece was captured
 		if (move.getCapturedPiece() != null) {
-			getSoundPlayer().play(Sounds.CAPTURE);
+			playAndAddSoundToHistory(Sounds.CAPTURE);
 			return;
 		}
 
-		getSoundPlayer().play(Sounds.MOVE);
+		playAndAddSoundToHistory(Sounds.MOVE);
+	}
+
+	/**
+	 * Plays the specified sound and adds it to the move sound history.
+	 *
+	 * @param sound
+	 * 	The key of the sound to be played.
+	 */
+	private void playAndAddSoundToHistory(String sound) {
+		getMoveSoundHistory().add(sound);
+		getSoundPlayer().play(sound);
+	}
+
+	/**
+	 * Plays the sound associated with the current move in the history.
+	 * This method retrieves the sound key from the move sound history
+	 * based on the current history lookup index and plays the corresponding sound.
+	 */
+	private void playHistoryGameSound(int index) {
+		getSoundPlayer().play(getMoveSoundHistory().get(index));
 	}
 
 	/**
@@ -786,10 +820,13 @@ public class Board extends JPanel {
 		getPieceList().remove(move.getPiece());
 		getPieceList().add(chosenPiece);
 
-		if (getMoveValidator().isKingInCheck()) {
-			getSoundPlayer().play(Sounds.CHECK);
-			return;
-		}
+		chosenPiece.setColumn(move.getNewColumn());
+		chosenPiece.setRow(move.getNewRow());
+		chosenPiece.setXPos(move.getNewColumn() * getTileSize());
+		chosenPiece.setYPos(move.getNewRow() * getTileSize());
+
+		playGameSound(move);
+		checkGameEnd();
 
 		// Create a new HistoryMove object to store the move details
 		HistoryMove historyMove = new HistoryMove(
@@ -807,6 +844,7 @@ public class Board extends JPanel {
 			checkForAiMove();
 		}
 
+		checkForGameEnding();
 	}
 
 	/**
