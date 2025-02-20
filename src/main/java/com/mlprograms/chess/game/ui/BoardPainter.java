@@ -83,10 +83,18 @@ public class BoardPainter {
 	 * 	the Graphics2D object used to render the pieces on the board
 	 */
 	public void paintPieces(Graphics2D graphics2D) {
-		// Iterate through all pieces on the board
+		Piece draggedPiece = BOARD.getSelectedPiece();
+
 		for (Piece piece : BOARD.getPieceList()) {
-			// Delegate the painting of each piece to its paint method
+			if (BOARD.isMouseDragged() && piece.equals(draggedPiece)) {
+				continue;
+			}
+
 			piece.paint(graphics2D);
+		}
+
+		if (draggedPiece != null) {
+			draggedPiece.paint(graphics2D);
 		}
 	}
 
