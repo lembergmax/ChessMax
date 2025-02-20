@@ -49,9 +49,12 @@ public class ChessMax {
 	/**
 	 * Constructs a new ChessMax game instance.
 	 *
-	 * @param playerWhite   the white player
-	 * @param playerBlack   the black player
-	 * @param isWhiteAtBottom if true, white pieces are displayed at the bottom
+	 * @param playerWhite
+	 * 	the white player
+	 * @param playerBlack
+	 * 	the black player
+	 * @param isWhiteAtBottom
+	 * 	if true, white pieces are displayed at the bottom
 	 */
 	public ChessMax(Player playerWhite, Player playerBlack, boolean isWhiteAtBottom) {
 		this.playerWhite = playerWhite;
@@ -68,7 +71,8 @@ public class ChessMax {
 	/**
 	 * Adds a move to the move history table.
 	 *
-	 * @param historyMove the move to add
+	 * @param historyMove
+	 * 	the move to add
 	 */
 	public static void addMove(HistoryMove historyMove) {
 		if (moveHistoryTableModel == null || historyMove == null) {
@@ -104,7 +108,9 @@ public class ChessMax {
 	/**
 	 * Updates the algebraic notation for a move by replacing piece letters with corresponding symbols.
 	 *
-	 * @param historyMove the move to update
+	 * @param historyMove
+	 * 	the move to update
+	 *
 	 * @return the updated notation string
 	 */
 	private static String updateAlgebraicNotationSymbols(HistoryMove historyMove) {
@@ -130,7 +136,8 @@ public class ChessMax {
 	/**
 	 * Highlights the move cell in the move history table.
 	 *
-	 * @param index the 0-based index of the move to mark
+	 * @param index
+	 * 	the 0-based index of the move to mark
 	 */
 	public static void markHistoryMoveCell(int index) {
 		if (moveHistoryTableModel == null || historyScrollPane == null) {
@@ -165,7 +172,7 @@ public class ChessMax {
 
 	/**
 	 * Returns a border based on the developer mode setting.
-	 * If DEV_MODE is enabled, returns the specified devBorder; otherwise, returns normalBorder.
+	 * If DEV_MODE is enabled, the devBorder is combined with the normalBorder so that padding is preserved.
 	 *
 	 * @param devBorder
 	 * 	the border to use in developer mode
@@ -175,7 +182,11 @@ public class ChessMax {
 	 * @return the appropriate border based on the DEV_MODE configuration
 	 */
 	private Border getDevBorder(Border devBorder, Border normalBorder) {
-		return fetchBooleanConfig("Developer", "DEV_MODE") ? devBorder : normalBorder;
+		if (fetchBooleanConfig("Developer", "DEV_MODE")) {
+			// Combines the devBorder as an outer frame with the original normalBorder
+			return (normalBorder != null) ? BorderFactory.createCompoundBorder(devBorder, normalBorder) : devBorder;
+		}
+		return normalBorder;
 	}
 
 	/**
@@ -207,7 +218,8 @@ public class ChessMax {
 		// Column 0: Left Spacer
 		JPanel leftSpacer = new JPanel();
 		leftSpacer.setOpaque(false);
-		leftSpacer.setPreferredSize(new Dimension(fetchIntegerConfig("MBPanel", "LEFT_SPACER_WIDTH"),
+		int leftSpacerWidth = fetchIntegerConfig("MBPanel", "LEFT_SPACER_WIDTH");
+		leftSpacer.setPreferredSize(new Dimension(fetchBooleanConfig("Developer", "DEV_MODE") ? leftSpacerWidth / 2 : leftSpacerWidth,
 			chessBoardPanel.getPreferredSize().height));
 		leftSpacer.setBorder(getDevBorder(
 			BorderFactory.createCompoundBorder(
@@ -401,7 +413,7 @@ public class ChessMax {
 		// Set border directly so that padding is always applied.
 		panel.setBorder(BorderFactory.createCompoundBorder(extraMargin, titledBorder));
 
-		moveHistoryTableModel = new DefaultTableModel(new Object[]{"Move", "White", "Black"}, 0) {
+		moveHistoryTableModel = new DefaultTableModel(new Object[] { "Move", "White", "Black" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -497,10 +509,15 @@ public class ChessMax {
 	/**
 	 * Creates a styled navigation button with the specified icon and click action.
 	 *
-	 * @param iconPath the resource path for the icon
-	 * @param iconWidth the desired icon width
-	 * @param iconHeight the desired icon height
-	 * @param runnable the action to execute on button click
+	 * @param iconPath
+	 * 	the resource path for the icon
+	 * @param iconWidth
+	 * 	the desired icon width
+	 * @param iconHeight
+	 * 	the desired icon height
+	 * @param runnable
+	 * 	the action to execute on button click
+	 *
 	 * @return the styled JButton
 	 */
 	private JButton createStyledButton(String iconPath, int iconWidth, int iconHeight, Runnable runnable) {
@@ -544,9 +561,13 @@ public class ChessMax {
 	/**
 	 * Scales an SVG icon from the given resource path to the specified dimensions.
 	 *
-	 * @param resourcePath the path to the SVG resource
-	 * @param width the target width
-	 * @param height the target height
+	 * @param resourcePath
+	 * 	the path to the SVG resource
+	 * @param width
+	 * 	the target width
+	 * @param height
+	 * 	the target height
+	 *
 	 * @return the scaled ImageIcon, or null if an error occurs
 	 */
 	private ImageIcon getScaledIcon(String resourcePath, int width, int height) {
