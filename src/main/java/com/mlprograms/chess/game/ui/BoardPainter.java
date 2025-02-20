@@ -367,6 +367,17 @@ public class BoardPainter {
 		}
 	}
 
+	/**
+	 * Draws all arrows on the board.
+	 * <p>
+	 * This method enables antialiasing and stroke control for smoother rendering,
+	 * iterates through the list of arrows on the board, and draws each valid arrow.
+	 * If a temporary arrow exists, it is also drawn.
+	 * </p>
+	 *
+	 * @param graphics2D
+	 * 	the Graphics2D context used for drawing
+	 */
 	public void drawArrows(Graphics2D graphics2D) {
 		// For smoother arrow rendering, enable antialiasing and stroke control
 		graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
