@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
- * Licensed under the CC BY-NC 4.0 License.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
@@ -90,6 +90,21 @@ public class ConfigFetcher {
 	 */
 	public static Color fetchColorConfig(String section, String key) {
 		return decodeColor(fetchStringConfig(section, key));
+	}
+
+	/**
+	 * Fetches a boolean configuration value based on the given section and key.
+	 *
+	 * @param section
+	 * 	the configuration section to look into (e.g., "General", "Settings").
+	 * @param key
+	 * 	the key whose value is to be fetched from the specified section.
+	 *
+	 * @return the configuration value as a boolean.
+	 */
+	public static boolean fetchBooleanConfig(String section, String key) {
+		String value = fetchStringConfig(section, key);
+		return Boolean.parseBoolean(value);
 	}
 
 	/**

@@ -518,6 +518,11 @@ public class Board extends JPanel {
 		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!") + "\nGrund: " + gameEnding);
 	}
 
+	public void rotateBoard() {
+		// TODO: implement
+		Logger.logDebug("rotate Board");
+	}
+
 	/**
 	 * Navigates to the start of the game (i.e. the initial board position).
 	 */
