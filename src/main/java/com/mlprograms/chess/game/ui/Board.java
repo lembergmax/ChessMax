@@ -684,6 +684,7 @@ public class Board extends JPanel {
 		// King has castled
 		if (isHasCastled()) {
 			playAndAddSoundToHistory(Sounds.CASTLE);
+			setHasCastled(false);
 			return;
 		}
 
@@ -888,12 +889,14 @@ public class Board extends JPanel {
 
 			// If the mouse is not being dragged, animate the rook's move as well
 			if (!isMouseDragged()) {
-				setHasCastled(true);
-				animateMove(rook, targetColumn, move.getPiece().getRow());
+				// TODO: animateMove(rook, targetColumn, move.getPiece().getRow());
 			} else {
 				// Set the rook's position immediately if the mouse is dragged
 				rook.setPosition(targetColumn, move.getPiece().getRow());
 			}
+
+			// Set the castling flag to true
+			setHasCastled(true);
 
 			// Update the rook's column and position
 			rook.setColumn(targetColumn);
