@@ -388,6 +388,7 @@ public class ChessMax {
 	 * @param iconHeight
 	 * 	the desired icon height.
 	 * @param runnable
+	 * 	the action to be executed on button click.
 	 *
 	 * @return the styled JButton.
 	 */
@@ -403,8 +404,7 @@ public class ChessMax {
 		button.setPreferredSize(new Dimension(iconWidth + BUTTON_PADDING, iconHeight + BUTTON_PADDING));
 
 		// Log debug text on button click.
-		button.addActionListener(e -> {
-			// TODO:
+		button.addActionListener(_ -> {
 			runnable.run();
 		});
 
