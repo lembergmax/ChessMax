@@ -486,7 +486,8 @@ public class Board extends JPanel {
 				getMoveHistory().size() + 1,
 				move.toAlgebraicNotation(),
 				move,
-				getCurrentPositionsFenNotation()
+				getCurrentPositionsFenNotation(),
+				null // TODO: fix
 			);
 
 			// Add the move to the move history
@@ -866,7 +867,8 @@ public class Board extends JPanel {
 			getMoveHistory().size() + 1,
 			move.toAlgebraicNotation(String.valueOf(chosenPiece.getFenChar()).toUpperCase()),
 			move,
-			getCurrentPositionsFenNotation()
+			getCurrentPositionsFenNotation(),
+			null // TODO: fix
 		);
 
 		// Add the move to the move history
