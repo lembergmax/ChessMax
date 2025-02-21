@@ -519,20 +519,20 @@ public class Board extends JPanel {
 	}
 
 	public void rotateBoard() {
-		// TODO: board does not update
-		// TODO: there are many more issues after rotation
-
-		System.out.println("rotate board");
-
-		for (Piece piece : getPieceList()) {
-			int[] newCoordinates = rotateCoordinates(piece.getColumn(), piece.getRow());
-			piece.setColumn(newCoordinates[ 0 ]);
-			piece.setRow(newCoordinates[ 1 ]);
-		}
-
-		setWhiteAtBottom(!isWhiteAtBottom());
+		// TODO: implement board rotation
+		//  use: rotateCoordinates(column: int, row: int)
 	}
 
+	/**
+	 * Rotates the given board coordinates by 180 degrees.
+	 *
+	 * @param column
+	 * 	the original column of the piece.
+	 * @param row
+	 * 	the original row of the piece.
+	 *
+	 * @return an array containing the new column and row after rotation.
+	 */
 	private int[] rotateCoordinates(int column, int row) {
 		return new int[] { getColumns() - 1 - column, getRows() - 1 - row };
 	}
@@ -575,7 +575,7 @@ public class Board extends JPanel {
 		// Clear any cached possible moves
 		getPossibleMoves().clear();
 		// Load the board position from the FEN of the last move in history
-		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotationWhiteAtBottom().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 		clearHighlightsAndArrows();
@@ -621,7 +621,7 @@ public class Board extends JPanel {
 				if (getHistoryLookupIndex() == -1) {
 					toHistoryStart();
 				} else {
-					loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+					loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotationWhiteAtBottom().toString());
 				}
 
 			}
@@ -649,7 +649,7 @@ public class Board extends JPanel {
 		// Clear any cached possible moves
 		getPossibleMoves().clear();
 		// Load the board position corresponding to the new history index
-		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
+		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotationWhiteAtBottom().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 
