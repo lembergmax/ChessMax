@@ -486,8 +486,7 @@ public class Board extends JPanel {
 				getMoveHistory().size() + 1,
 				move.toAlgebraicNotation(),
 				move,
-				getCurrentPositionsFenNotation(),
-				null // TODO: fix
+				getCurrentPositionsFenNotation()
 			);
 
 			// Add the move to the move history
@@ -519,9 +518,85 @@ public class Board extends JPanel {
 		new InformationMessage("Spielende", "Das Spiel ist beendet! " + (isDraw ? "Unentschieden" : (isWhiteTurn() ? "Schwarz" : "Weiß") + " hat gewonnen!") + "\nGrund: " + gameEnding);
 	}
 
+	/**
+	 * Rotates the board by 180 degrees, switching the positions of all pieces.
+	 * Clears highlights, arrows, and possible moves, and updates the piece positions.
+	 */
 	public void rotateBoard() {
-		// TODO: implement board rotation
-		//  use: rotateCoordinates(column: int, row: int)
+		setWhiteAtBottom(!isWhiteAtBottom());
+
+		getRedHighlights().clear();
+		getArrows().clear();
+		setSelectedPiece(null);
+		getPossibleMoves().clear();
+
+		// Calculate new coordinates for each piece
+		for (Piece piece : getPieceList()) {
+			int currentColumn = piece.getColumn();
+			int currentRow = piece.getRow();
+
+			// Calculate new coordinates (rotateCoordinates rotates by 180 degrees)
+			int[] newCoords = rotateCoordinates(currentColumn, currentRow);
+
+			// Set new logical positions
+			piece.setColumn(newCoords[ 0 ]);
+			piece.setRow(newCoords[ 1 ]);
+
+			// Update graphical positions if based on pixel coordinates
+			piece.setXPos(newCoords[ 0 ] * getTileSize());
+			piece.setYPos(newCoords[ 1 ] * getTileSize());
+		}
+
+		// Redraw the board to reflect the changes
+		repaint();
+	}
+
+	/**
+	 * Rotates all FEN notations in the move history by 180 degrees.
+	 * Updates the FEN notations and the move coordinates accordingly.
+	 */
+	public void rotateAllFenNotations() {
+		for (HistoryMove historyMove : getMoveHistory()) {
+			loadPositionFromFen(historyMove.getFenNotation().toString());
+			rotateBoard();
+			historyMove.setFenNotation(getCurrentPositionsFenNotation());
+			rotateBoard();
+
+			Move move = historyMove.getMove();
+			int oldColumn = move.getOldColumn();
+			int oldRow = move.getOldRow();
+			int newColumn = move.getNewColumn();
+			int newRow = move.getNewRow();
+
+			int[] newOldCoords = rotateCoordinates(oldColumn, oldRow);
+			int[] newNewCoords = rotateCoordinates(newColumn, newRow);
+
+			move.setOldColumn(newOldCoords[ 0 ]);
+			move.setOldRow(newOldCoords[ 1 ]);
+			move.setNewColumn(newNewCoords[ 0 ]);
+			move.setNewRow(newNewCoords[ 1 ]);
+		}
+	}
+
+	/**
+	 * Rotates the en passant tile by 180 degrees.
+	 */
+	private void rotateEnPassantTile() {
+		if (getEnPassantTile() != -1) {
+			int column = getEnPassantTile() % getColumns();
+			int row = getEnPassantTile() / getColumns();
+			int[] newCoords = rotateCoordinates(column, row);
+			setEnPassantTile(newCoords[ 1 ] * getColumns() + newCoords[ 0 ]);
+		}
+	}
+
+	/**
+	 * Rotates the board and all FEN notations in the move history by 180 degrees.
+	 */
+	public void rotate() {
+		rotateAllFenNotations();
+		rotateEnPassantTile();
+		rotateBoard();
 	}
 
 	/**
@@ -534,7 +609,7 @@ public class Board extends JPanel {
 	 *
 	 * @return an array containing the new column and row after rotation.
 	 */
-	private int[] rotateCoordinates(int column, int row) {
+	public int[] rotateCoordinates(int column, int row) {
 		return new int[] { getColumns() - 1 - column, getRows() - 1 - row };
 	}
 
@@ -576,7 +651,7 @@ public class Board extends JPanel {
 		// Clear any cached possible moves
 		getPossibleMoves().clear();
 		// Load the board position from the FEN of the last move in history
-		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotationWhiteAtBottom().toString());
+		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 		clearHighlightsAndArrows();
@@ -622,7 +697,7 @@ public class Board extends JPanel {
 				if (getHistoryLookupIndex() == -1) {
 					toHistoryStart();
 				} else {
-					loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotationWhiteAtBottom().toString());
+					loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 				}
 
 			}
@@ -650,7 +725,7 @@ public class Board extends JPanel {
 		// Clear any cached possible moves
 		getPossibleMoves().clear();
 		// Load the board position corresponding to the new history index
-		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotationWhiteAtBottom().toString());
+		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 
@@ -867,8 +942,7 @@ public class Board extends JPanel {
 			getMoveHistory().size() + 1,
 			move.toAlgebraicNotation(String.valueOf(chosenPiece.getFenChar()).toUpperCase()),
 			move,
-			getCurrentPositionsFenNotation(),
-			null // TODO: fix
+			getCurrentPositionsFenNotation()
 		);
 
 		// Add the move to the move history

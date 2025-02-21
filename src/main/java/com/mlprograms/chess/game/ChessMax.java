@@ -35,8 +35,8 @@ import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 public class ChessMax {
 
-	private static final int BUTTON_CORNER_RADIUS = 15;
-	private static final int BUTTON_PADDING = 20;
+	private static final int BUTTON_CORNER_RADIUS = fetchIntegerConfig("Buttons", "BUTTON_CORNER_RADIUS");
+	private static final int BUTTON_PADDING = fetchIntegerConfig("Buttons", "BUTTON_PADDING");
 	private static DefaultTableModel moveHistoryTableModel;
 	private static Board board;
 	private static JScrollPane historyScrollPane;
@@ -364,7 +364,7 @@ public class ChessMax {
 		int buttonX = fetchIntegerConfig("MBPanel", "ROTATE_BUTTON_X");
 		int buttonY = fetchIntegerConfig("MBPanel", "ROTATE_BUTTON_Y");
 		// Create a styled button that rotates the board on click
-		JButton imageButton = createStyledButton(fetchStringConfig("Images", "ROTATE_BUTTON_ICON"), buttonWidth, buttonHeight, board::rotateBoard);
+		JButton imageButton = createStyledButton(fetchStringConfig("Images", "ROTATE_BUTTON_ICON"), buttonWidth - buttonWidth / 4, buttonHeight - buttonHeight / 4, buttonWidth, buttonHeight, board::rotate);
 		imageButton.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
 		imageButton.setBorder(getDevBorder(
 			BorderFactory.createLineBorder(Color.PINK, 1),
@@ -529,6 +529,78 @@ public class ChessMax {
 		button.setIcon(getScaledIcon(iconPath, iconWidth, iconHeight));
 		button.setBackground(normalColor);
 		button.setPreferredSize(new Dimension(iconWidth + BUTTON_PADDING, iconHeight + BUTTON_PADDING));
+		button.addActionListener(_ -> runnable.run());
+		button.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent evt) {
+				button.setBackground(hoverColor);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent evt) {
+				button.setBackground(normalColor);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent evt) {
+				button.setBackground(pressedColor);
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent evt) {
+				if (button.contains(evt.getPoint())) {
+					button.setBackground(hoverColor);
+				} else {
+					button.setBackground(normalColor);
+				}
+			}
+		});
+		return button;
+	}
+
+	/**
+	 * Creates a styled navigation button with the specified icon, size, and click action.
+	 *
+	 * @param iconPath
+	 * 	the resource path for the icon
+	 * @param size
+	 * 	the desired size for both width and height of the icon
+	 * @param runnable
+	 * 	the action to execute on button click
+	 *
+	 * @return the styled JButton
+	 */
+	private JButton createStyledButton(String iconPath, int size, Runnable runnable) {
+		return createStyledButton(iconPath, size, size, runnable);
+	}
+
+	/**
+	 * Creates a styled navigation button with the specified icon, icon size, button size, and click action.
+	 *
+	 * @param iconPath
+	 * 	the resource path for the icon
+	 * @param iconWidth
+	 * 	the desired icon width
+	 * @param iconHeight
+	 * 	the desired icon height
+	 * @param buttonWidth
+	 * 	the desired button width
+	 * @param buttonHeight
+	 * 	the desired button height
+	 * @param runnable
+	 * 	the action to execute on button click
+	 *
+	 * @return the styled JButton
+	 */
+	private JButton createStyledButton(String iconPath, int iconWidth, int iconHeight, int buttonWidth, int buttonHeight, Runnable runnable) {
+		Color normalColor = fetchColorConfig("Colors", "BUTTON_NORMAL");
+		Color hoverColor = fetchColorConfig("Colors", "BUTTON_HOVER");
+		Color pressedColor = fetchColorConfig("Colors", "BUTTON_PRESSED");
+
+		RoundedButton button = new RoundedButton(BUTTON_CORNER_RADIUS);
+		button.setIcon(getScaledIcon(iconPath, iconWidth, iconHeight));
+		button.setBackground(normalColor);
+		button.setPreferredSize(new Dimension(buttonWidth, buttonHeight));
 		button.addActionListener(_ -> runnable.run());
 		button.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
