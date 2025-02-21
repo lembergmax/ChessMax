@@ -153,7 +153,7 @@ public class MoveValidator {
 	public boolean isThreefoldRepetition() {
 		// Count the number of repetitions of the current position
 		int repetitions = (int) getBoard().getMoveHistory().stream()
-			                        .map(historyMove -> historyMove.getFenNotationWhiteAtBottom().getFenString())
+			                        .map(historyMove -> historyMove.getFenNotation().getFenString())
 			                        .filter(fenString -> fenString.equals(getBoard().getCurrentPositionsFenNotation().getFenString()))
 			                        .count();
 		return repetitions >= 3;
