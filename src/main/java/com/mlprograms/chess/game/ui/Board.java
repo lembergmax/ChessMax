@@ -548,146 +548,120 @@ public class Board extends JPanel {
 	}
 
 	/**
-	 * Rotates the board by 180 degrees, switching the positions of all pieces.
-	 * Clears highlights, arrows, and possible moves, and updates the piece positions.
+	 * Rotates the board by 180° while toggling the board orientation flag.
+	 * This method ensures that the UI elements, highlights, arrows, and cached moves are cleared
+	 * and that all pieces are updated accordingly.
 	 */
-	public void rotateBoard() {
+	public void rotateBoardWithTogglingFlag() {
+		// Toggle the board orientation (white at the bottom vs. white at the top)
 		setWhiteAtBottom(!isWhiteAtBottom());
 
-		getRedHighlights().clear();
-		getArrows().clear();
-		setSelectedPiece(null);
-		getPossibleMoves().clear();
-
-		// Calculate new coordinates for each piece
-		List<Piece> pieceList = parsePiecesFromFen(getCurrentPositionsFenNotation().toString());
-		for (Piece piece : pieceList) {
-			int currentColumn = piece.getColumn();
-			int currentRow = piece.getRow();
-
-			// Calculate new coordinates (rotateCoordinates rotates by 180 degrees)
-			int[] newCoords = rotateCoordinates(currentColumn, currentRow);
-
-			// Set new logical positions
-			piece.setColumn(newCoords[ 0 ]);
-			piece.setRow(newCoords[ 1 ]);
-
-			// Update graphical positions if based on pixel coordinates
-			piece.setXPos(newCoords[ 0 ] * getTileSize());
-			piece.setYPos(newCoords[ 1 ] * getTileSize());
-
-		}
-
-		// Update the piece list with the new positions
-		setPieceList(pieceList);
-
-		// Redraw the board to reflect the changes
-		repaint();
+		// Rotate the board and update its state
+		rotateBoard();
 	}
 
 	/**
-	 * Rotates all FEN notations in the move history by 180 degrees.
-	 * Updates the FEN notations and the move coordinates accordingly.
-	 * Dabei wird der aktuelle Board-Zustand zwischengespeichert und nach jedem Iterationsschritt wiederhergestellt,
-	 * um Seiteneffekte zu vermeiden.
+	 * Rotates all FEN notations in the move history by 180°.
+	 * This updates the stored FEN strings and move coordinates accordingly.
+	 * The current board state is temporarily saved and restored to avoid unintended side effects.
 	 */
 	public void rotateAllFenNotations() {
-		// Zwischenspeichern des aktuellen Board-Zustands
 		String currentFen = getCurrentPositionsFenNotation().toString();
 
 		for (HistoryMove historyMove : getMoveHistory()) {
 			String historyFen = historyMove.getFenNotation().toString();
-			// Lade den Board-Zustand des Historienzugs
-			loadPositionFromFen(historyFen);
-			// Drehe diesen Zustand
-			rotateBoard();
-			// Aktualisiere die FEN-Notation des Historienzugs mit dem rotierten Zustand
-			historyMove.setFenNotation(getCurrentPositionsFenNotation());
-			// Drehe nochmal, um den ursprünglichen Zustand dieser Historienposition wiederherzustellen
-			rotateBoard();
 
-			// Aktualisiere zusätzlich die gespeicherten Zugkoordinaten
+			// Load the board state for the given history move and rotate it
+			loadPositionFromFen(historyFen);
+			rotateBoardWithTogglingFlag();
+			historyMove.setFenNotation(getCurrentPositionsFenNotation());
+
+			// Restore the original state for this history entry
+			rotateBoardWithTogglingFlag();
+
+			// Rotate move coordinates
 			Move move = historyMove.getMove();
-			int[] newOldCoords = rotateCoordinates(move.getOldColumn(), move.getOldRow());
-			int[] newNewCoords = rotateCoordinates(move.getNewColumn(), move.getNewRow());
-			move.setOldColumn(newOldCoords[ 0 ]);
-			move.setOldRow(newOldCoords[ 1 ]);
-			move.setNewColumn(newNewCoords[ 0 ]);
-			move.setNewRow(newNewCoords[ 1 ]);
+			int[] rotatedOldCoords = rotateCoordinates(move.getOldColumn(), move.getOldRow());
+			int[] rotatedNewCoords = rotateCoordinates(move.getNewColumn(), move.getNewRow());
+			move.setOldColumn(rotatedOldCoords[ 0 ]);
+			move.setOldRow(rotatedOldCoords[ 1 ]);
+			move.setNewColumn(rotatedNewCoords[ 0 ]);
+			move.setNewRow(rotatedNewCoords[ 1 ]);
 		}
 
-		// Wiederherstellen des ursprünglich angezeigten Board-Zustands
+		// Restore the original board state
 		loadPositionFromFen(currentFen);
 	}
 
 	/**
-	 * Rotates the board and all FEN notations in the move history by 180 degrees.
-	 * Wenn der Spieler in der Historienanzeige unterwegs ist, wird der aktuell angezeigte Zug
-	 * (bzw. dessen FEN) nach der Rotation wieder geladen, sodass der Benutzer nicht zum Endzustand gelangt.
+	 * Rotates the board and all FEN notations in the move history by 180°.
+	 * If in history lookup mode, the currently displayed move is reloaded after rotation
+	 * to ensure that the user remains on the same move rather than jumping to the latest position.
 	 */
 	public void rotate() {
 		if (isHistoryLookup()) {
-			// Speichern des aktuellen History-Index und Board-Zustands
 			int currentIndex = getHistoryLookupIndex();
-			String currentFen = getCurrentPositionsFenNotation().toString();
 
 			rotateAllFenNotations();
 			rotateEnPassantTile();
-			rotateBoard();
+			rotateBoardWithTogglingFlag();
 
-			// Nach der Rotation den aktuell angezeigten Historienzug wieder laden
+			// Reload the correct move after rotation to maintain history navigation consistency
 			if (currentIndex == -1) {
 				loadPositionFromFen(getStartingPosition());
 			} else {
 				loadPositionFromFen(getMoveHistory().get(currentIndex).getFenNotation().toString());
 			}
 		} else {
-			// Normale Rotation, wenn man nicht in der Historienanzeige unterwegs ist
+			// Standard rotation when not in history lookup mode
 			rotateAllFenNotations();
 			rotateEnPassantTile();
-			rotateBoard();
+			rotateBoardWithTogglingFlag();
 		}
 	}
 
 	/**
-	 * Rotates the en passant tile by 180 degrees.
+	 * Rotates the en passant tile by 180°.
+	 * If an en passant tile exists, its position is recalculated accordingly.
 	 */
 	private void rotateEnPassantTile() {
 		if (getEnPassantTile() != -1) {
 			int column = getEnPassantTile() % getColumns();
 			int row = getEnPassantTile() / getColumns();
-			int[] newCoords = rotateCoordinates(column, row);
-			setEnPassantTile(newCoords[ 1 ] * getColumns() + newCoords[ 0 ]);
+			int[] rotatedCoords = rotateCoordinates(column, row);
+			setEnPassantTile(rotatedCoords[ 1 ] * getColumns() + rotatedCoords[ 0 ]);
 		}
 	}
 
 	/**
-	 * Neue Methode: Dreht das Brett um 180° ohne den Orientierungs-Flag (whiteAtBottom) zu toggeln.
+	 * Rotates the board by 180° without toggling the orientation flag.
+	 * This method ensures that the board maintains its current orientation,
+	 * which is useful in history mode or when only updating positions without changing perspective.
 	 */
-	public void rotateBoardWithoutTogglingFlag() {
+	public void rotateBoard() {
+		// Keep the board orientation flag unchanged
 		getRedHighlights().clear();
 		getArrows().clear();
 		setSelectedPiece(null);
 		getPossibleMoves().clear();
 
-		List<Piece> pieceList = parsePiecesFromFen(getCurrentPositionsFenNotation().toString());
-		for (Piece piece : pieceList) {
+		List<Piece> pieces = parsePiecesFromFen(getCurrentPositionsFenNotation().toString());
+		for (Piece piece : pieces) {
 			int currentColumn = piece.getColumn();
 			int currentRow = piece.getRow();
 
-			int[] newCoords = rotateCoordinates(currentColumn, currentRow);
-
-			piece.setColumn(newCoords[ 0 ]);
-			piece.setRow(newCoords[ 1 ]);
-			piece.setXPos(newCoords[ 0 ] * getTileSize());
-			piece.setYPos(newCoords[ 1 ] * getTileSize());
+			int[] rotatedCoords = rotateCoordinates(currentColumn, currentRow);
+			piece.setColumn(rotatedCoords[ 0 ]);
+			piece.setRow(rotatedCoords[ 1 ]);
+			piece.setXPos(rotatedCoords[ 0 ] * getTileSize());
+			piece.setYPos(rotatedCoords[ 1 ] * getTileSize());
 		}
-		setPieceList(pieceList);
+		setPieceList(pieces);
 		repaint();
 	}
 
 	/**
-	 * Rotates the given board coordinates by 180 degrees.
+	 * Rotates the given board coordinates by 180°.
 	 *
 	 * @param column
 	 * 	the original column of the piece.
@@ -701,28 +675,23 @@ public class Board extends JPanel {
 	}
 
 	/**
-	 * Navigates to the start of the game (i.e. the initial board position).
-	 * Hier wird nun zusätzlich geprüft, ob die aktuelle Dreh-Richtung beibehalten werden muss.
+	 * Navigates to the start of the game (initial board position).
+	 * If the current board orientation differs from the starting orientation,
+	 * the board is adjusted without toggling the orientation flag.
 	 */
 	public void toHistoryStart() {
-		// If there is no move history, do nothing
 		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
 			return;
 		}
 
-		// Enable history lookup mode
 		setHistoryLookup(true);
-		// Set index to -1, representing the starting position
 		setHistoryLookupIndex(-1);
-		// Clear any cached possible moves
 		getPossibleMoves().clear();
-		// Load the starting board position using FEN notation
 		loadPositionFromFen(getStartingPosition());
 
-		// Falls die aktuelle Orientierung abweicht (whiteAtBottom == false),
-		// das geladene Board entsprechend anpassen, ohne den Flag zu ändern.
+		// Adjust board orientation if necessary (starting position is assumed to be white at bottom)
 		if (!isWhiteAtBottom()) {
-			rotateBoardWithoutTogglingFlag();
+			rotateBoard();
 		}
 
 		clearHistoryMoveSelection();
@@ -730,64 +699,53 @@ public class Board extends JPanel {
 	}
 
 	/**
-	 * Navigates to the end of the move history (i.e. the final board position).
+	 * Navigates to the end of the move history (final board position).
 	 */
 	public void toHistoryEnd() {
-		// If there is no move history, do nothing
 		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
 			return;
 		}
 
-		// Since we are at the final move, disable history lookup mode
 		setHistoryLookup(false);
-		// Set index to the last move (0-based index)
 		setHistoryLookupIndex(getMoveHistory().size() - 1);
-		// Clear any cached possible moves
 		getPossibleMoves().clear();
-		// Load the board position from the FEN of the last move in history
 		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 		clearHighlightsAndArrows();
-
 		playHistoryGameSound(getMoveHistory().size());
 	}
 
 	/**
 	 * Moves one step backward in the move history.
-	 * If at the first move, it will revert to the starting position.
-	 * Hier wird beim Laden der Startposition geprüft, ob die Orientierung angepasst werden muss.
+	 * If already at the start, it reverts to the starting position.
+	 * Adjusts board orientation if necessary.
 	 */
 	public void historyBackward() {
-		// If there is no move history, do nothing
 		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
 			return;
 		}
 
-		// If already at the starting position (index -1), no further backward navigation is possible
 		if (getHistoryLookupIndex() <= -1) {
 			return;
 		}
 
-		// Ensure history lookup mode is enabled
 		setHistoryLookup(true);
 
-		// If currently at the first move (index 0), moving backward goes to the starting position
 		if (getHistoryLookupIndex() == 0) {
 			setHistoryLookupIndex(-1);
 			getPossibleMoves().clear();
 			loadPositionFromFen(getStartingPosition());
 			if (!isWhiteAtBottom()) {
-				rotateBoardWithoutTogglingFlag();
+				rotateBoard();
 			}
 		} else {
-			// Otherwise, decrement the index and load the corresponding board position
 			setHistoryLookupIndex(getHistoryLookupIndex() - 1);
 			getPossibleMoves().clear();
 			if (getHistoryLookupIndex() == -1) {
 				loadPositionFromFen(getStartingPosition());
 				if (!isWhiteAtBottom()) {
-					rotateBoardWithoutTogglingFlag();
+					rotateBoard();
 				}
 			} else {
 				if (getHistoryLookupIndex() == getMoveHistory().size() - 1) {
@@ -811,23 +769,18 @@ public class Board extends JPanel {
 	 * When reaching the final move, the history lookup mode is disabled.
 	 */
 	public void historyForward() {
-		// If there is no move history, do nothing
-		if (getMoveHistory() == null || getMoveHistory().isEmpty() || getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
+		if (getMoveHistory() == null || getMoveHistory().isEmpty() ||
+			    getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
 			return;
 		}
 
-		// Increment the history index to move forward
 		setHistoryLookupIndex(getHistoryLookupIndex() + 1);
-		// Ensure history lookup mode remains enabled
 		setHistoryLookup(true);
-		// Clear any cached possible moves
 		getPossibleMoves().clear();
-		// Load the board position corresponding to the new history index
 		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 
-		// If already at the final move, disable history lookup mode and exit
 		if (getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
 			setHistoryLookup(false);
 		}
@@ -840,6 +793,7 @@ public class Board extends JPanel {
 			playHistoryGameSound(getHistoryLookupIndex() + 1);
 		}
 	}
+
 
 	/**
 	 * Clears all red highlights and arrows from the board.
