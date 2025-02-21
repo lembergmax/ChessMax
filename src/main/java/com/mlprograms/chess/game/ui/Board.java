@@ -1027,11 +1027,11 @@ public class Board extends JPanel {
 			if (move.getPiece().getColumn() < move.getNewColumn()) {
 				// Castling to the right: get the rook from the rightmost column
 				rook = getPieceAt(7, move.getPiece().getRow());
-				targetColumn = 5;  // The king moves to column 5 during castling
+				targetColumn = isWhiteAtBottom() ? 5 : 4;  // The king moves to column 5 during castling
 			} else {
 				// Castling to the left: get the rook from the leftmost column
 				rook = getPieceAt(0, move.getPiece().getRow());
-				targetColumn = 3;  // The king moves to column 3 during castling
+				targetColumn = isWhiteAtBottom() ? 3 : 2;  // The king moves to column 3 during castling
 			}
 
 			// If the mouse is not being dragged, animate the rook's move as well

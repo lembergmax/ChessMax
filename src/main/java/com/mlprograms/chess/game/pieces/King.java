@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
+ * See "http://creativecommons.org/licenses/by-nc/4.0/".
+ */
+
 package com.mlprograms.chess.game.pieces;
 
 import com.mlprograms.chess.game.ui.Board;
@@ -73,9 +79,9 @@ public class King extends Piece {
 	 * @return the rook involved in castling, or null if the column is invalid
 	 */
 	private Piece getRookForCastling(int column, int row) {
-		if (column == 6) {
+		if (column == 6 || column == 5) {
 			return getBoard().getPieceAt(7, row); // Kingside (Short Castling)
-		} else if (column == 2) {
+		} else if (column == 2 || column == 1) {
 			return getBoard().getPieceAt(0, row); // Queenside (Long Castling)
 		}
 		return null; // Invalid column for castling
@@ -92,10 +98,10 @@ public class King extends Piece {
 	 * @return true if the squares are empty, false otherwise
 	 */
 	private boolean areCastlingSquaresEmpty(int column, int row) {
-		if (column == 6) {
+		if (column == 6 || column == 5) {
 			return getBoard().getPieceAt(5, row) == null && getBoard().getPieceAt(6, row) == null;
-		} else if (column == 2) {
-			return getBoard().getPieceAt(1, row) == null && getBoard().getPieceAt(2, row) == null && getBoard().getPieceAt(3, row) == null;
+		} else if (column == 2 || column == 1) {
+			return getBoard().getPieceAt(1, row) == null && getBoard().getPieceAt(2, row) == null && (!getBoard().isWhiteAtBottom() || getBoard().getPieceAt(3, row) == null);
 		}
 		return false;
 	}
@@ -111,9 +117,9 @@ public class King extends Piece {
 	 * @return true if the castling move is under attack, false otherwise
 	 */
 	private boolean isCastlingMoveUnderAttack(int column, int row) {
-		if (column == 6) {
+		if (column == 6 || column == 5) {
 			return targetsEnemyPieceSpecificTile(5, row) || targetsEnemyPieceSpecificTile(6, row);
-		} else if (column == 2) {
+		} else if (column == 2 || column == 1) {
 			return targetsEnemyPieceSpecificTile(2, row) || targetsEnemyPieceSpecificTile(3, row);
 		}
 		return false;
