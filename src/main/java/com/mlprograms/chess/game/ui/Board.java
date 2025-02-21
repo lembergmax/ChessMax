@@ -519,8 +519,22 @@ public class Board extends JPanel {
 	}
 
 	public void rotateBoard() {
-		// TODO: implement
-		Logger.logDebug("rotate Board");
+		// TODO: board does not update
+		// TODO: there are many more issues after rotation
+
+		System.out.println("rotate board");
+
+		for (Piece piece : getPieceList()) {
+			int[] newCoordinates = rotateCoordinates(piece.getColumn(), piece.getRow());
+			piece.setColumn(newCoordinates[ 0 ]);
+			piece.setRow(newCoordinates[ 1 ]);
+		}
+
+		setWhiteAtBottom(!isWhiteAtBottom());
+	}
+
+	private int[] rotateCoordinates(int column, int row) {
+		return new int[] { getColumns() - 1 - column, getRows() - 1 - row };
 	}
 
 	/**
