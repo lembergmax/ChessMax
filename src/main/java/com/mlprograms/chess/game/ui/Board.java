@@ -624,7 +624,7 @@ public class Board extends JPanel {
 	 * Rotates the en passant tile by 180°.
 	 * If an en passant tile exists, its position is recalculated accordingly.
 	 */
-	private void rotateEnPassantTile() {
+	public void rotateEnPassantTile() {
 		if (getEnPassantTile() != -1) {
 			int column = getEnPassantTile() % getColumns();
 			int row = getEnPassantTile() / getColumns();
