@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025 Max Lemberg. This file is part of ChessMax.
+ * Licenced under the CC BY-NC 4.0 License.
+ * See "http://creativecommons.org/licenses/by-nc/4.0/".
+ */
+
 package com.mlprograms.tests.ui;
 
 import com.mlprograms.chess.game.ui.Board;
@@ -48,18 +54,49 @@ public class BoardTest {
 	}
 
 	@Test
-	public void testMakeMove() {
+	public void testRotateBoardWithTogglingFlag() {
+		boolean initialOrientation = board.isWhiteAtBottom();
+		board.rotateBoardWithTogglingFlag();
+		assertEquals(!initialOrientation, board.isWhiteAtBottom());
 	}
 
 	@Test
-	public void testIsValidMove() {
+	public void testRotateCoordinates() {
+		int[] rotatedCoords = board.rotateCoordinates(0, 0);
+		assertEquals(board.getColumns() - 1, rotatedCoords[ 0 ]);
+		assertEquals(board.getRows() - 1, rotatedCoords[ 1 ]);
 	}
 
 	@Test
-	public void testIsKingInCheck() {
+	public void testRotateAllFenNotations() {
+		String initialFen = board.getCurrentPositionsFenNotation().toString();
+		board.rotateAllFenNotations();
+		board.rotateAllFenNotations(); // Should restore the original position
+		assertEquals(initialFen, board.getCurrentPositionsFenNotation().toString());
 	}
 
 	@Test
-	public void testCheckForGameEnding() {
+	public void testRotate() {
+		String initialFen = board.getCurrentPositionsFenNotation().toString();
+		board.rotate();
+		board.rotate(); // Should restore the original position
+		assertEquals(initialFen, board.getCurrentPositionsFenNotation().toString());
 	}
+
+	@Test
+	public void testRotateBoard() {
+		String initialFen = board.getCurrentPositionsFenNotation().toString();
+		board.rotateBoard();
+		board.rotateBoard(); // Should restore the original position
+		assertEquals(initialFen, board.getCurrentPositionsFenNotation().toString());
+	}
+
+	@Test
+	public void testRotateEnPassantTile() {
+		board.setEnPassantTile(12); // Example tile
+		board.rotateEnPassantTile();
+		int expectedRotatedTile = board.rotateCoordinates(12 % board.getColumns(), 12 / board.getColumns())[ 1 ] * board.getColumns() + board.rotateCoordinates(12 % board.getColumns(), 12 / board.getColumns())[ 0 ];
+		assertEquals(expectedRotatedTile, board.getEnPassantTile());
+	}
+
 }
