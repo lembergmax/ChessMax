@@ -202,68 +202,97 @@ public class Board extends JPanel {
 
 	/**
 	 * Loads a chess position from a given FEN string and updates the board state accordingly.
-	 * The method parses the FEN string to set up the pieces, determine the turn,
-	 * castling rights, and en passant square. It also highlights the last move if possible.
+	 * This method parses the FEN string and updates the piece list, active color,
+	 * castling rights, and en passant square. Finally, the board is repainted.
 	 *
 	 * @param fenString
 	 * 	the FEN string representing the chess position
 	 */
 	public void loadPositionFromFen(String fenString) {
-
-		// Retrieve local reference to the piece list to avoid repeated getter calls.
 		List<Piece> pieceList = getPieceList();
 		pieceList.clear();
 
-		// Manually parse the FEN string instead of using StringTokenizer.
-		// FEN Format: [piece placement] [active color] [castling availability] [en passant square] ...
-		int firstSpace = fenString.indexOf(' ');
-		if (firstSpace == -1) return; // Invalid FEN, abort
+		String[] tokens = parseFenTokens(fenString);
+		parsePiecePlacement(tokens[ 0 ], pieceList);
+		setWhiteTurn("w".equals(tokens[ 1 ]));
+		updateCastling(tokens[ 2 ]);
+		updateEnPassant(tokens[ 3 ]);
+		repaint();
+	}
 
-		String placement = fenString.substring(0, firstSpace);
+	/**
+	 * Parses the given FEN string and returns a list of chess pieces representing
+	 * the piece placement section.
+	 *
+	 * @param fenString
+	 * 	the FEN string representing the chess position
+	 *
+	 * @return the list of chess pieces parsed from the FEN string
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the FEN string is null or invalid
+	 */
+	public List<Piece> parsePiecesFromFen(String fenString) {
+		if (fenString == null) {
+			throw new IllegalArgumentException("FEN string must not be null.");
+		}
+		List<Piece> pieceList = new ArrayList<>();
+		String[] tokens = parseFenTokens(fenString);
+		parsePiecePlacement(tokens[ 0 ], pieceList);
+		return pieceList;
+	}
 
-		int secondSpace = fenString.indexOf(' ', firstSpace + 1);
-		if (secondSpace == -1) return; // Invalid FEN, abort
-		// Active color: "w" or "b"
-		boolean whiteTurn = fenString.charAt(firstSpace + 1) == 'w';
-		setWhiteTurn(whiteTurn);
+	/**
+	 * Splits the FEN string into its basic tokens.
+	 *
+	 * @param fenString
+	 * 	the FEN string representing the chess position
+	 *
+	 * @return an array of tokens: [0]=piece placement, [1]=active color, [2]=castling rights, [3]=en passant
+	 *
+	 * @throws IllegalArgumentException
+	 * 	if the FEN string is invalid
+	 */
+	private String[] parseFenTokens(String fenString) {
+		if (fenString == null) {
+			throw new IllegalArgumentException("FEN string must not be null.");
+		}
+		String[] tokens = fenString.split(" ");
+		if (tokens.length < 4) {
+			throw new IllegalArgumentException("Invalid FEN string: insufficient tokens.");
+		}
+		return tokens;
+	}
 
-		int thirdSpace = fenString.indexOf(' ', secondSpace + 1);
-		if (thirdSpace == -1) return; // Invalid FEN, abort
-		String castlingRights = fenString.substring(secondSpace + 1, thirdSpace);
-
-		int fourthSpace = fenString.indexOf(' ', thirdSpace + 1);
-		// If no fourth space exists, en passant goes bis zum Ende.
-		String enPassant = (fourthSpace == -1)
-			                   ? fenString.substring(thirdSpace + 1)
-			                   : fenString.substring(thirdSpace + 1, fourthSpace);
-
-		// Parse the piece placement section using a char array for performance.
+	/**
+	 * Parses the piece placement section of the FEN string and populates the provided piece list.
+	 *
+	 * @param placement
+	 * 	the piece placement token from the FEN string
+	 * @param pieceList
+	 * 	the list to populate with chess pieces
+	 */
+	private void parsePiecePlacement(String placement, List<Piece> pieceList) {
 		char[] placementChars = placement.toCharArray();
 		int row = 0;
 		int column = 0;
+
 		for (char ch : placementChars) {
 			if (ch == '/') {
-				// New row detected; move to the next row and reset column.
+				// New row detected; move to the next row and reset the column counter.
 				row++;
 				column = 0;
-			} else if (ch >= '1' && ch <= '8') {
-				// Advance the column by the numeric value (number of empty squares).
+			} else if (Character.isDigit(ch)) {
+				// Skip a number of empty squares as indicated by the digit.
 				column += ch - '0';
 			} else {
-				// Create and add the piece.
-				// Determine the color by checking if the character is uppercase.
+				// Create and add the chess piece.
+				// Uppercase indicates a white piece.
 				boolean isWhite = Character.isUpperCase(ch);
 				pieceList.add(createPiece(ch, column, row, isWhite));
 				column++;
 			}
 		}
-
-		// Update castling rights and the en passant target square.
-		updateCastling(castlingRights);
-		updateEnPassant(enPassant);
-
-		// Redraw the board to reflect the new position.
-		repaint();
 	}
 
 	/**
@@ -519,21 +548,145 @@ public class Board extends JPanel {
 	}
 
 	/**
-	 * Navigates to the start of the game (i.e. the initial board position).
+	 * Rotates the board by 180° while toggling the board orientation flag.
+	 * This method ensures that the UI elements, highlights, arrows, and cached moves are cleared
+	 * and that all pieces are updated accordingly.
+	 */
+	public void rotateBoardWithTogglingFlag() {
+		// Toggle the board orientation (white at the bottom vs. white at the top)
+		setWhiteAtBottom(!isWhiteAtBottom());
+
+		// Rotate the board and update its state
+		rotateBoard();
+	}
+
+	/**
+	 * Rotates all FEN notations in the move history by 180°.
+	 * This updates the stored FEN strings and move coordinates accordingly.
+	 * The current board state is temporarily saved and restored to avoid unintended side effects.
+	 */
+	public void rotateAllFenNotations() {
+		String currentFen = getCurrentPositionsFenNotation().toString();
+
+		for (HistoryMove historyMove : getMoveHistory()) {
+			String historyFen = historyMove.getFenNotation().toString();
+
+			// Load the board state for the given history move and rotate it
+			loadPositionFromFen(historyFen);
+			rotateBoardWithTogglingFlag();
+			historyMove.setFenNotation(getCurrentPositionsFenNotation());
+
+			// Restore the original state for this history entry
+			rotateBoardWithTogglingFlag();
+
+			// Rotate move coordinates
+			Move move = historyMove.getMove();
+			int[] rotatedOldCoords = rotateCoordinates(move.getOldColumn(), move.getOldRow());
+			int[] rotatedNewCoords = rotateCoordinates(move.getNewColumn(), move.getNewRow());
+			move.setOldColumn(rotatedOldCoords[ 0 ]);
+			move.setOldRow(rotatedOldCoords[ 1 ]);
+			move.setNewColumn(rotatedNewCoords[ 0 ]);
+			move.setNewRow(rotatedNewCoords[ 1 ]);
+		}
+
+		// Restore the original board state
+		loadPositionFromFen(currentFen);
+	}
+
+	/**
+	 * Rotates the board and all FEN notations in the move history by 180°.
+	 * If in history lookup mode, the currently displayed move is reloaded after rotation
+	 * to ensure that the user remains on the same move rather than jumping to the latest position.
+	 */
+	public void rotate() {
+		if (isHistoryLookup()) {
+			int currentIndex = getHistoryLookupIndex();
+
+			rotateAllFenNotations();
+			rotateEnPassantTile();
+			rotateBoardWithTogglingFlag();
+
+			// Reload the correct move after rotation to maintain history navigation consistency
+			if (currentIndex == -1) {
+				loadPositionFromFen(getStartingPosition());
+			} else {
+				loadPositionFromFen(getMoveHistory().get(currentIndex).getFenNotation().toString());
+			}
+		} else {
+			// Standard rotation when not in history lookup mode
+			rotateAllFenNotations();
+			rotateEnPassantTile();
+			rotateBoardWithTogglingFlag();
+		}
+	}
+
+	/**
+	 * Rotates the en passant tile by 180°.
+	 * If an en passant tile exists, its position is recalculated accordingly.
+	 */
+	public void rotateEnPassantTile() {
+		if (getEnPassantTile() != -1) {
+			int column = getEnPassantTile() % getColumns();
+			int row = getEnPassantTile() / getColumns();
+			int[] rotatedCoords = rotateCoordinates(column, row);
+			setEnPassantTile(rotatedCoords[ 1 ] * getColumns() + rotatedCoords[ 0 ]);
+		}
+	}
+
+	/**
+	 * Rotates the board by 180° without toggling the orientation flag.
+	 * This method ensures that the board maintains its current orientation,
+	 * which is useful in history mode or when only updating positions without changing perspective.
+	 */
+	public void rotateBoard() {
+		// Keep the board orientation flag unchanged
+		getRedHighlights().clear();
+		getArrows().clear();
+		setSelectedPiece(null);
+		getPossibleMoves().clear();
+
+		List<Piece> pieces = parsePiecesFromFen(getCurrentPositionsFenNotation().toString());
+		for (Piece piece : pieces) {
+			int currentColumn = piece.getColumn();
+			int currentRow = piece.getRow();
+
+			int[] rotatedCoords = rotateCoordinates(currentColumn, currentRow);
+			piece.setColumn(rotatedCoords[ 0 ]);
+			piece.setRow(rotatedCoords[ 1 ]);
+			piece.setXPos(rotatedCoords[ 0 ] * getTileSize());
+			piece.setYPos(rotatedCoords[ 1 ] * getTileSize());
+		}
+		setPieceList(pieces);
+		repaint();
+	}
+
+	/**
+	 * Rotates the given board coordinates by 180°.
+	 *
+	 * @param column
+	 * 	the original column of the piece.
+	 * @param row
+	 * 	the original row of the piece.
+	 *
+	 * @return an array containing the new column and row after rotation.
+	 */
+	public int[] rotateCoordinates(int column, int row) {
+		return new int[] { getColumns() - 1 - column, getRows() - 1 - row };
+	}
+
+	/**
+	 * Navigates to the start of the game (initial board position).
+	 * If the current board orientation differs from the starting orientation,
+	 * the board is adjusted without toggling the orientation flag.
 	 */
 	public void toHistoryStart() {
-		// If there is no move history, do nothing
 		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
 			return;
 		}
 
-		// Enable history lookup mode
 		setHistoryLookup(true);
-		// Set index to -1, representing the starting position
 		setHistoryLookupIndex(-1);
-		// Clear any cached possible moves
 		getPossibleMoves().clear();
-		// Load the starting board position using FEN notation
 		loadPositionFromFen(getStartingPosition());
 
 		clearHistoryMoveSelection();
@@ -541,70 +694,63 @@ public class Board extends JPanel {
 	}
 
 	/**
-	 * Navigates to the end of the move history (i.e. the final board position).
+	 * Navigates to the end of the move history (final board position).
 	 */
 	public void toHistoryEnd() {
-		// If there is no move history, do nothing
 		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
 			return;
 		}
 
-		// Since we are at the final move, disable history lookup mode
 		setHistoryLookup(false);
-		// Set index to the last move (0-based index)
 		setHistoryLookupIndex(getMoveHistory().size() - 1);
-		// Clear any cached possible moves
 		getPossibleMoves().clear();
-		// Load the board position from the FEN of the last move in history
 		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 		clearHighlightsAndArrows();
-
 		playHistoryGameSound(getMoveHistory().size());
 	}
 
 	/**
 	 * Moves one step backward in the move history.
-	 * If at the first move, it will revert to the starting position.
+	 * If already at the start, it reverts to the starting position.
+	 * Adjusts board orientation if necessary.
 	 */
-	public void historyBackward() {
-		// If there is no move history, do nothing
+	public void historyPrevious() {
 		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
 			return;
 		}
 
-		// If already at the starting position (index -1), no further backward navigation is possible
 		if (getHistoryLookupIndex() <= -1) {
 			return;
 		}
 
-		// Ensure history lookup mode is enabled
 		setHistoryLookup(true);
 
-		// If currently at the first move (index 0), moving backward goes to the starting position
 		if (getHistoryLookupIndex() == 0) {
 			setHistoryLookupIndex(-1);
 			getPossibleMoves().clear();
 			loadPositionFromFen(getStartingPosition());
+			if (!isWhiteAtBottom()) {
+				rotateBoard();
+			}
 		} else {
-			// Otherwise, decrement the index and load the corresponding board position
 			setHistoryLookupIndex(getHistoryLookupIndex() - 1);
 			getPossibleMoves().clear();
-			// If the new index is -1, load the starting position; else load the move's FEN
 			if (getHistoryLookupIndex() == -1) {
 				loadPositionFromFen(getStartingPosition());
+				if (!isWhiteAtBottom()) {
+					rotateBoard();
+				}
 			} else {
 				if (getHistoryLookupIndex() == getMoveHistory().size() - 1) {
 					setHistoryLookupIndex(getHistoryLookupIndex() - 1);
 				}
-
 				if (getHistoryLookupIndex() == -1) {
 					toHistoryStart();
 				} else {
 					loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 				}
-
 			}
 		}
 
@@ -613,28 +759,24 @@ public class Board extends JPanel {
 		playHistoryGameSound(getHistoryLookupIndex() + 1);
 	}
 
+
 	/**
 	 * Moves one step forward in the move history.
 	 * When reaching the final move, the history lookup mode is disabled.
 	 */
-	public void historyForward() {
-		// If there is no move history, do nothing
-		if (getMoveHistory() == null || getMoveHistory().isEmpty() || getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
+	public void historyNext() {
+		if (getMoveHistory() == null || getMoveHistory().isEmpty() ||
+			    getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
 			return;
 		}
 
-		// Increment the history index to move forward
 		setHistoryLookupIndex(getHistoryLookupIndex() + 1);
-		// Ensure history lookup mode remains enabled
 		setHistoryLookup(true);
-		// Clear any cached possible moves
 		getPossibleMoves().clear();
-		// Load the board position corresponding to the new history index
 		loadPositionFromFen(getMoveHistory().get(getHistoryLookupIndex()).getFenNotation().toString());
 
 		markHistoryMoveCell(getHistoryLookupIndex());
 
-		// If already at the final move, disable history lookup mode and exit
 		if (getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
 			setHistoryLookup(false);
 		}
@@ -647,6 +789,7 @@ public class Board extends JPanel {
 			playHistoryGameSound(getHistoryLookupIndex() + 1);
 		}
 	}
+
 
 	/**
 	 * Clears all red highlights and arrows from the board.
@@ -880,11 +1023,11 @@ public class Board extends JPanel {
 			if (move.getPiece().getColumn() < move.getNewColumn()) {
 				// Castling to the right: get the rook from the rightmost column
 				rook = getPieceAt(7, move.getPiece().getRow());
-				targetColumn = 5;  // The king moves to column 5 during castling
+				targetColumn = isWhiteAtBottom() ? 5 : 4;  // The king moves to column 5 during castling
 			} else {
 				// Castling to the left: get the rook from the leftmost column
 				rook = getPieceAt(0, move.getPiece().getRow());
-				targetColumn = 3;  // The king moves to column 3 during castling
+				targetColumn = isWhiteAtBottom() ? 3 : 2;  // The king moves to column 3 during castling
 			}
 
 			// If the mouse is not being dragged, animate the rook's move as well

@@ -28,41 +28,43 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
+import java.util.Random;
 
 import static com.mlprograms.chess.game.pieces.AsciiPieces.*;
 import static com.mlprograms.chess.utils.ConfigFetcher.*;
 
 public class ChessMax {
 
-	private static final int BUTTON_CORNER_RADIUS = 15;
-	private static final int BUTTON_PADDING = 20;
+	private static final int BUTTON_CORNER_RADIUS = fetchIntegerConfig("Buttons", "BUTTON_CORNER_RADIUS");
+	private static final int BUTTON_PADDING = fetchIntegerConfig("Buttons", "BUTTON_PADDING");
 	private static DefaultTableModel moveHistoryTableModel;
 	private static Board board;
 	private static JScrollPane historyScrollPane;
-	private final boolean IS_WHITE_AT_BOTTOM;
-	private final Player PLAYER_WHITE;
-	private final Player PLAYER_BLACK;
+
+	private final boolean isWhiteAtBottom;
+	private final Player playerWhite;
+	private final Player playerBlack;
 	private JFrame frame;
 
 	/**
-	 * Creates a new ChessMax game instance.
+	 * Constructs a new ChessMax game instance.
 	 *
 	 * @param playerWhite
-	 * 	the white player.
+	 * 	the white player
 	 * @param playerBlack
-	 * 	the black player.
+	 * 	the black player
 	 * @param isWhiteAtBottom
-	 * 	determines if the white pieces are displayed at the bottom.
+	 * 	if true, white pieces are displayed at the bottom
 	 */
 	public ChessMax(Player playerWhite, Player playerBlack, boolean isWhiteAtBottom) {
-		this.PLAYER_WHITE = playerWhite;
-		this.PLAYER_BLACK = playerBlack;
-		this.IS_WHITE_AT_BOTTOM = isWhiteAtBottom;
+		this.playerWhite = playerWhite;
+		this.playerBlack = playerBlack;
+		this.isWhiteAtBottom = isWhiteAtBottom;
 
-		// Generate the sprite sheet for the bot (AI).
+		// Generate bot sprite sheet for AI
 		BotSpriteSheetCreator.createSpriteSheet();
 
-		// Initialize the main game window.
+		// Initialize the main game window
 		initializeMainFrame();
 	}
 
@@ -70,31 +72,31 @@ public class ChessMax {
 	 * Adds a move to the move history table.
 	 *
 	 * @param historyMove
-	 * 	the move to be added.
+	 * 	the move to add
 	 */
 	public static void addMove(HistoryMove historyMove) {
 		if (moveHistoryTableModel == null || historyMove == null) {
 			return;
 		}
-
+		// Update board move history and lookup index
 		board.getMoveHistory().add(historyMove);
 		board.setHistoryLookup(false);
 		board.setHistoryLookupIndex(board.getMoveHistory().size());
 
+		// Update move notation with proper piece symbols
 		String updatedNotation = updateAlgebraicNotationSymbols(historyMove);
 		int rowCount = moveHistoryTableModel.getRowCount();
 
-		// If the last row already contains a black move, start a new row for the white move.
+		// Add a new row or update the last row based on current table state
 		if (rowCount == 0 || (moveHistoryTableModel.getValueAt(rowCount - 1, 2) != null
 			                      && !moveHistoryTableModel.getValueAt(rowCount - 1, 2).toString().isEmpty())) {
 			Object[] row = new Object[] { rowCount + 1, updatedNotation, "" };
 			moveHistoryTableModel.addRow(row);
 		} else {
-			// Otherwise, update the last row with the black move.
 			moveHistoryTableModel.setValueAt(updatedNotation, rowCount - 1, 2);
 		}
 
-		// Scroll to the bottom of the move history.
+		// Auto-scroll the move history pane to the bottom
 		if (historyScrollPane != null) {
 			SwingUtilities.invokeLater(() -> {
 				JScrollBar verticalBar = historyScrollPane.getVerticalScrollBar();
@@ -104,16 +106,15 @@ public class ChessMax {
 	}
 
 	/**
-	 * Updates the algebraic notation for a move by replacing piece letters with corresponding ASCII symbols.
+	 * Updates the algebraic notation for a move by replacing piece letters with corresponding symbols.
 	 *
 	 * @param historyMove
-	 * 	the move whose notation will be updated.
+	 * 	the move to update
 	 *
-	 * @return the updated algebraic notation.
+	 * @return the updated notation string
 	 */
 	private static String updateAlgebraicNotationSymbols(HistoryMove historyMove) {
 		String notation = historyMove.getMoveAlgebraic();
-
 		if (historyMove.getMove().getPiece().isWhite()) {
 			notation = notation.replace("K", WHITE_KING.getSYMBOL())
 				           .replace("Q", WHITE_QUEEN.getSYMBOL())
@@ -133,61 +134,63 @@ public class ChessMax {
 	}
 
 	/**
-	 * Marks a single cell in the move history corresponding to the given move index.
+	 * Highlights the move cell in the move history table.
 	 *
 	 * @param index
-	 * 	the move index in the move list (0-based).
-	 * 	It is assumed that even indices represent white moves (column 1)
-	 * 	and odd indices represent black moves (column 2).
+	 * 	the 0-based index of the move to mark
 	 */
 	public static void markHistoryMoveCell(int index) {
 		if (moveHistoryTableModel == null || historyScrollPane == null) {
 			return;
 		}
-
-		// Retrieve the JTable instance from the JScrollPane
 		JTable moveTable = (JTable) historyScrollPane.getViewport().getView();
-		if (moveTable == null || index <= -1) {
+		if (moveTable == null || index < 0) {
 			clearHistoryMoveSelection();
 			return;
 		}
-
-		// Calculate row and column:
-		// Row = index / 2, Column = 1 (white) if index is even, otherwise Column = 2 (black)
 		int row = index / 2;
 		int col = (index % 2 == 0) ? 1 : 2;
-
-		// Check if the calculated row exists
 		if (row >= moveHistoryTableModel.getRowCount()) {
-			Logger.logError("Invalid Move-Index: " + index);
+			Logger.logError("Invalid move index: " + index);
 			return;
 		}
-
-		// Select the cell in the table
 		moveTable.changeSelection(row, col, false, false);
 	}
 
 	/**
-	 * Clears any current selection in the move history.
+	 * Clears the current selection in the move history table.
 	 */
 	public static void clearHistoryMoveSelection() {
 		if (historyScrollPane == null) {
 			return;
 		}
-
-		// Retrieve the JTable instance from the JScrollPane
 		JTable moveTable = (JTable) historyScrollPane.getViewport().getView();
-		if (moveTable == null) {
-			return;
+		if (moveTable != null) {
+			moveTable.clearSelection();
 		}
-
-		// Clear all selections
-		moveTable.clearSelection();
 	}
 
+	/**
+	 * Returns a border based on the developer mode setting.
+	 * If DEV_MODE is enabled, the devBorder is combined with the normalBorder so that padding is preserved.
+	 *
+	 * @param devBorder
+	 * 	the border to use in developer mode
+	 * @param normalBorder
+	 * 	the border to use in normal mode
+	 *
+	 * @return the appropriate border based on the DEV_MODE configuration
+	 */
+	private Border getDevBorder(Border devBorder, Border normalBorder) {
+		if (fetchBooleanConfig("Developer", "DEV_MODE")) {
+			// Combines the devBorder as an outer frame with the original normalBorder
+			return (normalBorder != null) ? BorderFactory.createCompoundBorder(devBorder, normalBorder) : devBorder;
+		}
+		return normalBorder;
+	}
 
 	/**
-	 * Initializes the main JFrame with the chessboard and side panels.
+	 * Initializes the main game window and lays out all panels.
 	 */
 	private void initializeMainFrame() {
 		frame = new JFrame(fetchStringConfig("ChessGame", "TITLE"));
@@ -201,28 +204,90 @@ public class ChessMax {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
-		// Create and add the chessboard.
-		board = new Board(PLAYER_WHITE, PLAYER_BLACK, IS_WHITE_AT_BOTTOM);
+		// Create the chessboard and remove any extra padding.
+		board = new Board(playerWhite, playerBlack, isWhiteAtBottom);
+		JPanel chessBoardPanel = board.getBoardContainer();
+		chessBoardPanel.setBorder(getDevBorder(
+			BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(Color.RED, 1),
+				BorderFactory.createEmptyBorder(0, 0, 0, 0)
+			),
+			BorderFactory.createEmptyBorder()
+		));
+
+		// Column 0: Left Spacer
+		JPanel leftSpacer = new JPanel();
+		leftSpacer.setOpaque(false);
+		int leftSpacerWidth = fetchIntegerConfig("MBPanel", "LEFT_SPACER_WIDTH");
+		leftSpacer.setPreferredSize(new Dimension(fetchBooleanConfig("Developer", "DEV_MODE") ? leftSpacerWidth / 2 : leftSpacerWidth,
+			chessBoardPanel.getPreferredSize().height));
+		leftSpacer.setBorder(getDevBorder(
+			BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(Color.BLUE, 1),
+				BorderFactory.createEmptyBorder(0, 0, 0, 0)
+			),
+			BorderFactory.createEmptyBorder()
+		));
+		GridBagConstraints leftSpacerConstraints = new GridBagConstraints();
+		leftSpacerConstraints.gridx = 0;
+		leftSpacerConstraints.gridy = 0;
+		leftSpacerConstraints.weightx = 0;
+		leftSpacerConstraints.fill = GridBagConstraints.VERTICAL;
+		frame.add(leftSpacer, leftSpacerConstraints);
+
+		// Column 1: ChessBoard
 		GridBagConstraints boardConstraints = new GridBagConstraints();
-		boardConstraints.gridx = 0;
+		boardConstraints.gridx = 1;
 		boardConstraints.gridy = 0;
 		boardConstraints.weightx = 1.0;
 		boardConstraints.weighty = 1.0;
 		boardConstraints.anchor = GridBagConstraints.CENTER;
-		frame.add(board.getBoardContainer(), boardConstraints);
+		frame.add(chessBoardPanel, boardConstraints);
 
-		// Create the move history panel.
+		// Column 2: Middle Panel with the image button (narrow and adjacent to the chessboard)
+		JPanel middleButtonPanel = createMiddleButtonPanel();
+		GridBagConstraints midPanelConstraints = new GridBagConstraints();
+		midPanelConstraints.gridx = 2;
+		midPanelConstraints.gridy = 0;
+		midPanelConstraints.weightx = 0;
+		midPanelConstraints.fill = GridBagConstraints.VERTICAL;
+		midPanelConstraints.anchor = GridBagConstraints.WEST;
+		frame.add(middleButtonPanel, midPanelConstraints);
+
+		// Column 3: Spacer between Middle Panel and Right Panel
+		int spacerWidth = fetchIntegerConfig("MBPanel", "RIGHT_SPACER_WIDTH");
+		JPanel spacer = new JPanel();
+		spacer.setOpaque(false);
+		spacer.setPreferredSize(new Dimension(spacerWidth, chessBoardPanel.getPreferredSize().height));
+		spacer.setBorder(getDevBorder(
+			BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(Color.MAGENTA, 1),
+				BorderFactory.createEmptyBorder(0, 0, 0, 0)
+			),
+			BorderFactory.createEmptyBorder()
+		));
+		GridBagConstraints spacerConstraints = new GridBagConstraints();
+		spacerConstraints.gridx = 3;
+		spacerConstraints.gridy = 0;
+		spacerConstraints.weightx = 0;
+		spacerConstraints.fill = GridBagConstraints.VERTICAL;
+		frame.add(spacer, spacerConstraints);
+
+		// Column 4: Right Panel (contains move history and navigation buttons)
 		JPanel historyPanel = createHistoryPanel();
-		// Create the button panel.
 		JPanel buttonPanel = createButtonPanel();
-
-		// Create a right-side container combining the history panel and buttons.
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		rightPanel.add(historyPanel, BorderLayout.CENTER);
 		rightPanel.add(buttonPanel, BorderLayout.SOUTH);
-
+		rightPanel.setBorder(getDevBorder(
+			BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(Color.GREEN, 1),
+				BorderFactory.createEmptyBorder(0, 0, 0, 0)
+			),
+			BorderFactory.createEmptyBorder()
+		));
 		GridBagConstraints rightPanelConstraints = new GridBagConstraints();
-		rightPanelConstraints.gridx = 1;
+		rightPanelConstraints.gridx = 4;
 		rightPanelConstraints.gridy = 0;
 		rightPanelConstraints.weighty = 1.0;
 		rightPanelConstraints.fill = GridBagConstraints.VERTICAL;
@@ -230,16 +295,93 @@ public class ChessMax {
 		frame.add(rightPanel, rightPanelConstraints);
 
 		frame.setVisible(false);
+
+		// Apply development borders if DEV_MODE is enabled.
+		if (fetchBooleanConfig("Developer", "DEV_MODE")) {
+			applyDevModeBorders(frame.getContentPane());
+		}
 	}
 
 	/**
-	 * Creates the move history panel containing a table of moves.
+	 * Recursively applies a developer mode border to all JComponents in the given container.
+	 * Each component receives a random colored border if DEV_MODE is enabled.
 	 *
-	 * @return a JPanel representing the move history.
+	 * @param container
+	 * 	the container whose components will receive the border
+	 */
+	private void applyDevModeBorders(Container container) {
+		for (Component component : container.getComponents()) {
+			if (component instanceof JComponent jComponent) {
+				// Preserve the original border in case it needs to be combined.
+				Border originalBorder = jComponent.getBorder();
+				// Create a random colored border.
+				Border randomBorder = BorderFactory.createLineBorder(getRandomColor(), 1);
+				// Set the border based on the DEV_MODE configuration.
+				try {
+					jComponent.setBorder(getDevBorder(randomBorder, originalBorder));
+				} catch (Exception e) {
+					// If setBorder is not supported, ignore and continue.
+				}
+			}
+			if (component instanceof Container) {
+				applyDevModeBorders((Container) component);
+			}
+		}
+	}
+
+	/**
+	 * Generates and returns a random color.
+	 *
+	 * @return a randomly generated Color instance
+	 */
+	private Color getRandomColor() {
+		Random random = new Random();
+		return new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+	}
+
+	/**
+	 * Creates the narrow middle panel that holds the image button.
+	 * The panel's width is configured (e.g., 15px) and the button is positioned accordingly.
+	 *
+	 * @return the configured middle panel
+	 */
+	private JPanel createMiddleButtonPanel() {
+		JPanel panel = new JPanel(null);
+		panel.setOpaque(false);
+		int middlePanelWidth = fetchIntegerConfig("MBPanel", "WIDTH"); // e.g., 15px
+		int boardHeight = board.getBoardContainer().getPreferredSize().height;
+		panel.setPreferredSize(new Dimension(middlePanelWidth, boardHeight));
+		panel.setBorder(getDevBorder(
+			BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(Color.ORANGE, 1),
+				BorderFactory.createEmptyBorder(0, 0, 0, 0)
+			),
+			BorderFactory.createEmptyBorder()
+		));
+
+		int buttonWidth = fetchIntegerConfig("MBPanel", "ROTATE_BUTTON_WIDTH");
+		int buttonHeight = fetchIntegerConfig("MBPanel", "ROTATE_BUTTON_HEIGHT");
+		int buttonX = fetchIntegerConfig("MBPanel", "ROTATE_BUTTON_X");
+		int buttonY = fetchIntegerConfig("MBPanel", "ROTATE_BUTTON_Y");
+		// Create a styled button that rotates the board on click
+		JButton imageButton = createStyledButton(fetchStringConfig("Images", "ROTATE_BUTTON_ICON"), buttonWidth - buttonWidth / 4, buttonHeight - buttonHeight / 4, buttonWidth, buttonHeight, board::rotate);
+		imageButton.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
+		imageButton.setBorder(getDevBorder(
+			BorderFactory.createLineBorder(Color.PINK, 1),
+			BorderFactory.createEmptyBorder()
+		));
+		panel.add(imageButton);
+
+		return panel;
+	}
+
+	/**
+	 * Creates the history panel containing the move table.
+	 *
+	 * @return the configured move history panel
 	 */
 	private JPanel createHistoryPanel() {
 		Color mainBackground = fetchColorConfig("Colors", "BACKGROUND");
-
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(
 			fetchIntegerConfig("History", "WIDTH"),
@@ -247,14 +389,19 @@ public class ChessMax {
 		));
 		panel.setBackground(mainBackground);
 		panel.setOpaque(true);
+		panel.setBorder(getDevBorder(
+			BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(Color.CYAN, 1),
+				BorderFactory.createEmptyBorder(10, 10, 10, 10)
+			),
+			BorderFactory.createEmptyBorder()
+		));
 
-		// Retrieve padding configurations.
 		int paddingTop = fetchIntegerConfig("History", "PADDING_TOP");
 		int paddingLeft = fetchIntegerConfig("History", "PADDING_LEFT");
 		int paddingBottom = fetchIntegerConfig("History", "PADDING_BOTTOM");
 		int paddingRight = fetchIntegerConfig("History", "PADDING_RIGHT");
 
-		// Create a titled border with specified padding and font.
 		TitledBorder titledBorder = BorderFactory.createTitledBorder(
 			BorderFactory.createEmptyBorder(paddingTop, paddingLeft, paddingBottom, paddingRight),
 			"",
@@ -263,34 +410,34 @@ public class ChessMax {
 			new Font("Arial", Font.BOLD, 18)
 		);
 		Border extraMargin = BorderFactory.createEmptyBorder(20, 0, 20, 20);
+		// Set border directly so that padding is always applied.
 		panel.setBorder(BorderFactory.createCompoundBorder(extraMargin, titledBorder));
 
-		// Initialize the move history table model with columns: Move, White, Black.
 		moveHistoryTableModel = new DefaultTableModel(new Object[] { "Move", "White", "Black" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
-				return false; // All cells are non-editable.
+				return false;
 			}
 		};
 
-		// Create the JTable with the move history table model.
 		JTable moveTable = new JTable(moveHistoryTableModel) {
 			@Override
 			protected void processMouseEvent(MouseEvent e) {
-				// Prevent user-initiated selection by overriding mouse events.
+				// Prevent user-initiated selection
 			}
 		};
 
 		moveTable.setShowGrid(false);
 		moveTable.setIntercellSpacing(new Dimension(0, 0));
-		moveTable.setRowHeight(30);
+		moveTable.setRowHeight(fetchIntegerConfig("History", "ROW_HEIGHT"));
 		moveTable.setBackground(mainBackground);
 		moveTable.setOpaque(true);
 		moveTable.setFocusable(false);
 		moveTable.setFillsViewportHeight(true);
 		moveTable.setCellSelectionEnabled(true);
 		moveTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		moveTable.setSelectionBackground(fetchColorWithAlphaConfig("Colors", "HISTORY_CELL_HIGHLIGHT", fetchIntegerConfig("Colors", "HISTORY_CELL_HIGHLIGHT_ALPHA")));
+		moveTable.setSelectionBackground(fetchColorWithAlphaConfig("Colors", "HISTORY_CELL_HIGHLIGHT",
+			fetchIntegerConfig("Colors", "HISTORY_CELL_HIGHLIGHT_ALPHA")));
 
 		moveTable.getTableHeader().setReorderingAllowed(false);
 		moveTable.getTableHeader().setBackground(mainBackground.darker());
@@ -299,13 +446,12 @@ public class ChessMax {
 		moveTable.getTableHeader().setBorder(BorderFactory.createEmptyBorder());
 		moveTable.getTableHeader().setOpaque(true);
 
-		// Set custom renderer for centering text and alternating row colors.
+		// Set custom cell renderer for move table
 		MoveTableCellRenderer cellRenderer = new MoveTableCellRenderer(mainBackground);
 		for (int i = 0; i < moveTable.getColumnCount(); i++) {
 			moveTable.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
 		}
 
-		// Adjust column widths based on configuration.
 		moveTable.getColumnModel().getColumn(0).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_MOVE_NUMBER_WIDTH"));
 		moveTable.getColumnModel().getColumn(1).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_WHITE_WIDTH"));
 		moveTable.getColumnModel().getColumn(2).setPreferredWidth(fetchIntegerConfig("History", "COLUMN_BLACK_WIDTH"));
@@ -315,118 +461,93 @@ public class ChessMax {
 		scrollPane.getViewport().setBackground(mainBackground);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-		// Customize the vertical scrollbar.
 		JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
 		verticalScrollBar.setUI(new CustomScrollBarUI());
 		verticalScrollBar.setPreferredSize(new Dimension(10, 0));
 		verticalScrollBar.setOpaque(false);
 
 		panel.add(scrollPane, BorderLayout.CENTER);
-
-		// Save reference to scroll pane for auto-scrolling.
 		historyScrollPane = scrollPane;
 		return panel;
 	}
 
 	/**
-	 * Creates a panel with navigation buttons.
+	 * Creates the panel containing navigation buttons for move history.
 	 *
-	 * @return a JPanel containing the navigation buttons.
+	 * @return the navigation button panel
 	 */
 	private JPanel createButtonPanel() {
 		Color mainBackground = fetchColorConfig("Colors", "BACKGROUND");
-
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
 		panel.setOpaque(true);
 		panel.setBackground(mainBackground);
+		panel.setBorder(BorderFactory.createCompoundBorder(
+			BorderFactory.createLineBorder(null, 0),
+			BorderFactory.createEmptyBorder(
+				fetchIntegerConfig("History", "BUTTON_PANEL_PADDING_TOP"),
+				fetchIntegerConfig("History", "BUTTON_PANEL_PADDING_LEFT"),
+				fetchIntegerConfig("History", "BUTTON_PANEL_PADDING_BOTTOM"),
+				fetchIntegerConfig("History", "BUTTON_PANEL_PADDING_RIGHT")
+			)
+		));
 
-		// Retrieve padding configurations.
-		int paddingTop = fetchIntegerConfig("History", "PADDING_TOP");
-		int paddingLeft = fetchIntegerConfig("History", "PADDING_LEFT");
-		int paddingBottom = fetchIntegerConfig("History", "PADDING_BOTTOM");
-		int paddingRight = fetchIntegerConfig("History", "PADDING_RIGHT");
-
-		TitledBorder titledBorder = BorderFactory.createTitledBorder(
-			BorderFactory.createEmptyBorder(paddingTop, paddingLeft, paddingBottom, paddingRight),
-			"",
-			TitledBorder.CENTER,
-			TitledBorder.TOP,
-			new Font("Arial", Font.BOLD, 18)
-		);
-		Border extraMargin = BorderFactory.createEmptyBorder(20, 0, 20, 20);
-		panel.setBorder(BorderFactory.createCompoundBorder(extraMargin, titledBorder));
-
-		// Icon dimensions from configuration.
 		int iconWidth = fetchIntegerConfig("History", "ARROWS_ICON_WIDTH");
 		int iconHeight = fetchIntegerConfig("History", "ARROWS_ICON_HEIGHT");
 
-		// Create navigation buttons.
-		JButton buttonToStart = createStyledButton(
-			"/images/buttons/To_Start.svg", iconWidth, iconHeight, board::toHistoryStart);
-		JButton buttonBackward = createStyledButton(
-			"/images/buttons/Backward.svg", iconWidth, iconHeight, board::historyBackward);
-		JButton buttonForward = createStyledButton(
-			"/images/buttons/Forward.svg", iconWidth, iconHeight, board::historyForward);
-		JButton buttonToEnd = createStyledButton(
-			"/images/buttons/To_End.svg", iconWidth, iconHeight, board::toHistoryEnd);
+		JButton buttonToStart = createStyledButton(fetchStringConfig("Images", "HISTORY_TO_START"), iconWidth, iconHeight, board::toHistoryStart);
+		JButton buttonPrevious = createStyledButton(fetchStringConfig("Images", "HISTORY_PREVIOUS"), iconWidth, iconHeight, board::historyPrevious);
+		JButton buttonNext = createStyledButton(fetchStringConfig("Images", "HISTORY_NEXT"), iconWidth, iconHeight, board::historyNext);
+		JButton buttonToEnd = createStyledButton(fetchStringConfig("Images", "HISTORY_TO_END"), iconWidth, iconHeight, board::toHistoryEnd);
 
 		panel.add(buttonToStart);
-		panel.add(buttonBackward);
-		panel.add(buttonForward);
+		panel.add(buttonPrevious);
+		panel.add(buttonNext);
 		panel.add(buttonToEnd);
-
 		return panel;
 	}
 
 	/**
-	 * Creates a styled button with custom icon and hover/pressed effects.
+	 * Creates a styled navigation button with the specified icon and click action.
 	 *
 	 * @param iconPath
-	 * 	the resource path to the button icon.
+	 * 	the resource path for the icon
 	 * @param iconWidth
-	 * 	the desired icon width.
+	 * 	the desired icon width
 	 * @param iconHeight
-	 * 	the desired icon height.
+	 * 	the desired icon height
 	 * @param runnable
-	 * 	the action to be executed on button click.
+	 * 	the action to execute on button click
 	 *
-	 * @return the styled JButton.
+	 * @return the styled JButton
 	 */
 	private JButton createStyledButton(String iconPath, int iconWidth, int iconHeight, Runnable runnable) {
 		Color normalColor = fetchColorConfig("Colors", "BUTTON_NORMAL");
 		Color hoverColor = fetchColorConfig("Colors", "BUTTON_HOVER");
 		Color pressedColor = fetchColorConfig("Colors", "BUTTON_PRESSED");
 
-		// Create a rounded button.
 		RoundedButton button = new RoundedButton(BUTTON_CORNER_RADIUS);
 		button.setIcon(getScaledIcon(iconPath, iconWidth, iconHeight));
 		button.setBackground(normalColor);
 		button.setPreferredSize(new Dimension(iconWidth + BUTTON_PADDING, iconHeight + BUTTON_PADDING));
-
-		// Log debug text on button click.
-		button.addActionListener(_ -> {
-			runnable.run();
-		});
-
-		// Mouse listener for hover and pressed effects.
+		button.addActionListener(_ -> runnable.run());
 		button.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
+			public void mouseEntered(MouseEvent evt) {
 				button.setBackground(hoverColor);
 			}
 
 			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
+			public void mouseExited(MouseEvent evt) {
 				button.setBackground(normalColor);
 			}
 
 			@Override
-			public void mousePressed(java.awt.event.MouseEvent evt) {
+			public void mousePressed(MouseEvent evt) {
 				button.setBackground(pressedColor);
 			}
 
 			@Override
-			public void mouseReleased(java.awt.event.MouseEvent evt) {
+			public void mouseReleased(MouseEvent evt) {
 				if (button.contains(evt.getPoint())) {
 					button.setBackground(hoverColor);
 				} else {
@@ -434,22 +555,92 @@ public class ChessMax {
 				}
 			}
 		});
-
 		return button;
 	}
 
 	/**
-	 * Scales an SVG icon from the resource path to the specified width and height.
-	 * Requires Apache Batik to be available in the classpath.
+	 * Creates a styled navigation button with the specified icon, size, and click action.
+	 *
+	 * @param iconPath
+	 * 	the resource path for the icon
+	 * @param size
+	 * 	the desired size for both width and height of the icon
+	 * @param runnable
+	 * 	the action to execute on button click
+	 *
+	 * @return the styled JButton
+	 */
+	private JButton createStyledButton(String iconPath, int size, Runnable runnable) {
+		return createStyledButton(iconPath, size, size, runnable);
+	}
+
+	/**
+	 * Creates a styled navigation button with the specified icon, icon size, button size, and click action.
+	 *
+	 * @param iconPath
+	 * 	the resource path for the icon
+	 * @param iconWidth
+	 * 	the desired icon width
+	 * @param iconHeight
+	 * 	the desired icon height
+	 * @param buttonWidth
+	 * 	the desired button width
+	 * @param buttonHeight
+	 * 	the desired button height
+	 * @param runnable
+	 * 	the action to execute on button click
+	 *
+	 * @return the styled JButton
+	 */
+	private JButton createStyledButton(String iconPath, int iconWidth, int iconHeight, int buttonWidth, int buttonHeight, Runnable runnable) {
+		Color normalColor = fetchColorConfig("Colors", "BUTTON_NORMAL");
+		Color hoverColor = fetchColorConfig("Colors", "BUTTON_HOVER");
+		Color pressedColor = fetchColorConfig("Colors", "BUTTON_PRESSED");
+
+		RoundedButton button = new RoundedButton(BUTTON_CORNER_RADIUS);
+		button.setIcon(getScaledIcon(iconPath, iconWidth, iconHeight));
+		button.setBackground(normalColor);
+		button.setPreferredSize(new Dimension(buttonWidth, buttonHeight));
+		button.addActionListener(_ -> runnable.run());
+		button.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent evt) {
+				button.setBackground(hoverColor);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent evt) {
+				button.setBackground(normalColor);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent evt) {
+				button.setBackground(pressedColor);
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent evt) {
+				if (button.contains(evt.getPoint())) {
+					button.setBackground(hoverColor);
+				} else {
+					button.setBackground(normalColor);
+				}
+			}
+		});
+		return button;
+	}
+
+	/**
+	 * Scales an SVG icon from the given resource path to the specified dimensions.
 	 *
 	 * @param resourcePath
-	 * 	the path to the image resource.
+	 * 	the path to the SVG resource
 	 * @param width
-	 * 	the target width.
+	 * 	the target width
 	 * @param height
-	 * 	the target height.
+	 * 	the target height
 	 *
-	 * @return the scaled ImageIcon, or null if an error occurs.
+	 * @return the scaled ImageIcon, or null if an error occurs
 	 */
 	private ImageIcon getScaledIcon(String resourcePath, int width, int height) {
 		URL url = getClass().getResource(resourcePath);
@@ -457,27 +648,20 @@ public class ChessMax {
 			Logger.logError("Resource not found: " + resourcePath);
 			return null;
 		}
-
-		// Only process SVG files.
 		if (!resourcePath.toLowerCase().endsWith(".svg")) {
 			return null;
 		}
-
 		try {
 			TranscoderInput transcoderInput = new TranscoderInput(url.toString());
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			TranscoderOutput transcoderOutput = new TranscoderOutput(byteArrayOutputStream);
-
 			PNGTranscoder pngTranscoder = new PNGTranscoder();
 			pngTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, (float) width);
 			pngTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, (float) height);
-
 			pngTranscoder.transcode(transcoderInput, transcoderOutput);
 			byteArrayOutputStream.flush();
-
 			ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
 			BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
-
 			return new ImageIcon(bufferedImage);
 		} catch (Exception e) {
 			Logger.logError(e.getMessage());
@@ -493,10 +677,9 @@ public class ChessMax {
 	}
 
 	/**
-	 * Custom ScrollBar UI that draws a rounded thumb without default arrow buttons.
+	 * Custom ScrollBar UI implementation that draws a rounded thumb without default arrow buttons.
 	 */
 	static class CustomScrollBarUI extends BasicScrollBarUI {
-		// Arc size for the scrollbar thumb from configuration.
 		private final int THUMB_ARC = fetchIntegerConfig("Colors", "HISTORY_SCROLLBAR_THUMB_ARC");
 
 		@Override
@@ -510,9 +693,9 @@ public class ChessMax {
 		}
 
 		/**
-		 * Creates an invisible button to remove the default arrow buttons.
+		 * Creates a button with zero dimensions.
 		 *
-		 * @return a zero-sized JButton.
+		 * @return a zero-size JButton
 		 */
 		private JButton createZeroSizeButton() {
 			JButton button = new JButton();
@@ -530,11 +713,8 @@ public class ChessMax {
 			}
 			Graphics2D g2 = (Graphics2D) g.create();
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-			// Get thumb color with configured transparency.
 			int alpha = fetchIntegerConfig("Colors", "HISTORY_SCROLLBAR_THUMB_ALPHA");
 			Color thumbColor = fetchColorWithAlphaConfig("Colors", "HISTORY_SCROLLBAR_THUMB", alpha);
-
 			g2.setPaint(thumbColor);
 			g2.fillRoundRect(thumbBounds.x, thumbBounds.y, thumbBounds.width, thumbBounds.height, THUMB_ARC, THUMB_ARC);
 			g2.dispose();
