@@ -74,6 +74,7 @@ public class Board extends JPanel {
 	private boolean hasCastled = false;
 	private boolean isPromotion = false;
 	private boolean moveHistoryKingInCheck = false;
+	private boolean targetWhiteAtBottom;
 	private boolean isWhiteAtBottom;
 
 	private Player playerWhite;
@@ -100,6 +101,7 @@ public class Board extends JPanel {
 		this.boardPainter = new BoardPainter(this);
 		this.boardContainer = new JPanel(new GridBagLayout());
 		this.isWhiteAtBottom = isWhiteAtBottom;
+		setTargetWhiteAtBottom(isWhiteAtBottom);
 
 		MouseInput mouseInput = new MouseInput(this);
 		addMouseListener(mouseInput);
@@ -600,6 +602,8 @@ public class Board extends JPanel {
 	 * to ensure that the user remains on the same move rather than jumping to the latest position.
 	 */
 	public void rotate() {
+		setTargetWhiteAtBottom(isTargetWhiteAtBottom());
+
 		if (isHistoryLookup()) {
 			int currentIndex = getHistoryLookupIndex();
 
@@ -688,7 +692,12 @@ public class Board extends JPanel {
 		setHistoryLookup(true);
 		setHistoryLookupIndex(-1);
 		getPossibleMoves().clear();
+
 		loadPositionFromFen(getStartingPosition());
+
+		if (isWhiteAtBottom() && !isTargetWhiteAtBottom() || !isWhiteAtBottom() && isTargetWhiteAtBottom()) {
+			rotateBoard();
+		}
 
 		clearHistoryMoveSelection();
 		clearHighlightsAndArrows();
@@ -732,7 +741,7 @@ public class Board extends JPanel {
 			setHistoryLookupIndex(-1);
 			getPossibleMoves().clear();
 			loadPositionFromFen(getStartingPosition());
-			if (!isWhiteAtBottom()) {
+			if (isWhiteAtBottom() && !isTargetWhiteAtBottom() || !isWhiteAtBottom() && isTargetWhiteAtBottom()) {
 				rotateBoard();
 			}
 		} else {
@@ -740,7 +749,7 @@ public class Board extends JPanel {
 			getPossibleMoves().clear();
 			if (getHistoryLookupIndex() == -1) {
 				loadPositionFromFen(getStartingPosition());
-				if (!isWhiteAtBottom()) {
+				if (isWhiteAtBottom() && !isTargetWhiteAtBottom() || !isWhiteAtBottom() && isTargetWhiteAtBottom()) {
 					rotateBoard();
 				}
 			} else {
