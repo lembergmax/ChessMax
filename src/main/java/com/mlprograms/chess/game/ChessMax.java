@@ -495,8 +495,8 @@ public class ChessMax {
 		int iconHeight = fetchIntegerConfig("History", "ARROWS_ICON_HEIGHT");
 
 		JButton buttonToStart = createStyledButton(fetchStringConfig("Images", "HISTORY_TO_START"), iconWidth, iconHeight, board::toHistoryStart);
-		JButton buttonPrevious = createStyledButton(fetchStringConfig("Images", "HISTORY_PREVIOUS"), iconWidth, iconHeight, board::historyBackward);
-		JButton buttonNext = createStyledButton(fetchStringConfig("Images", "HISTORY_NEXT"), iconWidth, iconHeight, board::historyForward);
+		JButton buttonPrevious = createStyledButton(fetchStringConfig("Images", "HISTORY_PREVIOUS"), iconWidth, iconHeight, board::historyPrevious);
+		JButton buttonNext = createStyledButton(fetchStringConfig("Images", "HISTORY_NEXT"), iconWidth, iconHeight, board::historyNext);
 		JButton buttonToEnd = createStyledButton(fetchStringConfig("Images", "HISTORY_TO_END"), iconWidth, iconHeight, board::toHistoryEnd);
 
 		panel.add(buttonToStart);

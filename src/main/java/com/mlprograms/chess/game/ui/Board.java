@@ -689,11 +689,6 @@ public class Board extends JPanel {
 		getPossibleMoves().clear();
 		loadPositionFromFen(getStartingPosition());
 
-		// Adjust board orientation if necessary (starting position is assumed to be white at bottom)
-		if (!isWhiteAtBottom()) {
-			rotateBoard();
-		}
-
 		clearHistoryMoveSelection();
 		clearHighlightsAndArrows();
 	}
@@ -721,7 +716,7 @@ public class Board extends JPanel {
 	 * If already at the start, it reverts to the starting position.
 	 * Adjusts board orientation if necessary.
 	 */
-	public void historyBackward() {
+	public void historyPrevious() {
 		if (getMoveHistory() == null || getMoveHistory().isEmpty()) {
 			return;
 		}
@@ -764,11 +759,12 @@ public class Board extends JPanel {
 		playHistoryGameSound(getHistoryLookupIndex() + 1);
 	}
 
+
 	/**
 	 * Moves one step forward in the move history.
 	 * When reaching the final move, the history lookup mode is disabled.
 	 */
-	public void historyForward() {
+	public void historyNext() {
 		if (getMoveHistory() == null || getMoveHistory().isEmpty() ||
 			    getHistoryLookupIndex() >= getMoveHistory().size() - 1) {
 			return;
