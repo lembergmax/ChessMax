@@ -75,6 +75,19 @@ public class BoardPainter {
 		return arrowHead;
 	}
 
+	public void highlightDragFromTile(Graphics2D graphics2D) {
+		if (BOARD.getSelectedPiece() == null || !BOARD.isMouseDragged()) {
+			return;
+		}
+
+		Color dragFromTile = fetchColorWithAlphaConfig("Colors", "TILE_HIGHLIGHT_DRAG_FROM", fetchIntegerConfig("Colors", "TILE_HIGHLIGHT_DRAG_FROM_ALPHA"));
+		graphics2D.setColor(dragFromTile);
+
+		// Draw the highlight on the specified tile
+		graphics2D.fillRect(BOARD.getSelectedPiece().getColumn() * BOARD.getTileSize(), BOARD.getSelectedPiece().getRow() * BOARD.getTileSize(),
+			BOARD.getTileSize(), BOARD.getTileSize());
+	}
+
 	/**
 	 * Paints all the pieces currently on the board.
 	 * Iterates through the list of pieces managed by the board and calls their respective paint methods.
