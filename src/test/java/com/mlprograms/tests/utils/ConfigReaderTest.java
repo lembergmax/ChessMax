@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
  * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
@@ -10,7 +10,8 @@ import com.mlprograms.chess.utils.ConfigReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ConfigReaderTest {
 
@@ -23,7 +24,7 @@ class ConfigReaderTest {
 
 	@Test
 	void testGetValue() {
-		String value = configReader.getValue("ChessGame", "TITLE");
+		String value = configReader.getValue("Text", "TITLE");
 		assertEquals("ChessMax", value, "Der Wert sollte 'ChessMax' sein.");
 	}
 

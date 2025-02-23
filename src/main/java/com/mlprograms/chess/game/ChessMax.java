@@ -193,7 +193,7 @@ public class ChessMax {
 	 * Initializes the main game window and lays out all panels.
 	 */
 	private void initializeMainFrame() {
-		frame = new JFrame(fetchStringConfig("ChessGame", "TITLE"));
+		frame = new JFrame(fetchStringConfig("Text", "TITLE"));
 		frame.setLayout(new GridBagLayout());
 		frame.setMinimumSize(new Dimension(
 			fetchIntegerConfig("ChessGame", "WIDTH"),
