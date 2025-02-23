@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
  * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConfigFetcherTest {
 
 	@Test
 	void testFetchStringConfig() {
-		String title = ConfigFetcher.fetchStringConfig("ChessGame", "TITLE");
+		String title = ConfigFetcher.fetchStringConfig("Text", "TITLE");
 		assertEquals("ChessMax", title, "Der Titel sollte 'ChessMax' sein.");
 	}
 
