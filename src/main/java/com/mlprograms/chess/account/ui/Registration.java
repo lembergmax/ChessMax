@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
  * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
@@ -14,6 +14,8 @@ import com.mlprograms.chess.account.AccountManager;
 import com.mlprograms.chess.utils.TabTraversalManager;
 
 import java.util.List;
+
+import static com.mlprograms.chess.utils.ConfigFetcher.fetchStringConfig;
 
 public class Registration extends javax.swing.JFrame {
 
@@ -61,7 +63,7 @@ public class Registration extends javax.swing.JFrame {
         setResizable(false);
 
         registrationTitle.setFont(new java.awt.Font("Malgun Gothic", 0, 24)); // NOI18N
-        registrationTitle.setText("Konto erstellen");
+        registrationTitle.setText(fetchStringConfig("Text", "REGISTRATION_TITLE"));
         registrationTitle.setToolTipText("");
         registrationTitle.setAlignmentX(1.0F);
         registrationTitle.setAlignmentY(1.0F);
@@ -71,30 +73,30 @@ public class Registration extends javax.swing.JFrame {
         jTextPaneUsername.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jScrollPane3.setViewportView(jTextPaneUsername);
 
-        jButtonSwitchToLogin.setText("Anmelden");
+        jButtonSwitchToLogin.setText(fetchStringConfig("Text", "REGISTRATION_SWITCH_TO_LOGIN"));
         jButtonSwitchToLogin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonSwitchToLoginActionPerformed(evt);
             }
         });
 
-        jButtonCreateAccount.setText("Konto erstellen");
+        jButtonCreateAccount.setText(fetchStringConfig("Text", "REGISTRATION_BUTTON_REGISTRATION"));
         jButtonCreateAccount.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonCreateAccountActionPerformed(evt);
             }
         });
 
-        jButtonBack.setText("Zurück");
+        jButtonBack.setText(fetchStringConfig("Text", "REGISTRATION_BUTTON_BACK"));
         jButtonBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBackActionPerformed(evt);
             }
         });
 
-        jLabelUsername.setText("Benutzername");
+        jLabelUsername.setText(fetchStringConfig("Text", "REGISTRATION_LABEL_USERNAME"));
 
-        jLabelEmail.setText("Email-Adresse");
+        jLabelEmail.setText(fetchStringConfig("Text", "REGISTRATION_LABEL_EMAIL_ADDRESS"));
 
         jTextPaneEmail.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jScrollPane5.setViewportView(jTextPaneEmail);
@@ -102,16 +104,16 @@ public class Registration extends javax.swing.JFrame {
         jTextPaneFirstname.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jScrollPane6.setViewportView(jTextPaneFirstname);
 
-        jLabelFirstname.setText("Vorname");
+        jLabelFirstname.setText(fetchStringConfig("Text", "REGISTRATION_LABEL_FIRSTNAME"));
 
         jTextPaneLastname.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jScrollPane7.setViewportView(jTextPaneLastname);
 
-        jLabelLastname.setText("Nachname");
+        jLabelLastname.setText(fetchStringConfig("Text", "REGISTRATION_LABEL_LASTNAME"));
 
-        jLabelPassword.setText("Passwort");
+        jLabelPassword.setText(fetchStringConfig("Text", "REGISTRATION_LABEL_PASSWORD"));
 
-        jLabelConfirmPassword.setText("Passwort bestätigen");
+        jLabelConfirmPassword.setText(fetchStringConfig("Text", "REGISTRATION_LABEL_CONFIRM_PASSWORD"));
 
         jPasswordFieldPassword.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
 
