@@ -134,6 +134,7 @@ public abstract class Piece implements Cloneable {
 	 *
 	 * @return true if the move is valid, false otherwise
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	protected boolean isValidPieceMove(int column, int row, boolean checkForKingSafety) {
 		if (column < 0 || column >= getBoard().getColumns() || row < 0 || row >= getBoard().getRows()) {
 			return false;
