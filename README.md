@@ -14,6 +14,7 @@
 * **Step-by-step navigation** through the game history
 * **Board rotation** by 180° to switch perspective
 * Easy **mouse controls** via click or drag & drop
+* Custom arrow drawing on the board to highlight moves or plans
 
 ## 🖼️ User Interface
 
