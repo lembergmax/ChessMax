@@ -1,12 +1,13 @@
 /*
- * Copyright (c) 2024 Max Lemberg. This file is part of ChessMax.
+ * Copyright (c) 2024-2025 Max Lemberg. This file is part of ChessMax.
  * Licenced under the CC BY-NC 4.0 License.
  * See "http://creativecommons.org/licenses/by-nc/4.0/".
  */
 
 package com.mlprograms.chess;
 
-import com.mlprograms.chess.account.ui.Startmenu;
+import com.mlprograms.chess.game.ChessMax;
+import com.mlprograms.chess.human.Human;
 
 /**
  * The main entry point for the ChessMax application.
@@ -28,8 +29,10 @@ public class Main {
 	 * Loads and displays the start menu of the application.
 	 */
 	private static void initializeUI() {
-		Startmenu startmenu = new Startmenu();
-		startmenu.setVisible(true);
+		// Startmenu startmenu = new Startmenu();
+		// startmenu.setVisible(true);
+
+		new ChessMax(new Human(), new Human(), true).play();
 	}
 
 }
