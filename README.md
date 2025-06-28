@@ -19,7 +19,9 @@
 
 ![ChessMax Screenshot 1](https://github.com/user-attachments/assets/16936b01-fc5f-4885-9cfc-61eb092322a7)
 
-![ChessMax Screenshot 2](https://github.com/user-attachments/assets/8529ede7-7616-43db-8757-3b4f1d75f1fe)
+![ChessMax Screenshot 2](https://github.com/user-attachments/assets/3ecde154-24b5-4a5a-853b-286b87e7f54c)
+
+![ChessMax Screenshot 3](https://github.com/user-attachments/assets/8529ede7-7616-43db-8757-3b4f1d75f1fe)
 
 ## ⚙️ Technology Stack
 
