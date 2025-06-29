@@ -6,6 +6,7 @@
 
 package com.mlprograms.chess;
 
+import com.mlprograms.chess.account.ui.Startmenu;
 import com.mlprograms.chess.game.ChessMax;
 import com.mlprograms.chess.human.Human;
 
@@ -22,17 +23,16 @@ public class Main {
 	 * 	command-line arguments (not used)
 	 */
 	public static void main(String[] args) {
-		initializeUI();
+		//initializeUI();
+		new ChessMax(new Human(), new Human(), true).play();
 	}
 
 	/**
 	 * Loads and displays the start menu of the application.
 	 */
 	private static void initializeUI() {
-		// Startmenu startmenu = new Startmenu();
-		// startmenu.setVisible(true);
-
-		new ChessMax(new Human(), new Human(), true).play();
+		Startmenu startmenu = new Startmenu();
+		startmenu.setVisible(true);
 	}
 
 }
