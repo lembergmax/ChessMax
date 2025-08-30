@@ -32,14 +32,6 @@
 | GUI Framework        | Java Swing |
 | Build Tool           | Maven      |
 
-## 🧱 Architecture
-
-The project follows a modular design based on the **MVC pattern**:
-
-* **Model**: Game logic, piece behavior, rules validation
-* **View**: Swing-based user interface (board, buttons)
-* **Controller**: Handles user interactions and game flow
-
 ## 🔧 Usage
 
 1. Start the application via the `main` method
@@ -55,3 +47,4 @@ This means:
 * You may share and adapt the project,
 * provided you give appropriate credit,
 * and do not use it for commercial purposes.
+
