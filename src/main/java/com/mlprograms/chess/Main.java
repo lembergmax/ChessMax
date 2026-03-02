@@ -6,33 +6,14 @@
 
 package com.mlprograms.chess;
 
-import com.mlprograms.chess.account.ui.Startmenu;
 import com.mlprograms.chess.game.ChessMax;
+import com.mlprograms.chess.game.engine.ai.presets.Martin;
 import com.mlprograms.chess.human.Human;
 
-/**
- * The main entry point for the ChessMax application.
- * Initializes and displays the user interface.
- */
 public class Main {
 
-	/**
-	 * Main method to start the application.
-	 *
-	 * @param args
-	 * 	command-line arguments (not used)
-	 */
 	public static void main(String[] args) {
-		//initializeUI();
-		new ChessMax(new Human(), new Human(), true).play();
-	}
-
-	/**
-	 * Loads and displays the start menu of the application.
-	 */
-	private static void initializeUI() {
-		Startmenu startmenu = new Startmenu();
-		startmenu.setVisible(true);
+		new ChessMax(new Martin(), new Martin(), true).play();
 	}
 
 }
