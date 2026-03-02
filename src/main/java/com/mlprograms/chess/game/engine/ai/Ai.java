@@ -91,13 +91,6 @@ public abstract class Ai extends Player {
 	 * Otherwise, the AI calculates its next strategic move and executes it.
 	 */
 	public void makeMove() {
-		// Skip move if a pawn promotion is currently being processed
-		if (getBoard().isPromotion()) {
-			return;
-		}
-
-		// Execute the move returned by the AI's strategic move finder
-		// getBoard().makeMove();
 	}
 
 }
