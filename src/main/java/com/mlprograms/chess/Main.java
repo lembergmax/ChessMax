@@ -13,7 +13,7 @@ import com.mlprograms.chess.human.Human;
 public class Main {
 
 	public static void main(String[] args) {
-		new ChessMax(new Martin(), new Martin(), true).play();
+		new ChessMax(new Human(), new Martin(), true).play();
 	}
 
 }
